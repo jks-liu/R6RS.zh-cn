@@ -1,6 +1,6 @@
 # R6RS简体中文翻译
 
-[在线阅读（已完成3%，最后修改于2014年07月9日）](http://r6rs.mrliu.org)
+[在线阅读](http://r6rs.mrliu.org)
 
 [英文原文](http://www.r6rs.org/final/r6rs.pdf)
 
