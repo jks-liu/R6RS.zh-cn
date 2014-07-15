@@ -14,12 +14,12 @@ tagline: 简体中文
 **<center>2007年09月26日</center>**
 
 [<center>在GitHub联系译者</center>](https://github.com/jks-liu/R6RS.zh-cn)
-<center>已完成8%，最后修改于2014年07月14日</center>
+<center>已完成10%，最后修改于2014年07月15日</center>
 
 # 摘要
 报告给出了程序设计语言Scheme的定义性描述。Scheme是由Guy Lewis Steele Jr.和Gerald Jay Sussman设计的具有静态作用域和严格尾递归特性的Lisp程序设计语言的方言。它的设计目的是以异常清晰，语义简明和较少表达方式的方法来组合表达式。包括函数（functional）式，命令（imperative）式和消息传递（message passing）式风格在内的绝大多数程序设计模式都可以用Scheme方便地表述。
 
-和本报告一起的还有一个描述标准库的报告[^24]；用描述符“library section”或“library chapter”来识别此文档的引用。和它一起的还有一个包含非规范性附录的报告[^22]。第四次报告在语言和库的许多方面阐述了历史背景和基本原理[^23]。
+和本报告一起的还有一个描述标准库的报告[^24]；用描述符“库的第多少小节（library section）”或“库的第多少章（library chapter）”来识别此文档的引用。和它一起的还有一个包含非规范性附录的报告[^22]。第四次报告在语言和库的许多方面阐述了历史背景和基本原理[^23]。
 
 上面列到的人不是这篇报告文字的唯一作者。多年来，下面这些人也参与到Scheme语言设计的讨论中，我们也将他们列为之前报告的作者：
 
@@ -337,13 +337,73 @@ Scheme对象的一个子集叫做*数据值*。这些包括布尔，数据对象
 (+ 1 3)
 ~~~
 
-中3的继续，给它加1。一般地，这些普遍存在的继续是隐藏在背后的，程序员不需要对它们考虑太多。可是，偶尔，一个程序员需要显示的处理继续。过程`call-with-current-continuation`（见11.15节）允许Scheme程序员通过创建一个接管当前继续的过程来处理这些。过程`call-with-current-continuation`传入一个过程，
+中3的继续，给它加1。一般地，这些普遍存在的继续是隐藏在背后的，程序员不需要对它们考虑太多。可是，偶尔，一个程序员需要显示地处理继续。过程`call-with-current-continuation`（见11.15节）允许Scheme程序员通过创建一个接管当前继续的过程来处理这些。过程`call-with-current-continuation`传入一个过程，并以一个*逃逸过程*作为参数，立刻调用这个过程。随后，这个逃逸过程可以用一个参数调用，这个参数会成为`call-with-current-continuation`的结果。也就是说，这个逃逸过程放弃了它自己的继续，恢复了`call-with-current-continuation`调用的继续。
 
+在下面这个例子中，一个逃逸过程代表加1到其绑定到`escape`参数的继续，且然后以参数3调用。`escape`调用的继续被放弃，取而代之的是3被传递给加1这个继续：
 
+~~~ scheme
+(+ 1 (call-with-current-continuation
+       (lambda (escape)
 
+         (+ 2 (escape 3))))) 
+            ‌‌⇒ 4
+~~~
 
+一个逃逸过程有无限的生存期：它可以在它捕获的继续被调用之后被调用，且它可以被调用多次。这使得`call-with-current-continuation`相对于特定的非本地跳转,如其它语言的异常,显得异常强大。
 
+## 1.12. 库
 
+Scheme代码可以被组织在叫做*库*的组件中。每个库包含定义和表达式。它可以从其它的库中导入定义，也可以向其它库中导出定义。
+
+下面叫做`(hello)`的库导出一个叫做`hello-world`的定义，且导入基础库（base library）（见第11章）和简单I/O库（simple I/O library）（见库的第8.3小节）。导出的`hello-world`是一个在单独的行上显示Hello World的过程。
+
+~~~ scheme
+(library (hello)
+  (export hello-world)
+  (import (rnrs base)
+          (rnrs io simple))
+  (define (hello-world)
+    (display "Hello World")
+    (newline)))
+~~~
+
+## 1.13. 顶层程序
+
+一个Scheme程序被一个*顶层程序*调用。像库一样，一个顶层程序包括导入，定义和表达式，且指定一个执行的入口。因此，一个顶层程序通过它导入的库的传递闭包定义了一个Scheme程序。
+
+下面的程序通过来自`(rnrs programs (6))`库（见库的第10章）的`command-line`过程从命令行获得第一个参数。它然后用`open-file-input-port`（见库的第8.2小节）打开一个文件，产生一个*端口（port）*，也就是作为一个数据源的文件的一个连接，并调用`get-bytes-all`过程以获得文件的二进制数据。程序然后使用`put-bytes`输出文件的内容到标准输出：
+
+（译注：以下的示例程序已根据勘误表进行了修正。）
+
+~~~ scheme
+#!r6rs
+(import (rnrs base)
+        (rnrs io ports)
+        (rnrs programs))
+(let ((p (standard-output-port)))
+  (put-bytevector p
+                  (call-with-port
+                      (open-file-input-port
+                        (cadr (command-line)))
+                    get-bytevector-all))
+  (close-port p))
+~~~
+
+# 2. 需求等级
+
+本报告中的关键词“必须（must）”, “必须不（must not）”, “应该（should）”, “不应该（should not）”, “推荐的（recommended）”, “可以（may）”和“可选的（optional）”按照RFC2119[^3]描述的进行解释。特别地：
+
+**必须** 这个词意味着一个陈述是规范的一个绝对必要条件。
+
+**必须不** 这个短语意味着一个陈述是规范绝对禁止的。
+
+**应该** 这个词，或形容词“推荐的”，意味着有合适的理由的时候，在特定的情况下可以忽略这个陈述，但应当理解其含义，并在选择不同的做法前要仔细权衡。
+
+**不应该** 这个短语，或短语“不推荐”，意味着有合适的理由的时候，在特定的情况下，一个陈述的行为是可接受的，但应当理解其含义，且选择本陈述的描述前应当仔细权衡。
+
+**可以** 这个词，或形容词“可选的”，意味着一个条目是真正可选的。
+
+尤其，本报告偶尔使用“应该”去指定本报告规范之外但是实际上无法被一个实现检测到的情况；见5.4小节。在这种情况下，一个特定的实现允许程序员忽略本报告的建议甚至表现出其它合理的行为。然而，由于本报告没有指定这种行为，这些程序可能是不可移植的，也就是说，它们的执行在不同的实现上可能产生不同的结果。
 
 
 
