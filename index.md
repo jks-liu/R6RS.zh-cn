@@ -14,7 +14,7 @@ tagline: 简体中文
 **<center>2007年09月26日</center>**
 
 [<center>在GitHub联系译者</center>](https://github.com/jks-liu/R6RS.zh-cn)
-<center>已完成11%，最后修改于2014年07月17日</center>
+<center>已完成13%，最后修改于2014年07月18日</center>
 
 # 摘要
 报告给出了程序设计语言Scheme的定义性描述。Scheme是由Guy Lewis Steele Jr.和Gerald Jay Sussman设计的具有静态作用域和严格尾递归特性的Lisp程序设计语言的方言。它的设计目的是以异常清晰，语义简明和较少表达方式的方法来组合表达式。包括函数（functional）式，命令（imperative）式和消息传递（message passing）式风格在内的绝大多数程序设计模式都可以用Scheme方便地表述。
@@ -478,6 +478,204 @@ Scheme的语法被组织进三个层次：
 Scheme源程序包含句法数据和（不重要的）注释。Scheme源程序中的句法数据叫做*形式*。（嵌套在另一个形式中的形式叫做*子形式*。）因此，Scheme的语法有如下性质，字符的任何序列是一个形式也是一个代表一些对象的句法数据。这可能导致混淆，因为在脱离上下文的情况下，一个给定的字符序列是用于对象的表示还是一个程序的文本可能不是很明显。它可能也是使Scheme强大的原因，因为它使得编写解释器或编译器这类把程序当作对象（或相反）的程序变得简单。
 
 一个数据值可能有多个不同的外部表示。比如“`#e28.000`”和“`#x1c`”都是表示精确整数对象28的句法数据，句法数据“`(8 13)`”, “`( 08 13 )`”和“`(8 . (13 . ()))`”都表示包含精确整数对象8和13的表。表示相同对象（从`equal?`的意义来说；见11.5小节）的句法数据作为程序的形式来说总是等价的。
+
+因为句法数据和数据值之间相当的一致性，所以当根据上下文精确含义显而易见时，本报告有时使用术语*数据*来表示句法数据或数据值。
+
+一个实现不允许以任何方式扩展词汇或数据语法，仅有一个例外：实现不需要把`#!<identifier>`,这些`<identifier>`不是r6rs内建的，当作一个语法错误，且实现可以使用特定的`#!-prefixed identifiers`作为指示接下来的输入包含标准词汇和数据语法的扩展的标记。语法`#!r6rs`可被用作预示接下来的输入是用本报告中描述的词汇语法和数据语法写成的。另外，`#!r6rs`被当作注释对待，见4.2.3小节。
+
+## 4.1. 符号（Notation）
+
+Scheme的形式语法（formal syntax）被用扩展的BNF写成。非终结符（Non-terminals）使用尖角括号进行书写。非终结符名字的大小写是无关紧要的。
+
+语法中的空格都是为了便于阅读二存在的。`<Empty>`代表空字符串。
+
+对BNF的以下扩展可以使描述更加简洁：`<thing>*`代表零个或更多的`<thing>`；`<thing>+`代表至少一个`<thing>`。
+
+一些非终结符的名字表示相同名字的Unicode标量值：`<character tabulation> (U+0009)`, `<linefeed> (U+000A)`, `<carriage return> (U+000D)`, `<line tabulation> (U+000B)`, `<form feed> (U+000C)`, `<carriage return> (U+000D)`, `<space> (U+0020)`, `<next line> (U+0085)`, `<line separator> (U+2028)`和`<paragraph separator> (U+2029)`。
+
+## 4.2. 词汇语法
+
+词汇语法决定了怎样将字符的序列分隔成语义的序列，省略不重要的部分如注释和空白。字符序列被假定是Unicode标准[^27]的文本。词汇语法一些语义，比如标识符，数字对象的表示，字符串等等，是数据语法中的句法数据，且因此代表对象。除了语法的形式解释（formal account），本节还描述了这些句法数据表示了什么数据值。
+
+注释中描述的词汇语法包含`<datum>`的一个向前引用，这是数据语法的一部分。然而，作为注释，这些`<datum>`在语法中并不起什么重要的作用。
+
+除了布尔，数字对象以及用16进制表示的Unicode标量是不区分大小写的，其它情况下大小写是敏感的。比如，`#x1A`和`#X1a`是一样的。然而，标识符`Foo`和标识符`FOO`是有区别的。
+
+### 4.2.1. 形式解释
+
+`<Interlexeme space>`可以出现在任意词位（lexeme）的两侧，但不允许出现在一个词位的中间。
+
+`<Identifier>`, `.`, `<number>`, `<character>`和`<boolean>`必须被一个`<delimiter>`或输入的结尾终结。
+
+下面的两个字符保留用作未来的语言扩展：`{``}`
+
+~~~ bnf
+<lexeme> → <identifier> ∣ <boolean> ∣ <number>
+‌ ∣ <character> ∣ <string>
+    ∣ ( ∣ ) ∣ [ ∣ ] ∣ #( ∣ #vu8( | ' ∣ ` ∣ , ∣ ,@ ∣ .
+    ∣ #' ∣ #` ∣ #, ∣ #,@
+<delimiter> → ( ∣ ) ∣ [ ∣ ] ∣ " ∣ ; ∣ #
+    ∣ <whitespace>
+<whitespace> → <character tabulation>
+    ∣ <linefeed> ∣ <line tabulation> ∣ <form feed>
+    ∣ <carriage return> ∣ <next line>
+    ∣ <any character whose category is Zs, Zl, or Zp>
+<line ending> → <linefeed> ∣ <carriage return>
+    ∣ <carriage return> <linefeed> ∣ <next line>
+    ∣ <carriage return> <next line> ∣ <line separator>
+<comment> → ; <all subsequent characters up to a
+    <line ending> or <paragraph separator>>
+‌ ∣ <nested comment>
+    ∣ #; <interlexeme space> <datum>
+    ∣ #!r6rs
+<nested comment> → #| <comment text>
+    <comment cont>* |#
+<comment text> → <character sequence not containing
+    #| or |#>
+<comment cont> → <nested comment> <comment text>
+<atmosphere> → <whitespace> ∣ <comment>
+<interlexeme space> → <atmosphere>*
+
+<identifier> → <initial> <subsequent>*
+‌ ∣ <peculiar identifier>
+<initial> → <constituent> ∣ <special initial>
+    ∣ <inline hex escape>
+<letter> → a ∣ b ∣ c ∣ ... ∣ z
+    ∣ A ∣ B ∣ C ∣ ... ∣ Z
+<constituent> → <letter>
+    ∣ <any character whose Unicode scalar value is greater than
+    ‌127, and whose category is Lu, Ll, Lt, Lm, Lo, Mn,
+    ‌Nl, No, Pd, Pc, Po, Sc, Sm, Sk, So, or Co>
+<special initial> → ! ∣ $ ∣ % ∣ & ∣ * ∣ / ∣ : ∣ < ∣ =
+    ∣ > ∣ ? ∣ ^ ∣ _ ∣ ~
+<subsequent> → <initial> ∣ <digit>
+    ∣ <any character whose category is Nd, Mc, or Me>
+    ∣ <special subsequent>
+<digit> → 0 ∣ 1 ∣ 2 ∣ 3 ∣ 4 ∣ 5 ∣ 6 ∣ 7 ∣ 8 ∣ 9
+<hex digit> → <digit>
+    ∣ a ∣ A ∣ b ∣ B ∣ c ∣ C ∣ d ∣ D ∣ e ∣ E ∣ f ∣ F
+<special subsequent> → + ∣ - ∣ . ∣ @
+<inline hex escape> → \x<hex scalar value>;
+<hex scalar value> → <hex digit>+
+<peculiar identifier> → + ∣ - ∣ ... ∣ -> <subsequent>*
+<boolean> → #t ∣ #T ∣ #f ∣ #F
+<character> → #\<any character>
+    ∣ #\<character name>
+    ∣ #\x<hex scalar value>
+<character name> → nul ∣ alarm ∣ backspace ∣ tab
+    ∣ linefeed ∣ newline ∣ vtab ∣ page ∣ return
+    ∣ esc ∣ space ∣ delete
+<string> → " <string element>* "
+<string element> → <any character other than " or \>
+    ∣ \a ∣ \b ∣ \t ∣ \n ∣ \v ∣ \f ∣ \r
+    ∣ \" ∣ \\
+    ∣ \<intraline whitespace><line ending>
+       <intraline whitespace>
+    ∣ <inline hex escape>
+<intraline whitespace> → <character tabulation>
+    ∣ <any character whose category is Zs>
+~~~
+
+一个`<hex scalar value>`表示一个`0`到`#x10FFFF`的Unicode标量值，这个范围要排除`[#xD800, #xDFFF]`。
+
+让R = 2， 8， 10 和 16，然后重复下面的规则`<num R>`, `<complex R>`, `<real R>`, `<ureal R>`, `<uinteger R>`和`<prefix R>`。没有`<decimal 2>`, `<decimal 8>`和`<decimal 16>`的规则，这意味着包含小数点和指数的数字表示必须使用十进制基数。
+
+~~~ bnf
+<number> → <num 2> ∣ <num 8>
+‌ ∣ <num 10> ∣ <num 16>
+<num R> → <prefix R> <complex R>
+<complex R> → <real R> ∣ <real R> @ <real R>
+    ∣ <real R> + <ureal R> i ∣ <real R> - <ureal R> i
+    ∣ <real R> + <naninf> i ∣ <real R> - <naninf> i
+    ∣ <real R> + i ∣ <real R> - i
+    ∣ + <ureal R> i ∣ - <ureal R> i
+    ∣ + <naninf> i ∣ - <naninf> i
+    ∣ + i ∣ - i
+<real R> → <sign> <ureal R>
+    ∣ + <naninf> ∣ - <naninf>
+<naninf> → nan.0 ∣ inf.0
+<ureal R> → <uinteger R>
+    ∣ <uinteger R> / <uinteger R>
+    ∣ <decimal R> <mantissa width>
+<decimal 10> → <uinteger 10> <suffix>
+    ∣ . <digit 10>+ <suffix>
+    ∣ <digit 10>+ . <digit 10>* <suffix>
+    ∣ <digit 10>+ . <suffix>
+<uinteger R> → <digit R>+
+<prefix R> → <radix R> <exactness>
+    ∣ <exactness> <radix R>
+
+<suffix> → <empty>
+‌ ∣ <exponent marker> <sign> <digit 10>+
+<exponent marker> → e ∣ E ∣ s ∣ S ∣ f ∣ F
+    ∣ d ∣ D ∣ l ∣ L
+<mantissa width> → <empty>
+    ∣ | <digit 10>+
+<sign> → <empty> ∣ + ∣ -
+<exactness> → <empty>
+    ∣ #i∣ #I ∣ #e∣ #E
+<radix 2> → #b∣ #B
+<radix 8> → #o∣ #O
+<radix 10> → <empty> ∣ #d ∣ #D
+<radix 16> → #x∣ #X
+<digit 2> → 0 ∣ 1
+<digit 8> → 0 ∣ 1 ∣ 2 ∣ 3 ∣ 4 ∣ 5 ∣ 6 ∣ 7
+<digit 10> → <digit>
+<digit 16> → <hex digit>
+~~~
+
+### 4.2.2. 换行符
+
+在Scheme单行注释（见4.2.3小节）和字符串字面量中，换行符是重要的。在Scheme源代码中，在`<line ending>`中的任意换行符都指示一个行的结束。此外，两字符的换行符`<carriage return> <linefeed>`和`<carriage return> <next line>`都仅表示一个单独的换行。
+
+在一个字符串字面量中，一个之前没有`\`的`<line ending>`表示一个换行字符（linefeed character），这个字符Scheme中的标准换行符。
+
+### 4.2.3. 空白和注释
+
+*空白*字符是空格，换行，回车，字符制表符，换页符，行制表符和其它种类是Zs，Zl或Zp的任意其它字符。空白字符用于提高可读性和必要地相互分隔词位。空白可以出现在两个词位中间，但不允许出现在一个词位的中间。空白字符也可以出现在一个字符串中，但此时空白是有意义的。
+
+词汇语法包括一些注释形式。在所有的情况下，注释对Scheme是不可见的，除非它们作为分隔符，所以，比如，一个注释不能出现在标识符或一个数字对象的表示的中间。
+
+一个分号（`;`）指示一个行注释的开始。注释一直延续到分号出现的那一行的结尾。
+
+另一个指示注释的方法是在`<datum>`（参见4.3.1节）前加一个前缀`#;`，可选的在`<datum>`前加上`<interlexeme space>`。注释包括注释前缀`#;`和`<datum>`。这个符号用作“注释掉”代码段。
+
+块注释可用正确嵌套的`#|`和`|#`指示。
+
+~~~ scheme
+#|
+    FACT过程计算一个非负数的阶乘。
+|#
+(define fact
+  (lambda (n)
+    ;; base case
+    (if (= n 0)
+        #;(= n 1)
+        1       ; *的单位元（identity）
+        (* n (fact (- n 1))))))
+~~~
+
+词位`#!r6rs`，表示接下来的输入是用本报告中描述的词汇语法和数据语法写成的，另外，它也被当作注释对待。
+
+### 4.2.4. 标识符
+
+其他程序设计语言认可的大多数标识符也能被Scheme接受。通常，第一个字符不是任何数值的字母、数字和“扩展字符”序列就是一个标识符。此外，`+`、`-`和`...`都是标识符，以两个字符序列`->`开始的字母、数字和“扩展字符”序列也是。这里有一些标识符的例子：
+
+~~~ scheme
+lambda         q                soup
+list->vector   +                V17a
+<=             a34kTMNs         ->-
+the-word-recursion-has-many-meanings
+~~~
+
+扩展字符可以像字母那样用于标识符内。以下是扩展字符：
+
+`! $ % & * + - . / : < = > ? @ ^ _ ~ `
+
+此外，
+
+
+
 
 
 
