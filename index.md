@@ -471,7 +471,7 @@ Scheme的语法被组织进三个层次：
 
 1. *词汇语法*描述一个程序文本怎样被分成语义（lexemes）的序列。
 2. *数据语法*，按词汇语法制定，将句法（syntactic）数据的序列组织为语义的序列，其中一个句法数据递归地组织一个实体。
-3. *程序语法*按阅读语法制定，实施进一步的句法数据含义的组织和分配。
+3. *程序语法*按数据语法制定，实施进一步的句法数据含义的组织和分配。（本句已根据勘误表修改。）
 
 句法数据（也叫做*外部表示（external representations）*）兼作为对象的一个符号，且Scheme的`(rnrs io ports (6))`库（见库的8.2小节）提供了`get-datum`和`put-datum`过程用作句法数据的读写，在它们的文本表示和对应的对象之间进行转换。每一个句法数据表示一个对应的*数据值*。一个句法数据可以使用`quote`在一个程序中获得对应的数据值（见第11.4.1节）。
 
@@ -491,7 +491,7 @@ Scheme的形式语法（formal syntax）被用扩展的BNF写成。非终结符�
 
 对BNF的以下扩展可以使描述更加简洁：`<thing>*`代表零个或更多的`<thing>`；`<thing>+`代表至少一个`<thing>`。
 
-一些非终结符的名字表示相同名字的Unicode标量值：`<character tabulation> (U+0009)`, `<linefeed> (U+000A)`, `<carriage return> (U+000D)`, `<line tabulation> (U+000B)`, `<form feed> (U+000C)`, `<carriage return> (U+000D)`, `<space> (U+0020)`, `<next line> (U+0085)`, `<line separator> (U+2028)`和`<paragraph separator> (U+2029)`。
+一些非终结符的名字表示相同名字的Unicode标量值：`<character tabulation> (U+0009)`, `<linefeed> (U+000A)`, `<line tabulation> (U+000B)`, `<form feed> (U+000C)`, `<carriage return> (U+000D)`, `<space> (U+0020)`, `<next line> (U+0085)`, `<line separator> (U+2028)`和`<paragraph separator> (U+2029)`。（本句已根据勘误表修改。）
 
 ## 4.2. 词汇语法
 
@@ -508,6 +508,8 @@ Scheme的形式语法（formal syntax）被用扩展的BNF写成。非终结符�
 `<Identifier>`, `.`, `<number>`, `<character>`和`<boolean>`必须被一个`<delimiter>`或输入的结尾终结。
 
 下面的两个字符保留用作未来的语言扩展：`{``}`
+
+（以下规则已根据勘误表修改。）
 
 ~~~ bnf
 <lexeme> → <identifier> ∣ <boolean> ∣ <number>
@@ -569,8 +571,8 @@ Scheme的形式语法（formal syntax）被用扩展的BNF写成。非终结符�
 <string element> → <any character other than " or \>
     ∣ \a ∣ \b ∣ \t ∣ \n ∣ \v ∣ \f ∣ \r
     ∣ \" ∣ \\
-    ∣ \<intraline whitespace><line ending>
-       <intraline whitespace>
+    ∣ \<intraline whitespace>*<line ending>
+       <intraline whitespace>*
     ∣ <inline hex escape>
 <intraline whitespace> → <character tabulation>
     ∣ <any character whose category is Zs>
@@ -579,6 +581,10 @@ Scheme的形式语法（formal syntax）被用扩展的BNF写成。非终结符�
 一个`<hex scalar value>`表示一个`0`到`#x10FFFF`的Unicode标量值，这个范围要排除`[#xD800, #xDFFF]`。
 
 让R = 2， 8， 10 和 16，然后重复下面的规则`<num R>`, `<complex R>`, `<real R>`, `<ureal R>`, `<uinteger R>`和`<prefix R>`。没有`<decimal 2>`, `<decimal 8>`和`<decimal 16>`的规则，这意味着包含小数点和指数的数字表示必须使用十进制基数。
+
+下面的规则中，大小写是不重要的。（本句根据勘误表添加。）
+
+（以下规则已根据勘误表修改。）
 
 ~~~ bnf
 <number> → <num 2> ∣ <num 8>
@@ -600,7 +606,6 @@ Scheme的形式语法（formal syntax）被用扩展的BNF写成。非终结符�
 <decimal 10> → <uinteger 10> <suffix>
     ∣ . <digit 10>+ <suffix>
     ∣ <digit 10>+ . <digit 10>* <suffix>
-    ∣ <digit 10>+ . <suffix>
 <uinteger R> → <digit R>+
 <prefix R> → <radix R> <exactness>
     ∣ <exactness> <radix R>
@@ -672,14 +677,73 @@ the-word-recursion-has-many-meanings
 
 `! $ % & * + - . / : < = > ? @ ^ _ ~ `
 
-此外，
+此外，所有Unicode标量值大于127且类型属于Lu, Ll, Lt, Lm, Lo, Mn, Mc, Me, Nd, Nl, No, Pd, Pc, Po, Sc, Sm, Sk, So或Co的字符都可以被用在标识符中。当通过一个`<inline hex escape>`表示的时候，任何字符都可以用在标识符中。比如，标识符`H\x65;llo`和标识符`Hello`是一样的，标识符`\x3BB;`和标识符`λ`是一样的。
+
+在Scheme程序中，任意标识符可作为一个变量或一个语法关键字（见5.2和9.2节）。任何标识符也可以作为一个句法数据，在这种情况下，它表示一个*符号*（见11.10小节）。
+
+### 4.2.5. 布尔
+
+标准布尔对象真和假有外部表示`#t`和`#f`。
+
+### 4.2.6.字符
+
+字符可以用符号`#\<character>`或`#\<character name>`或`#\x<hex scalar value>`表示。
+
+比如：
+
+| `#\a` |           lower case letter a
+| `#\A` |           upper case letter A
+| `#\(` |           left parenthesis  
+| `#\` |            space character  
+| `#\nul` |         U+0000  
+| `#\alarm` |       U+0007  
+| `#\backspace` |   U+0008  
+| `#\tab` |         U+0009  
+| `#\linefeed` |    U+000A  
+| `#\newline` |     U+000A  
+| `#\vtab` |        U+000B  
+| `#\page` |        U+000C  
+| `#\return` |      U+000D  
+| `#\esc` |         U+001B  
+| `#\space` |       U+0020  
+| |                preferred way to write a space  
+| `#\delete` |      U+007F  
+| `#\xFF` |         U+00FF  
+| `#\x03BB` |       U+03BB  
+| `#\x00006587` |   U+6587  
+| `#\λ` |           U+03BB  
+| `#\x0001z` |      &lexical exception  
+| `#\λx` |          &lexical exception  
+| `#\alarmx` |      &lexical exception  
+| `#\alarm x` |     U+0007  
+| |                followed by x  
+| `#\Alarm` |       &lexical exception  
+| `#\alert` |       &lexical exception  
+| `#\xA` |          U+000A  
+| `#\xFF` |         U+00FF  
+| `#\xff` |         U+00FF  
+| `#\x ff` |        U+0078  
+| |                followed by another datum, ff  
+| `#\x(ff)` |       U+0078  
+| |                followed by another datum,  
+| |                a parenthesized ff  
+| `#\(x)` |         &lexical exception  
+| `#\(x` |          &lexical exception  
+| `#\((x)` |        U+0028  
+| |                followed by another datum,  
+| |                parenthesized x  
+| `#\x00110000` |   &lexical exception  
+| |                out of range  
+| `#\x000000001` |  U+0001  
+| `#\xD800` |       &lexical exception  
+| |                in excluded range  
 
 
+<!--
+  （勘误：6.2.6）
 
-
-
-
-
+  TODO：将逗号由中文改为英文
+-->
 
 # 参考文献
 
