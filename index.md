@@ -14,7 +14,7 @@ tagline: 简体中文
 **<center>2007年09月26日</center>**
 
 [<center>在GitHub联系译者</center>](https://github.com/jks-liu/R6RS.zh-cn)
-<center>已完成13%，最后修改于2014年07月18日</center>
+<center>已完成15%，最后修改于2014年07月20日</center>
 
 # 摘要
 报告给出了程序设计语言Scheme的定义性描述。Scheme是由Guy Lewis Steele Jr.和Gerald Jay Sussman设计的具有静态作用域和严格尾递归特性的Lisp程序设计语言的方言。它的设计目的是以异常清晰，语义简明和较少表达方式的方法来组合表达式。包括函数（functional）式，命令（imperative）式和消息传递（message passing）式风格在内的绝大多数程序设计模式都可以用Scheme方便地表述。
@@ -691,10 +691,10 @@ the-word-recursion-has-many-meanings
 
 比如：
 
-| `#\a` |           lower case letter a
-| `#\A` |           upper case letter A
-| `#\(` |           left parenthesis  
-| `#\` |            space character  
+| `#\a` |           小写字母a
+| `#\A` |           大写字母A
+| `#\(` |           做小括号  
+| `#\ ` |           空格  
 | `#\nul` |         U+0000  
 | `#\alarm` |       U+0007  
 | `#\backspace` |   U+0008  
@@ -706,41 +706,103 @@ the-word-recursion-has-many-meanings
 | `#\return` |      U+000D  
 | `#\esc` |         U+001B  
 | `#\space` |       U+0020  
-| |                preferred way to write a space  
+| |                 表示一个空格时优先使用这种方法  
 | `#\delete` |      U+007F  
 | `#\xFF` |         U+00FF  
 | `#\x03BB` |       U+03BB  
 | `#\x00006587` |   U+6587  
 | `#\λ` |           U+03BB  
-| `#\x0001z` |      &lexical exception  
-| `#\λx` |          &lexical exception  
-| `#\alarmx` |      &lexical exception  
+| `#\x0001z` |      `词法`*异常*（`&lexical` *exception*）
+| `#\λx` |          `词法`*异常*
+| `#\alarmx` |      `词法`*异常*
 | `#\alarm x` |     U+0007  
-| |                followed by x  
-| `#\Alarm` |       &lexical exception  
-| `#\alert` |       &lexical exception  
+| |                 跟着`x`
+| `#\Alarm` |       `词法`*异常*
+| `#\alert` |       `词法`*异常*
 | `#\xA` |          U+000A  
 | `#\xFF` |         U+00FF  
 | `#\xff` |         U+00FF  
 | `#\x ff` |        U+0078  
-| |                followed by another datum, ff  
+| |                 跟着另外一个数据，`ff` 
 | `#\x(ff)` |       U+0078  
-| |                followed by another datum,  
-| |                a parenthesized ff  
-| `#\(x)` |         &lexical exception  
-| `#\(x` |          &lexical exception  
+| |                 跟着另外一个数据， 
+| |                 一个被括号括着的`ff` 
+| `#\(x)` |         `词法`*异常*
+| `#\(x` |          `词法`*异常*
 | `#\((x)` |        U+0028  
-| |                followed by another datum,  
-| |                parenthesized x  
-| `#\x00110000` |   &lexical exception  
-| |                out of range  
+| |                 跟着另外一个数据， 
+| |                 一个被括号括着的`x` 
+| `#\x00110000` |   `词法`*异常*
+| |                 超出范围
 | `#\x000000001` |  U+0001  
-| `#\xD800` |       &lexical exception  
-| |                in excluded range  
+| `#\xD800` |       `词法`*异常*
+| |                 在被排除的范围内
+
+（`词法`*异常*记号表示有问题的行违反了词汇语法。）
+
+在`#\<character>`和`#\<character name>`中，大小写是重要的，但在`#\x<hex scalar value>`的`<hex scalar value>`是不重要的。（上句以根据勘误表进行修改。）一个`<character>`必须跟着一个`<delimiter>`或输入的结束。此规则解决了关于命名字符的各种歧义，比如，要求字符序列`#\space`表解释为一个空白字符而不是字符`#\s`和跟着的标识符`pace`。
+
+<font size="2">
+<i>注意：</i>由于反向兼容的原因我们保留符号<code>#\newline</code>。它的使用是不赞成的；应使用<code>#\linefeed</code>代替。
+</font>
+
+### 4.2.7. 字符串
+
+字符串使用被双引号（`"`）括起来的字符序列表示。在字符串字面量中，各种转义序列（escape sequences）用来表示字符，而不是字符自己。转义序列总是以一个反斜杠（`\`）开始：
+
+* `\a` : 响铃（alarm）, U+0007
+* `\b` : 退格（backspace）, U+0008
+* `\t` : 制表（character tabulation）, U+0009
+* `\n` : 换行（linefeed）, U+000A
+* `\v` : 行制表（line tabulation）, U+000B
+* `\f` : 换页（formfeed）, U+000C
+* `\r` : 回车（return）, U+000D
+* `\"` : 双引号（doublequote）, U+0022
+* `\\` : 反斜杠（backslash）, U+005C
+* `\<intraline whitespace><line ending><intraline whitespace>` : 无
+* `\x<hex scalar value>;` : 指定字符（注意结尾的分号）。
+
+这些转义序列是大小写敏感的，除了`<hex scalar value>`中的字母数字（alphabetic digits）可以是大写也可以是小写。
+
+字符串中反斜杠后的任意其它字符都是违反语法的。除了行结尾外，任意在转义序列外且不是一个双引号的字符在字符串字面量中代表它自己。比如，但字符字符串字面量`"λ"`（双引号，一个小写的lambda，双引号）和`"\x03bb;"`表示一样的字符串。一个前面不是反斜杠的行结尾表示一个换行字符。
+
+比如：
+
+| "abc" | U+0061, U+0062, U+0063
+| "\x41;bc" | "Abc" ; U+0041, U+0062, U+0063
+| "\x41; bc" | "A bc" 
+| |U+0041, U+0020, U+0062, U+0063
+| "\x41bc;" | U+41BC
+| "\x41" |  `词法`*异常*
+| "\x;" | `词法`*异常*
+| "\x41bx;" | `词法`*异常*
+| "\x00000041;" | "A" ; U+0041
+| "\x0010FFFF;" | U+10FFFF
+| "\x00110000;" | `词法`*异常*
+| | 超出范围
+| "\x000000001;" |  U+0001
+| "\xD800;" | `词法`*异常*
+| | 在排除的范围内
+|"A |
+| bc" | U+0041, U+000A, U+0062, U+0063
+| | 如果A后面没有空格
+
+### 4.2.8. 数字
+
+数字对象外部表示的语法在形式语法的`<number>`规则中被正式描述。在数字对象的外部表示中，大小写是不重要的。
+
+数字对象的表示可以通过特定的基数前缀被写作二进制，八进制，十进制和十六进制。基数前缀是`#b`（二进制），`#o`（八进制），`#d`（十进制）和`#x`（十六进制）。在没有基数前缀时，一个数字对象的表示被假设是十进制的。
+
+一个数字对象的表示可通过前缀被指定为精确的货非精确的。前缀`#e`表示精确的，前缀`#i`表示非精确的。如果使用基数前缀的话，精确性前缀可使用在其之前或之后。如果一个数字对象的表示没有精确性前缀，则在下列情况是非精确的，包含一个小数点，指数，或一个非空的尾数宽度（mantissa width），否则它是精确的。
+
+在一个非精确数可以有不同精度的系统中，指定一个常数的精度可能是有用的。如果这样的话，数字对象的表示可以用一个指示非精确数预期精度的指数标记写成。字母`s`, `f`, `d`和`l`分别表示使用*short*，*single*，*double*和*long*精度。（当内部非精确表示少于四种时，这四个精度定义被映射到当前可用的定义。例如，只有两种内部表示的实现可以将short和single映射为一种精度，将long和double映射为一种）。另外，指数标记`e`指明了Scheme实现的缺省精度。缺省精度应达到或超过*double*的精度，但Scheme实现也许会希望用户可设置此缺省精度。
+
+
+
 
 
 <!--
-  （勘误：6.2.6）
+  （勘误：6.2.8）
 
   TODO：将逗号由中文改为英文
 -->
