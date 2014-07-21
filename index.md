@@ -14,7 +14,7 @@ tagline: 简体中文
 **<center>2007年09月26日</center>**
 
 [<center>在GitHub联系译者</center>](https://github.com/jks-liu/R6RS.zh-cn)
-<center>已完成15%，最后修改于2014年07月20日</center>
+<center>已完成16%，最后修改于2014年07月22日</center>
 
 # 摘要
 报告给出了程序设计语言Scheme的定义性描述。Scheme是由Guy Lewis Steele Jr.和Gerald Jay Sussman设计的具有静态作用域和严格尾递归特性的Lisp程序设计语言的方言。它的设计目的是以异常清晰，语义简明和较少表达方式的方法来组合表达式。包括函数（functional）式，命令（imperative）式和消息传递（message passing）式风格在内的绝大多数程序设计模式都可以用Scheme方便地表述。
@@ -819,14 +819,54 @@ the-word-recursion-has-many-meanings
 </font>
 
 <font size="2">
-  <i>注意：</i>
+  <i>注意：</i>当优先使用的浮点表示是IEEE double精度时，<code>|p</code>后缀不应该总是被省略：非规范化浮点数在精度上有所松懈，所以它们的外部表示应该加上一个使用有效数字真实宽度的<code>|p</code>后缀。
 </font>
 
+字面量`+inf.0`和`-inf.0`分别表示正无穷大和负无穷大。字面量`+nan.0`表示非数，它是`(/ 0.0 0.0)`的结果，且同样也可以表示其它非数。字面量`-nan.0`也表示一个非数。（上句根据勘误表添加。）
+
+如果*x*是一个非精确实数对象的外部表示且不包括竖线且不包括除了`e`之外的指数标记，这个非精确实数对象表示一个浮点数（见库的第11.3小节）。其它非精确实数对象外部表示的一些或所有也可以表示浮点数，但这不是本报告要求的。
+
+## 4.3. 数据语法
+
+数据语法按照`<lexeme>`的序列描述句法的语法。
+
+句法数据包括本报告前面章节描述的语义数据以及以下用于组织复合数据的结构。
+
+* 点对和表，被`( )`或`[ ]`（见4.3.2节）括起来
+* 向量（见4.3.3节）
+* 字节向量（bytevectors）（见4.3.4节）
+
+### 4.3.1. 形式解释
+
+下面的语法按照定义在4.2节的语法的各种语义描述句法数据的语法：
+
+~~~ scheme
+<datum> → <lexeme datum>
+‌ ∣ <compound datum>
+<lexeme datum> → <boolean> ∣ <number>
+    ∣ <character> ∣ <string> ∣ <symbol>
+<symbol> → <identifier>
+<compound datum> → <list> ∣ <vector> ∣ <bytevector>
+<list> → (<datum>*) ∣ [<datum>*]
+    ∣ (<datum>+ . <datum>) ∣ [<datum>+ . <datum>]
+    ∣ <abbreviation>
+<abbreviation> → <abbrev prefix> <datum>
+<abbrev prefix> → ' ∣ ` ∣ , ∣ ,@
+    ∣ #' | #` | #, | #,@
+<vector> → #(<datum>*)
+<bytevector> → #vu8(<u8>*)
+<u8> → <any <number> representing an exact
+      ‌‌integer in {0, ..., 255}>
+~~~
+
+### 4.3.2. 点对和表
+
+表示值对和值的列表（见11.9节）的列表和点对数据使用小括号和中括号表示。规则`<list>`中匹配的中括号对等价于匹配的小括号对。
 
 
 
 <!--
-  （勘误：6.2.8）
+  （勘误：5.10）
 
   TODO：将逗号由中文改为英文
 -->
