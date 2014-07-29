@@ -14,7 +14,7 @@ tagline: R6RS简体中文翻译
 **<center>2007年09月26日</center>**
 
 [<center>在GitHub联系译者</center>](https://github.com/jks-liu/R6RS.zh-cn)
-<center>已完成20%，最后修改于2014年07月25日</center>
+<center>已完成24%，最后修改于2014年07月29日</center>
 
 # 摘要
 报告给出了程序设计语言Scheme的定义性描述。Scheme是由Guy Lewis Steele Jr.和Gerald Jay Sussman设计的具有静态作用域和严格尾递归特性的Lisp程序设计语言的方言。它的设计目的是以异常清晰，语义简明和较少表达方式的方法来组合表达式。包括函数（functional）式，命令（imperative）式和消息传递（message passing）式风格在内的绝大多数程序设计模式都可以用Scheme方便地表述。
@@ -1102,11 +1102,11 @@ Scheme的实现必须是*严格尾递归的*。发生在叫做*尾上下文（ta
 
 ## 6.3. 实现责任
 
-除了通过命名惯例进行隐含的限制，一个条目可以列出另外的显式的限制。这些显式的限制通常同时描述程序员的责任和实现的责任，程序员的责任意味着程序员必须确保一个形式的子形式是适当的，或一个适当的参数被传递，实现的责任意味着实现必须检查子形式符合规范的限制（如果宏扩展终结的话），或检查参数是不是适当的。一个描述可以显式地列出实现的责任，通过为参数或子形式打上“实现责任”的标签。在这种情况下，在描述的其它部分为这些子形式或参数指定的责任就只是程序员的责任。一个描述实现责任的段落不影响那一段没有描述的实现检查子形式或参数的责任。
+除了通过命名惯例进行隐含的限制，一个条目可以列出另外的显式的限制。这些显式的限制通常同时描述程序员的责任和实现的责任，程序员的责任意味着程序员必须确保一个形式的子形式是适当的，或一个适当的参数被传递，实现的责任意味着实现必须检查子形式符合规范的限制（如果宏扩展终结的话），或检查参数是不是适当的。通过为参数或子形式打上“实现责任”的标签，一个描述可以显式地列出实现的责任。在这种情况下，在描述的其它部分为这些子形式或参数指定的责任就只是程序员的责任。一个描述实现责任的段落不影响那一段没有描述的实现检查子形式或参数的责任。
 
 ## 6.4. 其它种类的条目
 
-如果*类别*既不是“语法”也不是“过程”，那么，那个条目描述一个非过程值，且*类别*描述了这个值得种类。标题行
+如果*类别*既不是“语法”也不是“过程”，那么，那个条目描述一个非过程值，且*类别*描述了这个值的种类。标题行
 
 `&who‌‌` 条件类型
 
@@ -1147,13 +1147,152 @@ Scheme的实现必须是*严格尾递归的*。发生在叫做*尾上下文（ta
 
 ## 6.7. 命名惯例
 
+依照惯例，将值存进上次分配的位置的过程的名字通常使用“`!`”。
 
+依照惯例，“`->`”出现在以一个类型的对象作为参数，范围另一个类型的类似对象的过程名字中。
 
+按照惯例，谓词（predicates）—总是返回一个布尔的过程—以“`?`”结尾，只有当名字不包含任何字面的时候，谓词才不以问号结尾。
 
+按照惯例，复合名字的要素使用“`-`”进行分隔。尤其，是一个实际单词或可以像一个实际单词一样发音的单词的前缀会跟着一个连字符，除非跟在连字符后面的第一个字符不是一个字母，在这种情况下，连字符可以省略。简单地说，连字符不会跟在不可发音的前缀（“fx”和“fl”）后面。
 
+按照惯例，条件类型的名字以“`&`”开头。
 
+# 7. 库
 
+库是一个程序可以被独立发布的部分。库系统支持库内的宏定义，宏导出，且区别需要定义和导出的不同阶段。本章为库定义了符号，且为库的扩展（expansion ）和执行定义了语义。
 
+## 7.1. 库形式
+
+一个库定义必须有下面的形式：
+
+~~~ scheme
+(library <library name>
+  (export <export spec> ...)
+  (import <import spec> ...)
+  <library body>)
+~~~
+
+一个库的声明包含下面的要素：
+
+* `<library name>`指定了库的名字（可能还有版本）。
+* `export`子形式指定一个导出的列表，这个列表命名了定义在或导入到这个库的绑定的子集。
+* `import`子形式指定了作为一个导入依赖列表导入的绑定，其中每一个依赖指定：
+  - 导入的库的名字，且可以可选地包含它的版本，
+  - 相应的等级，比如，扩展（expand）或运行时（run time）（见7.2小节）和
+  - 为了在导入库中可用的库导出的子集，和为在导入库中可用的为每一个库导出准备的名字。
+* `<library body>`是库的内部，由一系列定义和紧随其后的表达式组成。标识符可以既是本地的（未导出的）也是导出绑定的，且表达式是为它们的效果求值的初始化表达式。
+
+一个标识符可以从两个或更多的库中使用相同的本地名字导入，或者使用两个不同的等级从相同的库中导入，只要每个库导出的绑定是一样的（也就是说，绑定在一个库中被定义，它只能<!-- TODO -->通过导出和再导出经过导入）。否则，没有标识符可以被导入多次，被定义多次，或者同事被定义和导入。除了被显式地导入到库中或在库中定义的标识符，其它标识符在库中都是不可见的。
+
+一个`<library name>`在一个实现中唯一地标识一个库，且在实现中的其它所有的库的`import`字句（clauses）（见下面）中是全局可见的。一个`<library name>`有下面的形式：
+
+`(<identifier1> <identifier2> ... <version>)`
+
+其中`<version>`是空的，或有以下的形式：
+
+`(<sub-version> ...)`
+
+每一个`<sub-version>`必须表示一个精确的非负整数对象。一个空的`<version>`等价于`()`。
+
+一个`<export spec>`命名一个集合，这个集合包含导入和本地定义，这个集合将被导出，可能还会使用不同的外部名字。一个`<export spec>`必须是如下的形式当中的一个：
+
+~~~ scheme
+<identifier>
+(rename (<identifier\(_1\)> <identifier\(_2\)>) ...)
+~~~
+
+在一个`<export spec>`中，一个`<identifier>`命名一个被定义在或被导入到库中的单独的绑定，其中，这个导入的外部名字和库中绑定的名字是一样的。一个`rename`指明在每一个`\(\texttt{(<identifier$_1$> <identifier$_2$>)}\)`这样的配对中，被命名为`\(\texttt{<identifier$_1$>}\)`的绑定使用`\(\texttt{<identifier$_2$>}\)`作为外部名字。
+
+每一个`<import spec>`指定一个被导入到库中的绑定的集合，在这个集合中，级别是可见的，且通过它可以知道本地的名字。一个`<import spec>`必须是下面的一个：
+
+~~~ scheme
+<import set>
+(for <import set> <import level> ...)
+~~~
+
+一个`<import level>`是下面中的一个：
+
+~~~ scheme
+run
+expand
+(meta <level>)
+~~~
+
+其中`<level>`表示一个精确的整数对象。
+
+在一个`<import level>`中，`run`是`(meta 0)`的缩写，且`expand`是`(meta 1)`的缩写。级别和阶段（phases）在7.2小节讨论。
+
+一个`<import set>`命名一个来自另一个库的绑定的集合，且可能为导入的绑定指定一个本地的名字。它必须是下面的一个：
+
+~~~ scheme
+<library reference>
+(library <library reference>)
+(only <import set> <identifier> ...)
+(except <import set> <identifier> ...)
+(prefix <import set> <identifier>)
+(rename <import set> (<identifier\(_1\)> <identifier\(_2\)>) ...)
+~~~
+
+一个`<library reference>`通过它的名字和可选的版本标识一个库。它有下面形式中的一个：
+
+~~~ scheme
+(<identifier\(_1\)> <identifier\(_2\)> ...)
+(<identifier\(_1\)> <identifier\(_2\)> ... <version reference>)
+~~~
+
+<!-- TODO -->
+一个第一个`<identifier>`是`for`, `library`, `only`, `except`, `prefix`，或`rename`的`<library reference>`只允许出现在一个`library <import set>`中。否则`<import set> (library <library reference>)`等价于`<library reference>`。
+
+一个没有`<version reference>`（上面的第一个形式）的`<library reference>`等价于`<version reference>`是`()`的`<library reference>`。
+
+一个`<version reference>`指定它匹配的`<version>`的一个子集。`<library reference>`指定所有相同名字且版本匹配`<version reference>`的库。一个`<version reference>`有下面的形式：
+
+~~~ scheme
+(<sub-version reference\(_1\)> ... <sub-version reference\(_n\)>)
+(and <version reference> ...)
+(or <version reference> ...)
+(not <version reference>)
+~~~
+
+第一个形式的一个`<version reference>`匹配`<version>`至少*n*个要素的，且`<sub-version reference>`匹配对应的`<sub-version>`。一个`and <version reference>`匹配一个版本，如果所有的跟在`and`后的`<version references>`都匹配的话。相应地，`or <version reference>`匹配一个版本，如果跟在`or`后的一个`<version references>`匹配的话。一个`not <version reference>`匹配一个版本，如果跟在其后的`<version reference>`都不匹配的话。
+
+一个`<sub-version reference>`有下列形式之一：
+
+~~~ scheme
+<sub-version>
+(>= <sub-version>)
+(<= <sub-version>)
+(and <sub-version reference> ...)
+(or <sub-version reference> ...)
+(not <sub-version reference>)
+~~~
+
+第一个形式的一个`<sub-version reference>`匹配一个版本，如果二者相等。第一个形式的`>= <sub-version reference>`匹配一个子版本如果它大于等于跟在它后面的`<sub-version>`；`<=`与其类似。一个`and <sub-version reference>`匹配一个子版本，如果所有随后的`<sub-version reference>`都匹配的话。相应地，一个`or <sub-version reference>`匹配一个子版本，如果随后的`<sub-version reference>`中的一个匹配的话。一个`not <sub-version reference>`匹配一个子版本，如果随后的`<sub-version reference>`都不匹配的话。
+
+例子：
+
+| 版本参考（version reference） | 版本（version） | 匹配？（match?）
+| `()` | `(1)` | yes
+| `(1)` | `(1)` | yes
+| `(1)` | `(2)` | no
+| `(2 3)` | `(2)` | no
+| `(2 3)` | `(2 3)` | yes
+| `(2 3)` | `(2 3 5)` | yes
+| `(or (1 (>= 1)) (2))` | `(2)` | yes
+| `(or (1 (>= 1)) (2))` | `(1 1)` | yes
+| `(or (1 (>= 1)) (2))` | `(1 0)` | no
+| `((or 1 2 3))` | `(1)` | yes
+| `((or 1 2 3))` | `(2)` | yes
+| `((or 1 2 3))` | `(3)` | yes
+| `((or 1 2 3))` | `(4)` | no
+
+当多于一个库被库参考引用的时候，库的选择有实现定义的方法决定。
+
+为了避免诸如不兼容的类型和重复的状态这些问题，实现必须禁止库名字由相同标识符序列组成但版本不匹配的两个库在同一个程序中共存。
+
+默认情况下，一个被导入的库导出的所有的绑定在一个使用被导入的库给的绑定的名字的导入库中是可见的。被导入的绑定和那些绑定的名字的精确的集合可以通过下面描述的`only`, `except`, `prefix`, 和`rename`形式进行调整。
+
+* 一个`only`形式产生来自另一个`<import set>`的绑定的一个子集，只包括被列出的`<identifier>`。被包含的`<identifier>`必须在原始的`<import set>`中。
 
 
 
