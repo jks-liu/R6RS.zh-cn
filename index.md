@@ -1149,9 +1149,9 @@ Scheme的实现必须是*严格尾递归的*。发生在叫做*尾上下文（ta
 
 依照惯例，将值存进上次分配的位置的过程的名字通常使用“`!`”。
 
-依照惯例，“`->`”出现在以一个类型的对象作为参数，范围另一个类型的类似对象的过程名字中。
+依照惯例，“`->`”出现在以一个类型的对象作为参数，返回另一个类型的类似对象的过程名字中。
 
-按照惯例，谓词（predicates）—总是返回一个布尔的过程—以“`?`”结尾，只有当名字不包含任何字面的时候，谓词才不以问号结尾。
+按照惯例，谓词（predicates）—总是返回一个布尔的过程—以“`?`”结尾，只有当名字不包含任何字母的时候，谓词才不以问号结尾。
 
 按照惯例，复合名字的要素使用“`-`”进行分隔。尤其，是一个实际单词或可以像一个实际单词一样发音的单词的前缀会跟着一个连字符，除非跟在连字符后面的第一个字符不是一个字母，在这种情况下，连字符可以省略。简单地说，连字符不会跟在不可发音的前缀（“fx”和“fl”）后面。
 
@@ -1178,23 +1178,23 @@ Scheme的实现必须是*严格尾递归的*。发生在叫做*尾上下文（ta
 * `export`子形式指定一个导出的列表，这个列表命名了定义在或导入到这个库的绑定的子集。
 * `import`子形式指定了作为一个导入依赖列表导入的绑定，其中每一个依赖指定：
   - 导入的库的名字，且可以可选地包含它的版本，
-  - 相应的等级，比如，扩展（expand）或运行时（run time）（见7.2小节）和
+  - 相应的级别，比如，扩展（expand）或运行时（run time）（见7.2小节）和
   - 为了在导入库中可用的库导出的子集，和为在导入库中可用的为每一个库导出准备的名字。
 * `<library body>`是库的内部，由一系列定义和紧随其后的表达式组成。标识符可以既是本地的（未导出的）也是导出绑定的，且表达式是为它们的效果求值的初始化表达式。
 
-一个标识符可以从两个或更多的库中使用相同的本地名字导入，或者使用两个不同的等级从相同的库中导入，只要每个库导出的绑定是一样的（也就是说，绑定在一个库中被定义，它只能<!-- TODO -->通过导出和再导出经过导入）。否则，没有标识符可以被导入多次，被定义多次，或者同事被定义和导入。除了被显式地导入到库中或在库中定义的标识符，其它标识符在库中都是不可见的。
+一个标识符可以从两个或更多的库中使用相同的本地名字导入，或者使用两个不同的级别从相同的库中导入，只要每个库导出的绑定是一样的（也就是说，绑定在一个库中被定义，它只能<!-- TODO -->通过导出和再导出经过导入）。否则，没有标识符可以被导入多次，被定义多次，或者同时被定义和导入。除了被显式地导入到库中或在库中定义的标识符，其它标识符在库中都是不可见的。
 
-一个`<library name>`在一个实现中唯一地标识一个库，且在实现中的其它所有的库的`import`字句（clauses）（见下面）中是全局可见的。一个`<library name>`有下面的形式：
+一个`<library name>`在一个实现中唯一地标识一个库，且在实现中的其它所有的库的`import`子句（clauses）（见下面）中是全局可见的。一个`<library name>`有下面的形式：
 
 `(<identifier1> <identifier2> ... <version>)`
 
-其中`<version>`是空的，或有以下的形式：
+其中`<version>`或者是空的，或者有以下的形式：
 
 `(<sub-version> ...)`
 
 每一个`<sub-version>`必须表示一个精确的非负整数对象。一个空的`<version>`等价于`()`。
 
-一个`<export spec>`命名一个集合，这个集合包含导入和本地定义，这个集合将被导出，可能还会使用不同的外部名字。一个`<export spec>`必须是如下的形式当中的一个：
+一个`<export spec>`命名一个集合，这个集合包含导入的和本地的定义，这个集合将被导出，可能还会使用不同的外部名字。一个`<export spec>`必须是如下的形式当中的一个：
 
 ~~~ scheme
 <identifier>
@@ -1290,45 +1290,293 @@ expand
 
 为了避免诸如不兼容的类型和重复的状态这些问题，实现必须禁止库名字由相同标识符序列组成但版本不匹配的两个库在同一个程序中共存。
 
+<!-- TODO -->
 默认情况下，一个被导入的库导出的所有的绑定在一个使用被导入的库给的绑定的名字的导入库中是可见的。被导入的绑定和那些绑定的名字的精确的集合可以通过下面描述的`only`, `except`, `prefix`, 和`rename`形式进行调整。
 
 * 一个`only`形式产生来自另一个`<import set>`的绑定的一个子集，只包括被列出的`<identifier>`。被包含的`<identifier>`必须在原始的`<import set>`中。
+* 一个`except`形式产生来自另一个`<import set>`的绑定的一个子集，包括除了被列出的所有的`<identifier>`。所有被排除的`<identifier>`必须在原始的`<import set>`中。
+* 一个`prefix`从另一个`<import set>`中添加一个`<identifier>`前缀到每个名字中。
+* 一个`rename`形式，`\(\texttt{(rename (<identifier$_1$> <identifier$_2$>) ...)}\)`，从一个中间的`<import set>`删除`\(\texttt{<identifier$_1$> ...}\)`的绑定，然后将对应的`\(\texttt{<identifier$_2$> ...})`添加回到最终的`<import set>`中。每一个`\(\texttt{<identifier$_1$>}\)`必须在原始的`<import set>`中，每一个`\(\texttt{<identifier$_2$>})`必须不在中间的`<import set>`中，且`\(\texttt{<identifier$_2$>})`必须是不一样的。
+
+不符合上面的约束是一个语法错误。
+
+一个库形式的`<library body>`由被分类为*定义*或*表达式*的形式组成。哪些形式属于哪些类型是根据被导入的库和表达式的结果来决定的—见第10章。通常，不是定义（见11.2小节，有基本库可见的定义）的形式是表达式。
+
+一个`<library body>`和`<body>`差不多（见11.3小节），除了一个`<library body>`不需要包括任何表达式。它必须有下面的形式：
+
+`<definition> ... <expression> ...`
+
+当`begin`, `let-syntax`, 或`letrec-syntax`形式先于第一个表达式出现在顶层内部的时候，它们被拼接成内部；见11.4.7小节。内部的一些或所以，包括在`begin`, `let-syntax`, 或`letrec-syntax`形式里面的部分，可以通过一个句法抽象指定（见9.2小节）。
+
+转换表达式和绑定像第10章描述的，按从左向右的顺序被求值和被创建。变量的表达式按从左向右求值，就像在一个隐式的`letrec*`中，且内部的表达式也在变量定义的表达式之后从左向右进行求值。每一个导出的变量和它本地副本值得初始化都会创建一个新的位置。两次返回给内部最后表达式的继续的行为是未定义的。
+
+<font size="2">
+  <i>注意：</i>出现在库语法的名字<code>library</code>, <code>export</code>, <code>import</code>, <code>for</code>, <code>run</code>, <code>expand</code>, <code>meta</code>, <code>import</code>, <code>export</code>, <code>only</code>, <code>except</code>, <code>prefix</code>, <code>rename</code>, <code>and</code>, <code>or</code>, <code>not</code>, <code>>=</code>, 和<code><=</code>是语法的一部分，且不是被保留的，也就是说，相同的名字可以在库中用作其它的用途，甚至以不同的含义导出或导入到其它库中，这些都不会影响它们在库形式中的使用。
+</font>
+
+在一个库的里面定义的绑定在库外面的代码中是不可见的，除非绑定被显式地从这个库中导出。可是，一个导出的宏可能*隐式地导出*一个另外的标识符，其是在库中定义的或导入到库中的。也就是说，它可以插入标识符的一个引用到其产生的代码中。
+
+所有的显式地导出的变量在导出的和导入的的库中都是不可变的。因此，不管是在导入的还是导出的库中，一个显式地导出的变量出现在一个`set!`表达式的左边是一个语法错误。
+
+所有的隐式地导出的变量在导出的和导入的的库中也都是不可变的。因此，在一个变量被定义的库的外面通过宏产生的代码中，如果这个变量出现在一个`set!`表达式的左边，那么这是一个语法错误。如果一个被赋值的变量的引用出现在这个变量被定义的库的外面通过宏产生的代码中，那么这也是一个语法错误，其中，一个被赋值的变量指出现在导出库中一个`set!`表达式左边的变量。
+
+所有其它的定义在一个库中的变量是可变的。
+
+## 7.2. 导入和导出级别
+
+扩展一个库可能需要来自其它库的运行时信息。比如，如果一个宏转换调用一个来自库*A*的过程，那么在库*B*中扩展宏的任何使用之前，库*A*必须被实例化（instantiated）。当库*B*作为一个程序的部分被最终运行的时候，库*A*可能不被需要，或者，它可能也被库*B*的运行时需要。库机制使用阶段来区别这些时间，这会在本小节解释。
+
+每个库可用通过扩展时（expand-time）信息（最低限度地，它的导入的库，导出的关键词的一个列表，导出的变量的一个列表，计算转换表达式的代码）和运行时信息（最低限度地，计算变量定义的右边表达式的代码，计算内部表达式的代码）表现其特征。扩展时信息必须对任何导出绑定的扩展引用可见，且运行时信息必须对任何导出变量绑定的求值引用可见。
+
+一个*阶段*是一段时间，在这段时间里库中的表达式被求值。在一个库的内部，顶层表达式和`define`形式的右边在运行时，也就是阶段0，被求值，且`define-syntax`形式的右边在扩展时，也就是阶段1，被求值。当`define-syntax`, `let-syntax`, 或`letrec-syntax`出现在在阶段*n*被求值的代码中时，它们的右边将在阶段*n* + 1被求值。
+
+这些阶段和库它自己使用的阶段是相关的。库的一个*实例（instance）*对应于一个与另一个库相关的特定阶段的它的变量定义和表达式的求值过程—一个叫做实例化的过程。比如，如果库*B*中的一个顶层表达式引用库*A*中导出的一个变量，那么它在阶段0（相对于*B*的阶段）从*A*的一个实例中引用这个导出。但是，*B*中一个阶段1的表达式引用*A*中相同的绑定，那么，它在阶段1（相对于*B*的阶段）从*A*的一个实例中引用这个导出。
+
+<!-- TODO -->
+一个库的*访问（visit）*对应于在一个特定阶段与另一个库相关的语法定义的计算过程—一个叫做*访问（visiting）*的过程。比如，如果库*B*中的一个顶层表达式引用来库*A*导出的一个宏，那么，它在阶段0（相对应*B*的阶段）从*A*的访问中引用这个导出，其对应于在阶段1宏转换表达式的求职过程。
+
+一个*级别（level）*是一个标识符的词法属性，其决定了它可以在哪个阶段被引用。在一个库中，每个用定义绑定的标识符的级别是0；也就是说，在库中只能在阶段0引用这个标识符。除了导出库中标识符的级别之外，每一个导入的绑定的级别由导入库中`import`的封装的`for`形式决定。导入和导出级别通过所有级别组合的成对相加的方式组合。比如，一个以`\(p_a\)`和`\(p_b\)`级别导出，以`\(q_a\)`，`\(q_b\)`和`\(q_c\)`级别导入的被导入的标识符的引用在以下级别是有效的：`\(p_a + q_a\)`, `\(p_a + q_b\)`, `\(p_a + q_c\)`, `\(p_b + q_a\)`, `\(p_b + q_b\)`, 和`\(p_b + q_c\)`。一个没有封装的`for`的`<import set>`等价于`(for <import set> run)`，它和`(for <import set> (meta 0))`是一样的。
+
+对于所有的定义在导出库中的绑定来说，一个被导出的的绑定的级别是0.一个重新导出的绑带，也就是一个从其它库导入的导出，的级别和重新导出库中的绑定的有效导入级别是一样的。
+
+对于定义在库报告中的库来说，几乎所有的绑定，导出级别是0。例外是来自`(rnrs base (6))`库的`syntax-rules`, `identifier-syntax`, `...`, 和`_`形式以级别1被导出，来自`(rnrs base (6))`库的`set!`形式以级别0和1被导出，来自复合`(rnrs (6))`库（见库的第15章）的所有绑定以级别0和1被导出。
+
+一个库中的宏扩展可以引出标识符的一个引用，其中这个标识符没有显式地导入到这个库中。在这种情况下，引用的阶段必须符合标识符的作为偏移的级别，<!-- TODO -->这个偏移是源库（也就是提供标识符词法上下文的库）和封装引用的库的阶段的不同。比如，假设扩展一个库调用一个宏转换，且宏转换的求值引用一个标识符，这个标识符被从另一个库中被导出（所以，库的阶段1的实例被使用）；进一步假设绑定的值是一个表示一个指示级别*n*绑定的标识符的语法对象；那么，在库被扩展的时候，标识符必须只能在*n* + 1阶段被使用。这个级别和阶段的组合就是为什么标识符负的级别是有用的，甚至，尽管库只存在非负的阶段。
+
+<!-- TODO -->
+如果在一个程序的扩展形式中，一个库的定义中的任何一个在阶段0被引用，那么被引用的库的一个作为阶段0实例会在程序的定义和表达式被求值之前被创建。这条规则的应用是透明的：如果一个库的扩展形式在阶段0从另一个库引用一个标识符，那么，在引用库在阶段*n*被实例化之前，被引用的库必须在阶段*n*被实例化。当一个标识符在任何大于0的阶段*n*被引用，那么于此相反，定义库会在阶段*n*被实例化，其在引用被求值之前的一些未定义的时间。同样地，在一个库的扩展期间，当一个宏关键词在阶段*n*被引用的时候，定义库在阶段*n*被访问，其是引用被计算之前的一定未定义的时间。
+
+一个实现可以为不同的阶段区别实例/访问，或者在任何阶段使用一个实例/访问就像在任何其它阶段的一个实例/访问一样。更进一步，一个实现可以扩展每一个库形式以区别在任何阶段的库的访问和/或在大于0的阶段的库的实例。一个实现可以创建更多库的实例/访问在比要求的安全引用的更多的阶段。当一个标识符作为一个表达式出现在一个与标识符级别不一致的阶段时，那么一个实现可以抛出一个异常，异常的抛出可以在扩展时也可以在运行时，或者，它也可以允许这个引用。因此，一个库可能是不可移植的，当其含义依赖于一个库的实例在库的整个阶段或`library`扩展时是有区别的还是共享的时候。
+
+## 7.3. 例子
+
+各种`<import spec>`和`<export spec>`的例子：
+
+（注：下面的例子已根据勘误表更正。）
+
+~~~ scheme
+(library (stack)
+  (export make push! pop! empty!)
+  (import (rnrs)
+          (rnrs mutable-pairs))
+
+  (define (make) (list '()))
+  (define (push! s v) (set-car! s (cons v (car s))))
+  (define (pop! s) (let ([v (caar s)])
+                     (set-car! s (cdar s))
+                     v))
+  (define (empty! s) (set-car! s '())))
+
+(library (balloons)
+  (export make push pop)
+  (import (rnrs))
+
+  (define (make w h) (cons w h))
+  (define (push b amt)
+    (cons (- (car b) amt) (+ (cdr b) amt)))
+  (define (pop b) (display "Boom! ") 
+                  (display (* (car b) (cdr b))) 
+                  (newline)))
+
+(library (party)
+  ;; 所以的导出:
+  ;; make, push, push!, make-party, pop!
+  (export (rename (balloon:make make)
+                  (balloon:push push))
+          push!
+          make-party
+          (rename (party-pop! pop!)))
+  (import (rnrs)
+          (only (stack) make push! pop!) ; 非空的!
+          (prefix (balloons) balloon:))
+
+  ;; 以气球的堆栈创建一个派对（party）,
+  ;; 从两个气球开始
+  (define (make-party)
+    (let ([s (make)]) ; from stack
+      (push! s (balloon:make 10 10))
+      (push! s (balloon:make 12 9))
+      s))
+  (define (party-pop! p)
+    (balloon:pop (pop! p))))
+
+(library (main)
+  (export)
+  (import (rnrs) (party))
+
+  (define p (make-party))
+  (pop! p)        ; 显示"Boom! 108"
+  (push! p (push (make 5 5) 1))
+  (pop! p))       ; 显示"Boom! 24"
+~~~
+
+宏和阶段的例子:
+
+~~~ scheme
+(library (my-helpers id-stuff)
+  (export find-dup)
+  (import (rnrs))
+
+  (define (find-dup l)
+    (and (pair? l)
+         (let loop ((rest (cdr l)))
+           (cond
+            [(null? rest) (find-dup (cdr l))]
+            [(bound-identifier=? (car l) (car rest)) 
+             (car rest)]
+            [else (loop (cdr rest))])))))
+
+(library (my-helpers values-stuff)
+  (export mvlet)
+  (import (rnrs) (for (my-helpers id-stuff) expand))
+
+  (define-syntax mvlet
+    (lambda (stx)
+      (syntax-case stx ()
+        [(_ [(id ...) expr] body0 body ...)
+         (not (find-dup (syntax (id ...))))
+         (syntax
+           (call-with-values
+               (lambda () expr) 
+             (lambda (id ...) body0 body ...)))]))))
+
+(library (let-div)
+  (export let-div)
+  (import (rnrs)
+          (my-helpers values-stuff)
+          (rnrs r5rs))
+
+  (define (quotient+remainder n d)
+    (let ([q (quotient n d)])
+      (values q (- n (* q d)))))
+  (define-syntax let-div
+    (syntax-rules ()
+     [(_ n d (q r) body0 body ...)
+      (mvlet [(q r) (quotient+remainder n d)]
+        body0 body ...)])))
+~~~
+
+# 8. 顶层程序
 
 
 
 
 <!--
-  （勘误：7.3）
+  （勘误：11.4.5）
 
   TODO：将逗号由中文改为英文
 -->
+
+# 附录E 语言的变化 <!-- Language changes -->
+
+本章描述了自“修订<sup>5</sup>报告”[^14]出版以来Scheme发生的大部分变化：
+
+* 现在，Scheme源代码使用Unicode字符集。尤其，可被用作标识符的字符集被大大地扩展了。
+* 现在，标识符可以以`->`字符开始。
+* 现在，标识符和符号字面量是大小写敏感的。
+* 标识符和字符，布尔，数字对象和`.`的表示必须被显式地区分。<!-- TODO -->
+* 现在，`#`是定界符（delimiter）。
+* 字节向量字面量语法已被添加。
+* 匹配的中括号可以和小括号等价得使用。
+* 数据语法的简写`#'` (即`syntax`), `#`` (即`quasisyntax`), `#,` (即`unsyntax`), and `#,@` (即`unsyntax-splicing`)被添加；见4.3.5小节。<!-- TODO: 1. read-syntax 应该是 datum-syntax；2. 括号不对 -->
+* `#`不再可以用在数字的表示中替换数字。
+* 现在，数字对象的外部表示可以包括一个尾数宽度。
+* 非输和无限大的字面量被添加。
+* 现在，字符串和字符字面量可以使用各种转移序列。
+* 块注释和数据注释被添加。
+* 用作报告兼容的`#!r6rs`注释词汇语法被添加。
+* 现在，字符指定对应的Unicode标量值。
+* 现在，许多的程序和语言的句法形式是`(rnrs base (6))`库的一部分。一些过程和句法形式被转移到其它库中；见图表A.1。
+
+| identifier |  moved to
+|:-|:-
+| `assoc` | (rnrs lists (6))
+| `assv` |  (rnrs lists (6))
+| `assq` |  (rnrs lists (6))
+| `call-with-input-file` |  (rnrs io simple (6))
+| `call-with-output-file` | (rnrs io simple (6))
+| `char-upcase` | (rnrs unicode (6))
+| `char-downcase` | (rnrs unicode (6))
+| `char-ci=?` | (rnrs unicode (6))
+| `char-ci<?` | (rnrs unicode (6))
+| `char-ci>?` | (rnrs unicode (6))
+| `char-ci<=?` |  (rnrs unicode (6))
+| `char-ci>=?` |  (rnrs unicode (6))
+| `char-alphabetic?` |  (rnrs unicode (6))
+| `char-numeric?` | (rnrs unicode (6))
+| `char-whitespace?` |  (rnrs unicode (6))
+| `char-upper-case?` |  (rnrs unicode (6))
+| `char-lower-case?` |  (rnrs unicode (6))
+| `close-input-port` |  (rnrs io simple (6))
+| `close-output-port` | (rnrs io simple (6))
+| `current-input-port` |  (rnrs io simple (6))
+| `current-output-port` | (rnrs io simple (6))
+| `display` | (rnrs io simple (6))
+| `do` |  (rnrs control (6))
+| `eof-object?` | (rnrs io simple (6))
+| `eval` |  (rnrs eval (6))
+| `delay` | (rnrs r5rs (6))
+| `exact->inexact` |  (rnrs r5rs (6))
+| `force` | (rnrs r5rs (6))
+| `inexact->exact` |  (rnrs r5rs (6))
+| `member` |  (rnrs lists (6))
+| `memv` |  (rnrs lists (6))
+| `memq` |  (rnrs lists (6))
+| `modulo` |  (rnrs r5rs (6))
+| `newline` | (rnrs io simple (6))
+| `null-environment` |  (rnrs r5rs (6))
+| `open-input-file` | (rnrs io simple (6))
+| `open-output-file` |  (rnrs io simple (6))
+| `peek-char` | (rnrs io simple (6))
+| `quotient` |  (rnrs r5rs (6))
+| `read` |  (rnrs io simple (6))
+| `read-char` | (rnrs io simple (6))
+| `remainder` | (rnrs r5rs (6))
+| `scheme-report-environment` | (rnrs r5rs (6))
+| `set-car!` |  (rnrs mutable-pairs (6))
+| `set-cdr!` |  (rnrs mutable-pairs (6))
+| `string-ci=?` | (rnrs unicode (6))
+| `string-ci<?` | (rnrs unicode (6))
+| `string-ci>?` | (rnrs unicode (6))
+| `string-ci<=?` |  (rnrs unicode (6))
+| `string-ci>=?` |  (rnrs unicode (6))
+| `string-set!` | (rnrs mutable-strings (6))
+| `string-fill!` |  (rnrs mutable-strings (6))
+| `with-input-from-file` |  (rnrs io simple (6))
+| `with-output-to-file` | (rnrs io simple (6))
+| `write` | (rnrs io simple (6))
+| `write-char` |  (rnrs io simple (6))
+
+表 A.1：标识符转移到库中
+
+
 
 # 参考文献
 
 [^1]:      J. W. Backus, F.L. Bauer, J.Green, C. Katz, J. McCarthy P. Naur, A. J. Perlis, H. Rutishauser, K. Samuelson, B. Vauquois J. H. Wegstein, A. van Wijngaarden, and M. Woodger. Revised report on the algorithmic language Algol 60. Communications of the ACM, 6(1):1–17, 1963.
 [^2]:      Alan Bawden and Jonathan Rees. Syntactic closures. In ACM Conference on Lisp and Functional Programming, pages 86–95, Snowbird, Utah, 1988. ACM Press.
-[^3]:      Scott Bradner. Key words for use in RFCs to indicate requirement levels. http://www.ietf.org/rfc/rfc2119.txt, March 1997. RFC 2119.
+[^3]:      Scott Bradner. Key words for use in RFCs to indicate requirement levels. <http://www.ietf.org/rfc/rfc2119.txt>, March 1997. RFC 2119.
 [^4]:      Robert G. Burger and R. Kent Dybvig. Printing floating-point numbers quickly and accurately. In Proceedings of the ACM SIGPLAN '96 Conference on Programming Language Design and Implementation, pages 108–116, Philadelphia, PA, USA, May 1996. ACM Press.
 [^5]:      William Clinger. Proper tail recursion and space efficiency. In Keith Cooper, editor, Proceedings of the 1998 Conference on Programming Language Design and Implementation, pages 174–185, Montreal, Canada, June 1998. ACM Press. Volume 33(5) of SIGPLAN Notices.
 [^6]:      William Clinger and Jonathan Rees. Macros that work. In Proceedings 1991 ACM SIGPLAN Symposium on Principles of Programming Languages, pages 155–162, Orlando, Florida, January 1991. ACM Press.
 [^7]:      William D. Clinger. How to read floating point numbers accurately. In Proceedings Conference on Programming Language Design and Implementation '90, pages 92–101, White Plains, New York, USA, June 1990. ACM.
-[^8]:      R. Kent Dybvig. Chez Scheme Version 7 User's Guide. Cadence Research Systems, 2005. http://www.scheme.com/csug7/.
+[^8]:      R. Kent Dybvig. Chez Scheme Version 7 User's Guide. Cadence Research Systems, 2005. <http://www.scheme.com/csug7/>.
 [^9]:      R. Kent Dybvig, Robert Hieb, and Carl Bruggeman. Syntactic abstraction in Scheme. Lisp and Symbolic Computation, 1(1):53–75, 1988.
-[^10]:     Matthias Felleisen and Matthew Flatt. Programming languages and lambda calculi. http://www.cs.utah.edu/plt/publications/pllc.pdf, 2003.
-[^11]:     Matthew Flatt. PLT MzScheme: Language Manual. Rice University, University of Utah, July 2006. http://download.plt-scheme.org/doc/352/html/mzscheme/.
+[^10]:     Matthias Felleisen and Matthew Flatt. Programming languages and lambda calculi. <http://www.cs.utah.edu/plt/publications/pllc.pdf>, 2003.
+[^11]:     Matthew Flatt. PLT MzScheme: Language Manual. Rice University, University of Utah, July 2006. <http://download.plt-scheme.org/doc/352/html/mzscheme/>.
 [^12]:     Daniel P. Friedman, Christopher Haynes, Eugene Kohlbecker, and Mitchell Wand. Scheme 84 interim reference manual. Indiana University, January 1985. Indiana University Computer Science Technical Report 153.
 [^13]:     IEEE standard 754-1985. IEEE standard for binary floating-point arithmetic, 1985. Reprinted in SIGPLAN Notices, 22(2):9-25, 1987.
 [^14]:     Richard Kelsey, William Clinger, and Jonathan Rees. Revised<sup>5</sup> report on the algorithmic language Scheme. Higher-Order and Symbolic Computation, 11(1):7–105, 1998.
 [^15]:     Eugene E. Kohlbecker, Daniel P. Friedman, Matthias Felleisen, and Bruce Duba. Hygienic macro expansion. In Proceedings of the 1986 ACM Conference on Lisp and Functional Programming, pages 151–161, 1986.
 [^16]:     Eugene E. Kohlbecker Jr. Syntactic Extensions in the Programming Language Lisp. PhD thesis, Indiana University, August 1986.
 [^17]:     Jacob Matthews and Robert Bruce Findler. An operational semantics for R5RS Scheme. In J. Michael Ashley and Michael Sperber, editors, Proceedings of the Sixth Workshop on Scheme and Functional Programming, pages 41–54, Tallin, Estonia, September 2005. Indiana University Technical Report TR619.
-[^18]:     Jacob Matthews and Robert Bruce Findler. An operational semantics for Scheme. Journal of Functional Programming, 2007. From http://www.cambridge.org/journals/JFP/.
+[^18]:     Jacob Matthews and Robert Bruce Findler. An operational semantics for Scheme. Journal of Functional Programming, 2007. From <http://www.cambridge.org/journals/JFP/>.
 [^19]:     Jacob Matthews, Robert Bruce Findler, Matthew Flatt, and Matthias Felleisen. A visual environment for developing context-sensitive term rewriting systems. In Proceedings 15th Conference on Rewriting Techniques and Applications, Aachen, June 2004. Springer-Verlag.
 [^20]:     MIT Department of Electrical Engineering and Computer Science. Scheme manual, seventh edition, September 1984.
 [^21]:     Jonathan A. Rees, Norman I. Adams IV, and James R. Meehan. The T manual. Yale University Computer Science Department, fourth edition, January 1984.
-[^22]:     Michael Sperber, R. Kent Dybvig, Matthew Flatt, and Anton van Straaten. Revised<sup>6</sup> report on the algorithmic language Scheme (Non-Normative appendices). http://www.r6rs.org/, 2007.
-[^23]:     Michael Sperber, R. Kent Dybvig, Matthew Flatt, and Anton van Straaten. Revised<sup>6</sup> report on the algorithmic language Scheme (Rationale). http://www.r6rs.org/, 2007.
-[^24]:     Michael Sperber, R. Kent Dybvig, Matthew Flatt, Anton van Straaten, Richard Kelsey, William Clinger, and Jonathan Rees. Revised<sup>6</sup> report on the algorithmic language Scheme (Libraries). http://www.r6rs.org/, 2007.
+[^22]:     Michael Sperber, R. Kent Dybvig, Matthew Flatt, and Anton van Straaten. Revised<sup>6</sup> report on the algorithmic language Scheme (Non-Normative appendices). <http://www.r6rs.org/>, 2007.
+[^23]:     Michael Sperber, R. Kent Dybvig, Matthew Flatt, and Anton van Straaten. Revised<sup>6</sup> report on the algorithmic language Scheme (Rationale). <http://www.r6rs.org/>, 2007.
+[^24]:     Michael Sperber, R. Kent Dybvig, Matthew Flatt, Anton van Straaten, Richard Kelsey, William Clinger, and Jonathan Rees. Revised<sup>6</sup> report on the algorithmic language Scheme (Libraries). <http://www.r6rs.org/>, 2007.
 [^25]:     Guy Lewis Steele Jr. Common Lisp: The Language. Digital Press, Burlington, MA, second edition, 1990.
 [^26]:     Texas Instruments, Inc. TI Scheme Language Reference Manual, November 1985. Preliminary version 1.0.
 [^27]:     The Unicode Consortium. The Unicode standard, version 5.0.0. defined by: The Unicode Standard, Version 5.0 (Boston, MA, Addison-Wesley, 2007. ISBN 0-321-48091-0), 2007.
