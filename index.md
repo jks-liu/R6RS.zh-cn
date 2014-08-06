@@ -16,7 +16,8 @@ tagline: R6RS简体中文翻译
 [<center>在GitHub联系译者</center>](https://github.com/jks-liu/R6RS.zh-cn)
 <center>已完成24%，最后修改于2014年07月29日</center>
 
-# 摘要
+# 摘要 <!-- SUMMARY -->
+
 报告给出了程序设计语言Scheme的定义性描述。Scheme是由Guy Lewis Steele Jr.和Gerald Jay Sussman设计的具有静态作用域和严格尾递归特性的Lisp程序设计语言的方言。它的设计目的是以异常清晰，语义简明和较少表达方式的方法来组合表达式。包括函数（functional）式，命令（imperative）式和消息传递（message passing）式风格在内的绝大多数程序设计模式都可以用Scheme方便地表述。
 
 和本报告一起的还有一个描述标准库的报告[^24]；用描述符“库的第多少小节（library section）”或“库的第多少章（library chapter）”来识别此文档的引用。和它一起的还有一个包含非规范性附录的报告[^22]。第四次报告在语言和库的许多方面阐述了历史背景和基本原理[^23]。
@@ -29,11 +30,13 @@ Hal Abelson, Norman Adams, David Bartley, Gary Brooks, William Clinger, R. Kent 
 
 我们认为这篇报告属于整个Scheme社区，并且我们授权任何人复制它的全部或部分。我们尤其鼓励Scheme的实现者使用本报告作为手册或其它文档的起点，必要时也可以对它进行修改。
 
-# 目录
+# 目录 <!-- CONTENTS -->
+
 * 这回生成一个目录，且这行文字会被忽略
 {:toc}
 
-# 概述
+# 概述 <!-- INTRODUCTION -->
+
 程序设计语言的设计不应该是特征的堆砌，而应消除那些需要依赖于多余特征的弱点和局限。Scheme语言证明，极少的表达式构造规则和不加限制的表达式复合方式可以构造出实用而高效的程序设计语言，其灵活性足以支持今天的大部分主流编程模型。
 
 Scheme是最早的像在lambda演算里一样提供了第一级过程的程序设计语言之一，并由此在动态类型的语言中提供了有用的静态作用域规则和块结构的特征。在Lisp的主要方言中，Scheme第一次使过程有别于lambda表达式和符号，为所有变量使用单一的词法环境，在确定运算符的位置时采用与确定运算对象位置一样的方式。Scheme完全依赖过程调用来表示迭代，并以此强调，尾递归过程调用在本质上就是传递参数的goto。Scheme是第一种被广泛使用的，采纳第一级逃逸过程（escape procedure）的程序设计语言，通过第一级逃逸过程可以合成所有已知的顺序控制结构。Scheme的后续版本引入了精确和非精确数的概念，这是CommonLisp语言通用算术功能的扩展。最近，Scheme成为了第一种支持卫生宏（hygienic macro）的程序设计语言，该机制允许我们以一种一致和可靠的方式扩展块结构语言的语法。
@@ -78,9 +81,10 @@ Scheme是最早的像在lambda演算里一样提供了第一级过程的程序�
 
 The Artificial Intelligence Laboratory of the Massachusetts Institute of Technology, the Computer Science Department of Indiana University, the Computer and Information Sciences Department of the University of Oregon和the NEC Research Institute支持了本报告的预备工作。The Advanced Research Projects Agency of the Department of Defense根据Office of Naval Research的N00014-80-C-0505号合同为MIT的工作提供了部分支持。NSF的NCS 83-04567和NCS 83-03325号基金为Indiana University的工作提供了支持。
 
-# **语言描述**
+# **语言描述** <!-- DESCRIPTION OF THE LANGUAGE -->
 
-# 1. Scheme概论
+# 1. <!-- Overview of -->Scheme概论
+
 本章概述了Scheme的语义。此概述的目的在于充分解释语言的基本概念，以帮助理解本报告的后面的章节，这些章节以参考手册的形式被组织起来。因此，本概述不是本语言的完整介绍，在某些方面也不够精确和规范。
 
 像Algol语言一样，Scheme是一种静态作用域的程序设计语言。对变量的每一次使用都对应于该变量在词法上的一个明显的绑定。
@@ -99,7 +103,7 @@ Scheme是最早支持把过程在本质上当作对象的语言之一。过程�
 
 Scheme的算术模型被设计为尽量独立于计算机内数值的特定表示方式。此外，他还区分精确数和非精确数对象：本质上，一个精确数对象精确地等价于一个数，一个非精确数对象是一个涉及到近似或其它误差的计算结果。
 
-## 1.1. 基本类型
+## 1.1. 基本类型 <!-- Basic types -->
 
 Scheme程序操作对象（object），有时也被成为值（value）。Scheme对象被组织为叫做类型（type）的值的集合。本节将给你Scheme语言十分重要的类型的一个概述。更多的类型将在后面章节进行描述。
 
@@ -147,7 +151,7 @@ Scheme代码中最重要的元素是*表达式*。表达式可以被*计算（ev
 
 正如其它许多语言，空白符（包括换行符）在表达式中分隔子表达式的时候不是很重要，它也可以用来表示结构。
 
-## 1.3. 变量和绑定（binding）
+## 1.3. <!-- Variables and -->变量和绑定（binding）
 
 Scheme允许标识符代表一个包含值得位置。这些标识符叫做变量。在许多情况下，尤其是这个位置的值在创建之后再也不被修改的时候，认为变量直接代表这个值是非常有用的。
 
@@ -159,7 +163,7 @@ Scheme允许标识符代表一个包含值得位置。这些标识符叫做变�
 
 在这种情况下，以`let`开头的表达式是一种绑定结构。跟在`let`之后的括号结构列出了和表达式一起的变量：和23一起的变量`x`，以及和42一起的变量`y`。`let`表达式将`x`绑定到23，将`y`绑定到42。这些绑定在`let`表达式的*内部（body）*是有效的，如上面的`(+ x y)`，也仅仅在那是有效的。
 
-## 1.4. 定义
+## 1.4. 定义 <!-- Definitions -->
 
 `let`表达式绑定的变量是*局部的（local）*，因为绑定只在`let`的内部可见。Scheme同样允许创建标识符的顶层绑定，方法如下：
 
@@ -196,7 +200,7 @@ Scheme允许标识符代表一个包含值得位置。这些标识符叫做变�
 
 尽管第一行包含一个定义，第二行包含一个表达式，但它们的不同依赖于`define`和`*`的绑定。在纯粹的语法层次上，两者都是*形式*，*形式*是Scheme程序一个语法部分的名字。特别地，23是形式`(define x 23)`的一个*子形式（subform）*。
 
-## 1.6. 过程
+## 1.6. 过程 <!-- Procedures -->
 
 定义也可以被用作定义一个过程：
 
@@ -240,7 +244,7 @@ Scheme允许标识符代表一个包含值得位置。这些标识符叫做变�
 
 这个例子中的整个表达式是一个过程调用；`(lambda (x) (+ x 42))`，相当于一个输入一个数字并加上42的过程。
 
-## 1.7. 过程调用和语法关键词（syntactic keywords）
+## 1.7. <!-- Procedure calls and -->过程调用和语法关键词（syntactic keywords）
 
 尽管`(+ 23 42)`, `(f 23)`和`((lambda (x) (+ x 42)) 23)`都是过程调用的例子，但`lambda`和`let`表达式不是。这时因为尽管`let`是一个标识符，但它不是一个变量，而是一个*语法关键词*。以一个语法关键词作为第一个子表达式的形式遵从关键词决定的特殊规则。`define`标识符是一个定义，也是一个语法关键词。因此，定义也不是一个过程调用。
 
@@ -260,7 +264,7 @@ Scheme变量通过定义或`let`或`lambda`表达式进行的绑定不是直接�
 
 在这种情况下，`let`的内部包括两个表达式，这两个表达式被顺序地求值，最后一个表达式的值会成为整个`let`表达式的值。表达式`(set! x 42)`是一个赋值，表示“用42代替`x`所指向位置的对象”。因此，`x`以前的值，23，被42代替了。
 
-## 1.9. 衍生形式（Derived forms）和宏（macros）
+## 1.9. 衍生形式（Derived forms）<!-- and -->和宏（macros）
 
 在本报告中，许多特殊的形式可被转换成更基本的特殊形式。比如，一个`let`表达式可以被转换成一个过程调用和一个lambda表达式。下面两个表达式是等价的：
 
@@ -305,7 +309,7 @@ Scheme变量通过定义或`let`或`lambda`表达式进行的绑定不是直接�
 
 创建新的语法关键词的能力使得Scheme异常灵活和负有表现力，允许许多内建在其它语言的特性在Scheme中以衍生形式出现。
 
-## 1.10. 语法数据（Syntactic data）和数据值（datum values）
+## 1.10. 语法数据（Syntactic data）<!-- and -->和数据值（datum values）
 
 Scheme对象的一个子集叫做*数据值*。这些包括布尔，数据对象，字符，符号，和字符串还有表和向量，它们的元素是数据。每一个数据值都可以语法数据的形式被表现成字面形式，语法数据可以在不丢失信息的情况下导出和读入。一个数据值可以被表示成多个不同的语法数据。而且，每一个数据值可以被平凡地转换成一个一个字面表达式，这种转换通过在程序中加上一个`'`在其对应的语法数据前：
 
@@ -351,7 +355,7 @@ Scheme对象的一个子集叫做*数据值*。这些包括布尔，数据对象
 
 一个逃逸过程有无限的生存期：它可以在它捕获的继续被调用之后被调用，且它可以被调用多次。这使得`call-with-current-continuation`相对于特定的非本地跳转,如其它语言的异常,显得异常强大。
 
-## 1.12. 库
+## 1.12. 库 <!-- Libraries -->
 
 Scheme代码可以被组织在叫做*库*的组件中。每个库包含定义和表达式。它可以从其它的库中导入定义，也可以向其它库中导出定义。
 
@@ -367,7 +371,7 @@ Scheme代码可以被组织在叫做*库*的组件中。每个库包含定义和
     (newline)))
 ~~~
 
-## 1.13. 顶层程序
+## 1.13. 顶层程序 <!-- Top-level programs -->
 
 一个Scheme程序被一个*顶层程序*调用。像库一样，一个顶层程序包括导入，定义和表达式，且指定一个执行的入口。因此，一个顶层程序通过它导入的库的传递闭包定义了一个Scheme程序。
 
@@ -389,7 +393,7 @@ Scheme代码可以被组织在叫做*库*的组件中。每个库包含定义和
   (close-port p))
 ~~~
 
-# 2. 需求等级
+# 2. 需求等级 <!-- Requirement levels -->
 
 本报告中的关键词“必须（must）”, “必须不（must not）”, “应该（should）”, “不应该（should not）”, “推荐的（recommended）”, “可以（may）”和“可选的（optional）”按照RFC2119[^3]描述的进行解释。特别地：
 
@@ -437,11 +441,11 @@ Scheme代码可以被组织在叫做*库*的组件中。每个库包含定义和
 
 精确算术在下面的场景是可靠的：一个精确数对象被传递到11.7.1节描述的任意一个算术过程，并返回一个精确数对象，这个结果是数学上正确的。然而在涉及到非精确数的计算的时候，这通常是不正确的，这时因为像浮点算法的近似方法可能被使用，但是，让结果尽可能接近数学上的理想结果是每个实现的职责。
 
-## 3.3. 定长数和浮点数
+## 3.3. 定长数和浮点数 <!-- Fixnums and flonums -->
 
 一个*定长数*是一个精确的整数对象，这个整数对象在精确的整数对象的一个特定的实现相关的子范围（subrange）。（库的第11.2小节描绘了一个计算定长数的库。）同样地，每个实现应当指定一个非精确实数对象的子集作为*浮点数*，并将特定的外部表示转换成浮点数。（库的第11.3小节描绘了一个计算浮点数的库。）注意，这并不意味着实现必须使用浮点表示。
 
-## 3.4. 实现要求
+## 3.4. 实现要求 <!-- Implementation requirements -->
 
 Scheme的实现必须支持3.1节给出的子类型的整个塔的数字对象。此外，实现必须支持几乎无限（Practically unlimited）大小和精度的精确整数对象和精确有理数对象，并实现特定的过程（在11.7.1节列出），当给它们精确参数的时候这些过程总是返回精确结果。（“几乎无限”意味着这些数字的大小和精度应当仅受可用内存大小的限制。）
 
@@ -453,7 +457,7 @@ Scheme的实现必须支持3.1节给出的子类型的整个塔的数字对象�
 
 避免使用量级或有效数字大到实现无法表示的非精确数是程序员的责任。
 
-## 3.5. 无穷大（Infinities）和非数（NaNs）
+## 3.5. 无穷大（Infinities）<!-- and -->和非数（NaNs）
 
 一些Scheme实现，尤其是那些遵从IEEE浮点格式标准的实现区别叫做*正无穷大*，*负无穷大*和*非数*的特殊数字对象。
 
@@ -461,11 +465,11 @@ Scheme的实现必须支持3.1节给出的子类型的整个塔的数字对象�
 
 一个非数被认为是一个非精确数（但不是一个实数）对象，它是如此不确定以至于它可以表示任何数，包括正负无穷大，且甚至可能大于正无穷大或小于负无穷大。
 
-## 3.6. 可区别的-0.0
+## 3.6. 可区别的-0.0 <!-- Distinguished -0.0 -->
 
 一些Scheme实现，尤其是那些遵从IEEE浮点格式标准的实现区别数字对象0.0和-0.0。也就是说，正的和负的非精确的零。本报告有时会指定在这些数字对象上的特定算术操作的行为。这些说明会被写作“如果-0.0的话是不一样的”或“实现区分-0.0”。
 
-# 4. 词汇（Lexical）语法和数据（datum）语法
+# 4. 词汇（Lexical）<!-- syntax and -->语法和数据（datum）<!-- syntax -->语法
 
 Scheme的语法被组织进三个层次：
 
@@ -493,7 +497,7 @@ Scheme的形式语法（formal syntax）被用扩展的BNF写成。非终结符�
 
 一些非终结符的名字表示相同名字的Unicode标量值：`<character tabulation> (U+0009)`, `<linefeed> (U+000A)`, `<line tabulation> (U+000B)`, `<form feed> (U+000C)`, `<carriage return> (U+000D)`, `<space> (U+0020)`, `<next line> (U+0085)`, `<line separator> (U+2028)`和`<paragraph separator> (U+2029)`。（本句已根据勘误表修改。）
 
-## 4.2. 词汇语法
+## 4.2. 词汇语法 <!-- Lexical syntax -->
 
 词汇语法决定了怎样将字符的序列分隔成语义的序列，省略不重要的部分如注释和空白。字符序列被假定是Unicode标准[^27]的文本。词汇语法的一些语义，比如标识符，数字对象的表示，字符串等等，是数据语法中的句法数据，且因此代表对象。除了语法的形式解释（formal account），本节还描述了这些句法数据表示什么数据值。
 
@@ -501,7 +505,7 @@ Scheme的形式语法（formal syntax）被用扩展的BNF写成。非终结符�
 
 除了布尔，数字对象以及用16进制表示的Unicode标量是不区分大小写的，其它情况下大小写是敏感的。比如，`#x1A`和`#X1a`是一样的。然而，标识符`Foo`和标识符`FOO`是有区别的。
 
-### 4.2.1. 形式解释
+### 4.2.1. 形式解释 <!-- Formal account -->
 
 `<Interlexeme space>`可以出现在任意词位（lexeme）的两侧，但不允许出现在一个词位的中间。
 
@@ -629,13 +633,13 @@ Scheme的形式语法（formal syntax）被用扩展的BNF写成。非终结符�
 <digit 16> → <hex digit>
 ~~~
 
-### 4.2.2. 换行符
+### 4.2.2. 换行符 <!-- Line endings -->
 
 在Scheme单行注释（见4.2.3小节）和字符串字面量中，换行符是重要的。在Scheme源代码中，在`<line ending>`中的任意换行符都指示一个行的结束。此外，两字符的换行符`<carriage return> <linefeed>`和`<carriage return> <next line>`都仅表示一个单独的换行。
 
 在一个字符串字面量中，一个之前没有`\`的`<line ending>`表示一个换行字符（linefeed character），这个字符是Scheme中的标准换行符。
 
-### 4.2.3. 空白和注释
+### 4.2.3. 空白和注释 <!-- Whitespace and comments -->
 
 *空白*字符是空格，换行，回车，字符制表符，换页符，行制表符和其它种类是Zs，Zl或Zp的任意其它字符。空白字符用于提高可读性和必要地相互分隔词位。空白可以出现在两个词位中间，但不允许出现在一个词位的中间。空白字符也可以出现在一个字符串中，但此时空白是有意义的。
 
@@ -662,7 +666,7 @@ Scheme的形式语法（formal syntax）被用扩展的BNF写成。非终结符�
 
 词位`#!r6rs`，表示接下来的输入是用本报告中描述的词汇语法和数据语法写成的，另外，它也被当作注释对待。
 
-### 4.2.4. 标识符
+### 4.2.4. 标识符 <!-- Identifiers -->
 
 其他程序设计语言认可的大多数标识符也能被Scheme接受。通常，第一个字符不是任何数值的字母、数字和“扩展字符”序列就是一个标识符。此外，`+`、`-`和`...`都是标识符，以两个字符序列`->`开始的字母、数字和“扩展字符”序列也是。这里有一些标识符的例子：
 
@@ -681,11 +685,11 @@ the-word-recursion-has-many-meanings
 
 在Scheme程序中，任意标识符可作为一个变量或一个语法关键词（见5.2和9.2节）。任何标识符也可以作为一个句法数据，在这种情况下，它表示一个*符号*（见11.10小节）。
 
-### 4.2.5. 布尔
+### 4.2.5. 布尔 <!-- Booleans -->
 
 标准布尔对象真和假有外部表示`#t`和`#f`。
 
-### 4.2.6.字符
+### 4.2.6.字符 <!-- Characters -->
 
 字符可以用符号`#\<character>`或`#\<character name>`或`#\x<hex scalar value>`表示。
 
@@ -746,7 +750,7 @@ the-word-recursion-has-many-meanings
 <i>注意：</i>由于反向兼容的原因我们保留符号<code>#\newline</code>。它的使用是不赞成的；应使用<code>#\linefeed</code>代替。
 </font>
 
-### 4.2.7. 字符串
+### 4.2.7. 字符串 <!-- Strings -->
 
 字符串使用被双引号（`"`）括起来的字符序列表示。在字符串字面量中，各种转义序列（escape sequences）被用来表示字符，而不是字符自己。转义序列总是以一个反斜杠（`\`）开始：
 
@@ -787,7 +791,7 @@ the-word-recursion-has-many-meanings
 | bc" | U+0041, U+000A, U+0062, U+0063
 | | 如果A后面没有空格
 
-### 4.2.8. 数字
+### 4.2.8. 数字 <!-- Numbers -->
 
 数字对象外部表示的语法在形式语法的`<number>`规则中被正式描述。在数字对象的外部表示中，大小写是不重要的。
 
@@ -826,7 +830,7 @@ the-word-recursion-has-many-meanings
 
 如果*x*是一个非精确实数对象的外部表示且不包括竖线且不包括除了`e`之外的指数标记，这个非精确实数对象表示一个浮点数（见库的第11.3小节）。其它非精确实数对象外部表示的一些或所有也可以表示浮点数，但这不是本报告要求的。
 
-## 4.3. 数据语法
+## 4.3. 数据语法 <!-- Datum syntax -->
 
 数据语法按照`<lexeme>`的序列描述句法的语法。
 
@@ -836,7 +840,7 @@ the-word-recursion-has-many-meanings
 * 向量（见4.3.3节）
 * 字节向量（bytevectors）（见4.3.4节）
 
-### 4.3.1. 形式解释
+### 4.3.1. 形式解释 <!-- Formal account -->
 
 下面的语法按照定义在4.2节的语法的各种语义描述句法数据的语法：
 
@@ -859,7 +863,7 @@ the-word-recursion-has-many-meanings
       ‌‌integer in {0, ..., 255}>
 ~~~
 
-### 4.3.2. 点对和表
+### 4.3.2. 点对和表 <!-- Pairs and lists -->
 
 表示值对和值的列表（见11.9节）的列表和点对数据使用小括号和中括号表示。规则`<list>`中匹配的中括号对等价于匹配的小括号对。
 
@@ -879,7 +883,7 @@ Scheme点对的句法数据最常用的符号是“点”符号<tt>(<datum<sub>1
 
 符号序列“`(4 . 5)`”是一个点对的外部表示，而不是一个计算结果为点对的表达式。类似的，符号序列“`(+ 2 6)`”*不*是整数8的外部表示，虽然它*是*一个计算结果是整数8的表达式（在`(rnrs base (6))`库语言中）；当然，它是一个句法数据，这个句法数据表示一个三个元素的表，这个表的元素是符号`+`，整数2和6。
 
-### 4.3.3. 向量
+### 4.3.3. 向量 <!-- Vectors -->
 
 表示向量对象（见11.13小节）的向量数据使用`#(<datum> ...)`表示。比如：一个长度是3，且0号元素位置是数字对象零，1号元素位置是表`(2 2 2 2)`，2号元素位置是字符串`"Anna"`，的向量可以如下表示：
 
@@ -887,7 +891,7 @@ Scheme点对的句法数据最常用的符号是“点”符号<tt>(<datum<sub>1
 
 这是一个向量的外部表示，而不是一个计算结果为向量的表达式。
 
-### 4.3.4. 字节向量
+### 4.3.4. 字节向量 <!-- Bytevectors -->
 
 表示字节向量（见库的第2章）的向量数据使用符号`#vu8(<u8> ...)`表示，其中`<u8>`表示字节向量的八位字节（octets）。比如：一个长度是3且包含八位字节2，24和123的字节向量可以如下表示：
 
@@ -919,15 +923,15 @@ Scheme点对的句法数据最常用的符号是“点”符号<tt>(<datum<sub>1
 `` ‌#,<datum> ``是`` (unsyntax <datum>) ``的缩写，且  
 `` ‌#,@<datum> ``是`` (unsyntax-splicing <datum>) ``的缩写。
 
-# 5. 语义概念
+# 5. 语义概念 <!-- Semantic concepts -->
 
-## 5.1. 程序和库
+## 5.1. 程序和库 <!-- Programs and libraries -->
 
 一个Scheme程序由一个*顶层程序*以及一系列的*库*组成，每个库通过显式地指定导入和导出定义了和其它程序相联系的程序的一部分。一个库由一系列的导入导出说明和程序体组成，程序体由定义和表达式组成。一个顶层程序和一个库差不多，但是没有导出说明。第7章和第8章分别描述了库和顶层程序的语法和语义。第11章描述了定义了通常和Scheme一起的结构的一个基本库。一个单独的报告[^24]描述了Scheme系统提供的各种标准库。
 
 基本库和其它标准库的划分是根据使用而不是结构。尤其那些通常被编译器或运行时系统实现为“原语（primitives）”而不是根据其它标准调用或句法形式的功能不是基本库的一部分，而是被定义在单独的库中。例子包括定长数和浮点数库，异常和条件库，以及用于记录的库。
 
-## 5.2. 变量，关键词和作用域
+## 5.2. 变量，关键词和作用域 <!-- Variables, keywords, and regions -->
 
 在一个库或顶层程序的内部，一个标识符可以命名一种语法，或者它可以命名一个值可以被存储的位置。命名一种语法的标识符叫做*关键词*，或*句法关键词*，也可以说是关键词被*绑定*到那个语法（或者说是一个句法抽象，这个抽象将语法转换成更基本的形式；见7.2小节）。命名一个位置的标识符叫做*变量*，也可以说是变量被*绑定*到那个位置。在一个顶层程序或一个库的每一个位置，一个特定的固定集合的标识符被绑定。这些标识符的集合，也就是*可见绑定（visible bindings）*的集合，被称为影响该位置的*环境（environment）*。
 
@@ -941,7 +945,7 @@ Scheme点对的句法数据最常用的符号是“点”符号<tt>(<datum<sub>1
 
 Scheme是一个拥有块结构的静态作用域的语言。顶层程序或库的内部的每一个地方，一个标识符被绑定到代码的*作用域*，在这个作用域中绑定是可见的。这个作用域被特定的建立绑定的绑定结构决定；比如，如果一个绑定通过`lambda`表达式建立，那么作用域是整个`lambda`表达式。每当标识符引用标识符的绑定的时候，它总是引用包含这次使用的最内层绑定。如果找不到作用域包含该引用的标识符绑定，它可以引用库或顶层程序最上面的定义或导入建立的绑定（见第7章）。如果找不到标识符的绑定，它就被称为*未绑定的*。
 
-## 4.3. 异常情况
+## 5.3. 异常情况 <!-- Exceptional situations -->
 
 在本报告中各种异常情况是有区别的，包括违反语法，违反过程调用，违反实现限制和环境中的异常情况。当实现检测到一个异常情况时，一个*异常被抛出*，这意味着一个被称为*当前异常处理程序（current exception handler）*的特殊过程被调用。一个程序也可以抛出一个异常且覆盖当前异常处理程序；见库的第7.1小节。
 
@@ -955,7 +959,7 @@ Scheme是一个拥有块结构的静态作用域的语言。顶层程序或库�
 
 本报告使用的措辞“一个异常被抛出”等价于“一个异常必须被抛出”。本报告使用措辞“一个条件类型为*t*的异常”指示跟随异常抛出的对象是一个有特定类型的条件对象。措辞“一个可继续的异常被抛出”指示一个异常情况允许异常处理程序返回。
 
-## 5.4. 参数检查
+## 5.4. 参数检查 <!-- Argument checking -->
 
 本报告中的许多或一个标准库中的部分调用限制它们接受的参数。典型地，一个调用只接受特定的数字和参数类型。许多句法形式同样限制它们的一个或多个子形式计算结果的值。这些限制暗示着程序员和实现共同的责任。尤其，程序员负责确保这些值确实符合本规范描述的限制。实现必须检查本规范描述的限制确实被遵守，在某种程度上来说允许特定的操作成功完成是合理的，可能的，也是必要的。
 
@@ -966,7 +970,8 @@ Scheme是一个拥有块结构的静态作用域的语言。顶层程序或库�
 当一个实现检测到参数违反限制的时候，它必须以5.6小节描述的符合执行安全性的方法抛出一个条件类型是`&assertion`的异常。
 
 
-## 5.5. 违反语法 <!-- TODO -->
+## 5.5. 违反语法 <!-- Syntax violations -->
+<!-- TODO -->
 
 一个特定形式的子形式通常需要遵循特定的句法限制。由于形式可能要遵从宏扩展，其可能不会终结，所以，它们是否符合特定的限制的问题通常是无法解答的。
 
@@ -977,7 +982,7 @@ Scheme是一个拥有块结构的静态作用域的语言。顶层程序或库�
 -->
 如果一个程序中的一个顶层或库形式是句法上不正确的，那么实现必须抛出一个条件类型是`&syntax`的异常，且顶层程序或库必须不能被允许开始。
 
-## 5.6. 安全性
+## 5.6. 安全性 <!-- Safety -->
 
 导出被本文档描述的标准库被认为是*安全库*。只从安全库导入的库或顶层程序也被认为是安全的。
 
@@ -987,11 +992,11 @@ Scheme是一个拥有块结构的静态作用域的语言。顶层程序或库�
 
 上面的安全性属性只有在顶层程序或库被认为是安全的时候被确保。特别地，实现可以提供访问非安全库的方法，这种方法不能保证安全性。
 
-## 5.7. 布尔值
+## 5.7. 布尔值 <!-- Boolean values -->
 
  尽管有单独的布尔值的存在，但是，Scheme的任何值可在条件测试中被当作一个布尔值使用，除了`#f`，所有的值在测试中被当成真。本报告使用词语“真”表示任意除了`#f`的Scheme值，用词语“假”表示`#f`。
 
-## 5.8. 多个返回值
+## 5.8. 多个返回值 <!-- Multiple return values -->
 
 一个Scheme表达式的结果可以是任意多个有限数量的值。这些值被传递给表达式的继续。
 
@@ -1000,11 +1005,11 @@ Scheme是一个拥有块结构的静态作用域的语言。顶层程序或库�
 
 基本库的许多的形式有作为子形式的表达式的序列，这个序列被按顺序求值，但除了最后一个表达式的值，其它所有的值都会被忽略。丢弃这些值得继续接受任意数量的值。
 
-## 5.9. 未定义（Unspecified）的行为
+## 5.9. 未定义（Unspecified）<!-- behavior -->的行为
 
 如果说一个表达式“返回未定义的值”，那么这个表达式必须正确计算而不是抛出一个异常，但是返回值是依赖于实现的；本报告故意不说多少值或什么值被返回。程序员不应该依赖返回值是特定的数量或依赖返回值是特定的值。
 
-## 5.10. 存储模型
+## 5.10. 存储模型 <!-- Storage model -->
 
 变量和对象，比如点对，向量，字节向量，字符串，哈希表和含蓄地引用位置或位置序列的记录。一个字符串，比如说，包含很多位置因为在一个字符串中有许多的字符。（这些位置不需要对应于一个完整的机器字。）通过使用`string-set!`过程，一个新的值可以被存进这些位置的一个当中，但是，字符串的位置和以前还是一样的。
 
@@ -1018,7 +1023,7 @@ Scheme是一个拥有块结构的静态作用域的语言。顶层程序或库�
 
 Scheme的实现必须是*严格尾递归的*。发生在叫做*尾上下文（tail contexts）*的特定句法上下文的过程调用是*尾调用（tail calls）*。一个Scheme实现是严格尾递归的，如果它支持无限数量的活动尾调用。一个调用时*活动的（active）*如果被调用的过程可以返回。注意，这里所说的返回既包括了通过当前继续从调用中返回的情况，也包括了事先以`call-with-current-continuation`过程捕获继续，后来再调用该继续以便从调用中返回的情况。不存在被捕获的继续时，调用最多只能返回一次，活动调用就是那些还没有返回的调用。一个严格尾递归的正式定义可以在Clinger的论文[^5]中被发现。来自`(rnrs base (6))`库的结构上识别尾调用的规则在11.20小节被描述。
 
-## 5.12. 动态生存期（Dynamic extent）和动态环境
+## 5.12. 动态生存期（Dynamic extent）<!-- and the dynamic environment -->和动态环境
 
 对于一个过程调用，在它开始和它返回的过程之间的时间叫做它的*动态生存期*。在Scheme中，`call-with-current-continuation`（11.15小节）允许在它的过程调用返回之后重新进入一个动态生存期。因此，一个调用的动态生存期可能不是一个单独的，连贯的时间段。
 
@@ -1035,7 +1040,7 @@ Scheme的实现必须是*严格尾递归的*。发生在叫做*尾上下文（ta
 
 *类别*定义了条目描述的绑定的种类，其中类别通常要么是“语法”要么是“过程”。一个条目可以指定子形式或参数的各种限制。对于这些的背景知识，见5.4小节。
 
-## 6.1. 语法条目
+## 6.1. 语法条目 <!-- Syntax entries -->
 
 如果*条目*是语法，则这个条目描述一个特定的句法结构，且模板给了这个结构的形式的语法。模板使用类似于第4章BNF规则右侧的符号，且描述了等价于匹配作为句法数据的模板的形式的形式的集合。一些“语法”条目带有一个后缀（<tt>扩展（expand）</tt>），指明结构的句法关键词是以级别0（level 0）被导出的。否则，句法关键词以级别1被导出。
 
@@ -1053,7 +1058,7 @@ Scheme的实现必须是*严格尾递归的*。发生在叫做*尾上下文（ta
 
 确保一个形式的每一个要素有模板指定的形状是程序员的责任。语法的描述可以表达一个形式的要素的其它限制。通常，这样的限制被格式化成如下形式的短语“`<x>`必须是一个...”。再次强调，这些是程序员的责任。只要宏转换涉及扩展形式终结符，检查这些限制被满足就是实现的责任。如果实现检测到一个要素不满足限制，一个条件类型是`&syntax`的异常被抛出。
 
-## 6.2. 过程条目
+## 6.2. 过程条目 <!-- Procedure entries -->
 
 如果*类别*是“过程”，则条目描述一个过程，标题行给出一个过程调用的模板。模板中参数的名字是*斜体*。因此，标题行
 
@@ -1100,11 +1105,11 @@ Scheme的实现必须是*严格尾递归的*。发生在叫做*尾上下文（ta
 
 过程的描述可以在过程的参数上表达其它的限制。代表性地，这样的限制被格式化成如下形式的短语“`x`必须是一个...”（或者，否则使用词语“必须”）。
 
-## 6.3. 实现责任
+## 6.3. 实现责任 <!-- Implementation responsibilities -->
 
 除了通过命名惯例进行隐含的限制，一个条目可以列出另外的显式的限制。这些显式的限制通常同时描述程序员的责任和实现的责任，程序员的责任意味着程序员必须确保一个形式的子形式是适当的，或一个适当的参数被传递，实现的责任意味着实现必须检查子形式符合规范的限制（如果宏扩展终结的话），或检查参数是不是适当的。通过为参数或子形式打上“实现责任”的标签，一个描述可以显式地列出实现的责任。在这种情况下，在描述的其它部分为这些子形式或参数指定的责任就只是程序员的责任。一个描述实现责任的段落不影响那一段没有描述的实现检查子形式或参数的责任。
 
-## 6.4. 其它种类的条目
+## 6.4. 其它种类的条目 <!-- Other kinds of entries -->
 
 如果*类别*既不是“语法”也不是“过程”，那么，那个条目描述一个非过程值，且*类别*描述了这个值的种类。标题行
 
@@ -1116,11 +1121,11 @@ Scheme的实现必须是*严格尾递归的*。发生在叫做*尾上下文（ta
 
 指示`unquote`是一个语法绑定，这个语法绑定只会作为特定周边表达式<!-- TODO -->的部分出现。任何作为一个独立的句法结构或标识符的使用是一个语法错误。和“语法”条目一样，一些“辅助语法”条目带有一个语法后缀（扩展），指明结构的句法关键词以级别1导出。
 
-## 6.5. 等价的条目
+## 6.5. 等价的条目 <!-- Equivalent entries -->
 
 一个条目的描述偶尔会说它和另外一个条目是*一样*的。这意味着这两个条目是等价的。特别地，它意味着如果两个条目有一样的形式，且从不同的库导出，则两个库的条目可以使用同样的名字导入而没有冲突。
 
-## 6.6. 求值（Evaluation）的例子
+## 6.6. 求值（Evaluation）<!-- examples -->的例子
 
 用在程序例子中的符号“⇒”可以被读作“的值是”。比如，
 
@@ -1145,7 +1150,7 @@ Scheme的实现必须是*严格尾递归的*。发生在叫做*尾上下文（ta
          ⇒ -1.5707963267948965 ; 近似地
 ~~~
 
-## 6.7. 命名惯例
+## 6.7. 命名惯例 <!-- Naming conventions -->
 
 依照惯例，将值存进上次分配的位置的过程的名字通常使用“`!`”。
 
@@ -1157,11 +1162,11 @@ Scheme的实现必须是*严格尾递归的*。发生在叫做*尾上下文（ta
 
 按照惯例，条件类型的名字以“`&`”开头。
 
-# 7. 库
+# 7. 库 <!-- Libraries --> 
 
 库是一个程序可以被独立发布的部分。库系统支持库内的宏定义，宏导出，且区别需要定义和导出的不同阶段。本章为库定义了符号，且为库的扩展（expansion ）和执行定义了语义。
 
-## 7.1. 库形式
+## 7.1. 库形式 <!-- Library form -->
 
 一个库定义必须有下面的形式：
 
@@ -1322,7 +1327,7 @@ expand
 
 所有其它的定义在一个库中的变量是可变的。
 
-## 7.2. 导入和导出级别
+## 7.2. 导入和导出级别 <!-- Import and export levels -->
 
 扩展一个库可能需要来自其它库的运行时信息。比如，如果一个宏转换调用一个来自库*A*的过程，那么在库*B*中扩展宏的任何使用之前，库*A*必须被实例化（instantiated）。当库*B*作为一个程序的部分被最终运行的时候，库*A*可能不被需要，或者，它可能也被库*B*的运行时需要。库机制使用阶段来区别这些时间，这会在本小节解释。
 
@@ -1348,7 +1353,7 @@ expand
 
 一个实现可以为不同的阶段区别实例/访问，或者在任何阶段使用一个实例/访问就像在任何其它阶段的一个实例/访问一样。更进一步，一个实现可以扩展每一个库形式以区别在任何阶段的库的访问和/或在大于0的阶段的库的实例。一个实现可以创建更多库的实例/访问在比要求的安全引用的更多的阶段。当一个标识符作为一个表达式出现在一个与标识符级别不一致的阶段时，那么一个实现可以抛出一个异常，异常的抛出可以在扩展时也可以在运行时，或者，它也可以允许这个引用。因此，一个库可能是不可移植的，当其含义依赖于一个库的实例在库的整个阶段或`library`扩展时是有区别的还是共享的时候。
 
-## 7.3. 例子
+## 7.3. 例子 <!-- Examples -->
 
 各种`<import spec>`和`<export spec>`的例子：
 
@@ -1456,7 +1461,244 @@ expand
         body0 body ...)])))
 ~~~
 
-# 8. 顶层程序
+# 8. 顶层程序 <!-- Top-level programs -->
+
+一个*顶层程序*为定义和运行一个Scheme程序制定一个入口点。一个顶层程序指定导入库和准备运行的程序的一个集合。通过被导入的库，不管是直接地还是通过导入的传递闭包（transitive closure），一个顶层程序定义了一个完整的Scheme程序。
+
+## 8.1. 顶层程序语法 <!-- Top-level program syntax -->
+
+一个顶层程序是一个带分隔符的文本片段，通常是一个文件，其有如下的形式：
+
+`<import form> <top-level body>`
+
+一个`<import form>`有如下的形式：
+
+`(import <import spec> ...)`
+
+一个`<top-level body>`有如下的形式：
+
+`<top-level body form> ...`
+
+一个`<top-level body form>`或者是一个`<definition>`或者是一个`<expression>`。
+
+`<import form>`和库中的导入子句是相同的（见7.1小节），且指定要导入的库的一个集合。一个`<top-level body>`就像一个`<library body>`（见7.1小节）一样，除了定义和表达式可以以任何次序出现。因此，`<top-level body form>`指定的语法引用了宏扩展的结果。
+
+<!-- TODO -->
+当使用来自`(rnrs base (6))`库的`begin`, `let-syntax`, 或`letrec-syntax`的时候，如果其先于第一个表达式出现在顶层程序的内部时，那么它们被拼接到内部中；见11.4.7小节。内部的一些或所有，包括`begin`, `let-syntax`, 或`letrec-syntax`里面的部分，可以通过一个句法抽象指定（见9.2小节）。
+
+## 8.2. 顶层程序语义 <!-- Top-level program semantics -->
+
+一个顶层程序被执行的时候，程序就像一个库一样被对待，执行其定义和表达式。一个顶层内部的语义可以通过一个简单的转换将其转换到库内部来解释：在顶层内部中每一个出现在定义前的`<expression>`被转换为一个哑（dummy）定义
+
+`(define <variable> (begin <expression> <unspecified>))`
+
+其中，`<variable>`是一个新鲜的标识符，`<unspecified>`是一个返回未定义值得无副作用的表达式。（如果不同时对内部进行扩展，那么，判断哪个形式是定义，哪个形式是表达式通常是不可能的，因此，实际的转换多少会更加复杂；见第10章。）
+
+在支持它的平台上，一个顶层程序可以通过调用`command-line`过程（见库的第10章<!-- TODO: 原文错写成小节 -->）访问它的命令行。
+
+# 9. 基本语法 <!-- Primitive syntax -->
+
+在一个`library`形式或顶层程序的`import`形式的后面，构成库或顶层程序内部的形式依赖于被导入的库。尤其，被导入的句法关键词决定可用的句法抽象以及每个形式是一个定义还是一个表达式。可是，一些形式总是可用的，它们独立于被导入的库，包括常量字面量，变量引用，过程调用，和宏的使用。
+
+## 9.1. 基本表达式类型（Primitive expression types）
+
+本节的条目都是都是描述表达式，其可以出现在`<expression>`句法变量的地方。也可以参见第11.4小节。
+
+**常量字面量**
+
+`<number>`‌‌ syntax  
+`<boolean>`‌‌ syntax  
+`<character>`‌‌ syntax  
+`<string>`‌‌ syntax  
+`<bytevector>`‌‌ syntax  
+
+一个由一个数字对象，或一个布尔，或一个字符，或一个字符串，或一个字节向量组成的表达式求值“等于它自己”。
+
+~~~ scheme
+145932     ‌          ⇒  145932
+#t   ‌                ⇒  #t
+"abc"      ‌          ⇒  "abc"
+#vu8(2 24 123) ‌      ⇒ #vu8(2 24 123)
+~~~
+
+就像5.10小节描述的那样，一个字面量表达式的值是不可改变的。
+
+**变量引用**
+
+`<variable>`‌‌ syntax 
+
+由一个变量组成的表达式（5.2小节）是一个变量引用，如果它不是一个宏使用（见下面）的话。这个变量引用的值是被存储在这个变量绑定的位置的值。引用一个未绑定的变量是一个语法错误。
+
+<!-- TODO：原文多了一个“examples” -->
+下面的例子假设基本库已经被导入：
+
+~~~ scheme
+(define x 28)
+x   ‌⇒  28
+~~~
+
+**过程调用**
+
+`(<operator> <operand1> ...)‌‌` 语法
+
+一个过程调用由被调用的过程表达式，传递给这个过程的参数以及两边的下括号组成。在一个表达式上下文中，如果`<operator>`不是一个作为句法关键字绑定的标识符（见下面的9.2小节），那么这个形式是一个过程调用。
+
+当一个过程调用被求值的时候，操作和操作数被（以一个未定义的顺序）求值，且最终产生的过程接受最终产生的参数。
+
+下面的例子假设`(rnrs base (6))`库已被导入：
+
+~~~ scheme
+(+ 3 4)                           ‌⇒  7
+((if #f + *) 3 4)                 ‌⇒  12
+~~~
+
+如果`<operator>`的值不是一个过程，那么一个条件类型是`&assertion`的异常被抛出。并且，如果一个过程接受的参数的数量不是`<operand>`的数量，那么一个条件类型是`&assertion`的异常被抛出。
+
+<p><font size="2"><i>注意：</i> 相比于其它的Lisp方言，求值的顺序是未定义的，且操作表达式和操作数表达式总是以相同的求值规则被求值。</font></p>
+
+<p><font size="2">此外，尽管求值的顺序是未定义，但是对操作和操作数表达式进行的任何并发求值的结果必须与按某种顺序求值的结果一致。对每个过程调用的求值顺序可以有不同的选择。</font></p>
+
+<p><font size="2"><i>注意：</i>在许多Lisp方言中，空组合式<code>()</code>是合法的表达式。在Scheme中，写成表/点对形式的表达式至少要包含一个子表达式，因此<code>()</code>不是一个语法上有效的表达式。</font></p>
+
+## 9.2. 宏 <!-- Macros -->
+
+库的顶层程序可以定义和使用新的叫做*句法抽象*或*宏*派生表达式和定义。一个句法抽象通过绑定一个关键词到一个*宏转换*，或简称为*转换*，来创建。转换决定一个宏的使用（被称为*宏使用（macro use）*）怎样被转录我一个更加基本的形式。
+
+大部分宏有形式：
+
+`(<keyword> <datum> ...)`
+
+其中`<keyword>`是唯一决定形式种类的标识符。这个标识符叫做宏的*句法关键词*，或简称为宏的*关键词*。`<datum>`的数量和每一个的语法由句法抽象决定。
+
+<!-- 原文的括号匹配有问题 -->
+宏使用可以表现为不正确的表形式，单独的标识符或`set!`形式，其中`set!`形式的第二个子形式是关键字（见第11.19小节，库的第12.3小节）：
+
+~~~ scheme
+(<keyword> <datum> ... . <datum>)
+<keyword>
+(set! <keyword> <datum>)
+~~~
+
+在11.2.2和11.18小节描述的`define-syntax`, `let-syntax` 和`letrec-syntax`形式创建关键词的绑定，将它们与宏转换的形式联系起来，且控制它们可见的范作用域。
+
+在11.19小节描述的`syntax-rules` 和`identifier-syntax`形式通过一个模式语言创建转换。并且，库的第12章描述的`syntax-case`形式允许通过任意的Scheme代码创建转换。
+
+关键词和变量占据相同的名字空间。也就是，在相同的作用域内，一个标识符可以被绑定到一个变量或一个关键词中的零个或一个，不能同时绑定到两个，且任何一种本地绑定可以覆盖任何一种其它的绑定。
+
+使用`syntax-rules` 和`identifier-syntax`定义的宏是“卫生的”和“引用透明的”，且因此保持了Scheme词法作用域的特点[^16][^15][^2][^6][^9]：
+
+* 如果一个宏转换为一个没有出现在宏使用中的标识符（变量或关键词）插入一个绑定，就实际效果而言，该标识符在其整个作用域中将被改名使用，以避免与其他标识符冲突。
+* 如果一个宏转换器插入了对某标识符的自由引用，那么，无论是否存在包围该宏的使用的局部绑定，该引用都将指向定义转换器时可见的绑定。
+
+使用`syntax-case`工具定义的宏也是卫生的，除非`datum->syntax`（见库的第12.6小节）被使用。
+
+# 10. 扩展过程 <!-- Expansion process -->
+
+<!-- 将前面的transformer翻译成转换器 -->
+宏使用（见第9.2小节）在求值开始的时候（在编译或解释之前）通过语法*扩展器（expander）*被扩展为*核心形式*。核心形式的集合石实现定义的，在扩展器输出中这些形式的表示也是。如果扩展器遇到一个句法抽象，那么他会调用相关的转换器去扩展句法抽象，然后对转换器（transformer）返回的形式重复扩展过程。如果扩展器遇到一个核心形式，它会递归地处理表达式或定义上下文中它的子形式，如果有的话，且从被扩展的子形式中重建形式。关于标识符绑定的信息在为变量和关键词实施词法作用域扩展的时候被维持。
+
+为了处理定义，扩展器从左向右地处理`<body>`或`<library body>`（见7.1小节）中的初始形式。扩展器怎样处理每个遇到的形式取决于形式的种类。
+
+宏使用
+: 扩展器调用相关的转换器来转换宏使用，然后对产生的形式递归地执行适当的操作。
+
+`define-syntax`形式
+: 扩展器扩展和求值右边的表达式，且绑定关键词到最终的转换器。
+
+`define`形式
+: 扩展器记录这样的事实直到所有的定义都被处理，被定义的标识符是一个变量，而不是右边表达式的推迟扩展。
+
+`begin`形式
+: 扩展器将子形式拼接到它正在处理的内部形式的表中。
+
+`let-syntax`或`letrec-syntax`形成
+: 扩展器将里面的内部形式拼接到它正在处理的（外面的）内部形式的表中，使得通过`let-syntax`和`letrec-syntax`绑定的关键词只在里面的内部形式可见。
+
+表达式，也就是，非定义
+: 扩展器完成推迟的右边表达式和内部当前的即遗留的表达式的扩展，且然后从被定义的变量，被扩展的右边的表达式，和被扩展的内部表达式创建等价于`letrec*`的形式。
+
+对于一个变量定义的右边，扩展被推迟到所以的定义可见之后。因此，如果可以的话，右边的每个关键词和变量引用都解析到本地绑定。
+
+<!-- TODO -->
+在形式序列中的一个定义必须不能定义任意下列的标识符，其绑定被用作判断定义或形式序列中任何在其之前的定义的含义。比如，下列表达式的内部违反了这个限制：
+
+~~~ scheme
+(let ()
+  (define define 17)
+  (list define))
+
+(let-syntax ([def0 (syntax-rules ()
+                     [(_ x) (define x 0)])])
+  (let ([z 3])
+    (def0 z)
+    (define def0 list)
+    (list z)))
+
+(let ()
+  (define-syntax foo
+    (lambda (e)
+      (+ 1 2)))
+  (define + 2)
+  (foo))
+~~~
+
+下面的没有违反这个限制：
+
+~~~ scheme
+(let ([x 5])
+  (define lambda list)
+  (lambda x x))         ‌⇒  (5 5)
+
+(let-syntax ([def0 (syntax-rules ()
+                     [(_ x) (define x 0)])])
+  (let ([z 3])
+    (define def0 list)
+    (def0 z)
+    (list z)))          ‌⇒  (3)
+
+(let ()
+  (define-syntax foo
+    (lambda (e)
+      (let ([+ -]) (+ 1 2))))
+  (define + 2)
+  (foo))                ‌⇒  -1
+~~~
+
+实现应当将违反限制当作语法错误对待。
+
+注意这个算法不直接地再处理任何形式。它要求整个定义中一个单独的从左到右的途径，其后是表达式和推迟的右手边里的一个单独的途径（任何顺序）。
+
+例如：
+
+~~~ scheme
+(lambda (x)
+  (define-syntax defun
+    (syntax-rules ()
+      [(_ x a e) (define x (lambda a e))]))
+  (defun even? (n) (or (= n 0) (odd? (- n 1))))
+  (define-syntax odd?
+    (syntax-rules () [(_ n) (not (even? n))]))
+  (odd? (if (odd? x) (* x x) x)))
+~~~
+
+<!-- TODO -->
+在这个例子中，第一次遇到`defun`的定义，且关键词`defun`与转换器相关，转换器从扩展和对应的右手边的求值得来。`defun`的一个使用在接下来被遇到，且扩展到一个`define`形式中。这个定义形式右手边的扩展是推迟的。`odd?`的定义是下一个且是与其相关的关键词`odd?`的结果，其转换器从对应的右手边的扩展和求值得来<!-- TODO -->。`odd?`的一个使用出现在旁边，且被扩展；作为结果的对`not`的调用被认为是一个表达式，这是因为`not`作为一个变量被绑定。此时，扩展器完成当前表达式（`not`的调用）和被推迟的`even?`定义右侧的扩展；出现在这些表达式中的`odd?`的使用通过使用与`odd?`关联的转换器扩展。最终的输出等价于：
+
+~~~ scheme
+(lambda (x)
+  (letrec* ([even?
+              (lambda (n)
+                (or (= n 0)
+                    (not (even? (- n 1)))))])
+    (not (even? (if (not (even? x)) (* x x) x)))))
+~~~
+
+尽管输出的结构是实现定义的。
+
+因为定义被表达式在一个`<top-level body>`中可以交错地出现（见第8章），所以`<top-level body>`扩展器的处理有时更加复杂。
+
+
+
 
 
 
@@ -1486,9 +1728,9 @@ expand
 * 块注释和数据注释被添加。
 * 用作报告兼容的`#!r6rs`注释词汇语法被添加。
 * 现在，字符指定对应的Unicode标量值。
-* 现在，许多的程序和语言的句法形式是`(rnrs base (6))`库的一部分。一些过程和句法形式被转移到其它库中；见图表A.1。
+* 现在，许多的程序和语言的句法形式是`(rnrs base (6))`库的一部分。一些过程和句法形式被转移到其它库中；见表A.1。
 
-| identifier |  moved to
+| 标识符 |  转移到
 |:-|:-
 | `assoc` | (rnrs lists (6))
 | `assv` |  (rnrs lists (6))
@@ -1571,37 +1813,37 @@ expand
 * 宏扩展的顺序和语义被更加完整地指定。
 * 现在，内部定义按照`letrec*`定义。
 * 程序结构和Scheme顶层环境的旧符号被顶层程序和库代替。
-* 指称语义（denotational semantics）被一个基于“修订<sup>5</sup>报告”一个早期语义的操作语义（operational semantics）[^14][^18]取代。
+* 指称语义（denotational semantics）被一个基于“修订<sup>5</sup>报告”[^14]一个早期语义的操作语义（operational semantics）[^18]取代。
 
-# 参考文献
+# 参考文献 <!-- REFERENCES -->
 
-[^1]:      J. W. Backus, F.L. Bauer, J.Green, C. Katz, J. McCarthy P. Naur, A. J. Perlis, H. Rutishauser, K. Samuelson, B. Vauquois J. H. Wegstein, A. van Wijngaarden, and M. Woodger. Revised report on the algorithmic language Algol 60. Communications of the ACM, 6(1):1–17, 1963.
-[^2]:      Alan Bawden and Jonathan Rees. Syntactic closures. In ACM Conference on Lisp and Functional Programming, pages 86–95, Snowbird, Utah, 1988. ACM Press.
+[^1]:      J. W. Backus, F.L. Bauer, J.Green, C. Katz, J. McCarthy P. Naur, A. J. Perlis, H. Rutishauser, K. Samuelson, B. Vauquois J. H. Wegstein, A. van Wijngaarden, and M. Woodger. Revised report on the algorithmic language Algol 60. *Communications of the ACM*, 6(1):1–17, 1963.
+[^2]:      Alan Bawden and Jonathan Rees. Syntactic closures. In *ACM Conference on Lisp and Functional Programming*, pages 86–95, Snowbird, Utah, 1988. ACM Press.
 [^3]:      Scott Bradner. Key words for use in RFCs to indicate requirement levels. <http://www.ietf.org/rfc/rfc2119.txt>, March 1997. RFC 2119.
-[^4]:      Robert G. Burger and R. Kent Dybvig. Printing floating-point numbers quickly and accurately. In Proceedings of the ACM SIGPLAN '96 Conference on Programming Language Design and Implementation, pages 108–116, Philadelphia, PA, USA, May 1996. ACM Press.
-[^5]:      William Clinger. Proper tail recursion and space efficiency. In Keith Cooper, editor, Proceedings of the 1998 Conference on Programming Language Design and Implementation, pages 174–185, Montreal, Canada, June 1998. ACM Press. Volume 33(5) of SIGPLAN Notices.
-[^6]:      William Clinger and Jonathan Rees. Macros that work. In Proceedings 1991 ACM SIGPLAN Symposium on Principles of Programming Languages, pages 155–162, Orlando, Florida, January 1991. ACM Press.
-[^7]:      William D. Clinger. How to read floating point numbers accurately. In Proceedings Conference on Programming Language Design and Implementation '90, pages 92–101, White Plains, New York, USA, June 1990. ACM.
-[^8]:      R. Kent Dybvig. Chez Scheme Version 7 User's Guide. Cadence Research Systems, 2005. <http://www.scheme.com/csug7/>.
-[^9]:      R. Kent Dybvig, Robert Hieb, and Carl Bruggeman. Syntactic abstraction in Scheme. Lisp and Symbolic Computation, 1(1):53–75, 1988.
+[^4]:      Robert G. Burger and R. Kent Dybvig. Printing floating-point numbers quickly and accurately. In *Proceedings of the ACM SIGPLAN '96 Conference on Programming Language Design and Implementation*, pages 108–116, Philadelphia, PA, USA, May 1996. ACM Press.
+[^5]:      William Clinger. Proper tail recursion and space efficiency. In Keith Cooper, editor, *Proceedings of the 1998 Conference on Programming Language Design and Implementation*, pages 174–185, Montreal, Canada, June 1998. ACM Press. Volume 33(5) of SIGPLAN Notices.
+[^6]:      William Clinger and Jonathan Rees. Macros that work. In *Proceedings 1991 ACM SIGPLAN Symposium on Principles of Programming Languages*, pages 155–162, Orlando, Florida, January 1991. ACM Press.
+[^7]:      William D. Clinger. How to read floating point numbers accurately. In *Proceedings Conference on Programming Language Design and Implementation '90*, pages 92–101, White Plains, New York, USA, June 1990. ACM.
+[^8]:      R. Kent Dybvig. *Chez Scheme Version 7 User's Guide*. Cadence Research Systems, 2005. <http://www.scheme.com/csug7/>.
+[^9]:      R. Kent Dybvig, Robert Hieb, and Carl Bruggeman. Syntactic abstraction in Scheme. *Lisp and Symbolic Computation*, 1(1):53–75, 1988.
 [^10]:     Matthias Felleisen and Matthew Flatt. Programming languages and lambda calculi. <http://www.cs.utah.edu/plt/publications/pllc.pdf>, 2003.
-[^11]:     Matthew Flatt. PLT MzScheme: Language Manual. Rice University, University of Utah, July 2006. <http://download.plt-scheme.org/doc/352/html/mzscheme/>.
-[^12]:     Daniel P. Friedman, Christopher Haynes, Eugene Kohlbecker, and Mitchell Wand. Scheme 84 interim reference manual. Indiana University, January 1985. Indiana University Computer Science Technical Report 153.
+[^11]:     Matthew Flatt. *PLT MzScheme: Language Manual*. Rice University, University of Utah, July 2006. <http://download.plt-scheme.org/doc/352/html/mzscheme/>.
+[^12]:     Daniel P. Friedman, Christopher Haynes, Eugene Kohlbecker, and Mitchell Wand. *Scheme 84 interim reference manual*. Indiana University, January 1985. Indiana University Computer Science Technical Report 153.
 [^13]:     IEEE standard 754-1985. IEEE standard for binary floating-point arithmetic, 1985. Reprinted in SIGPLAN Notices, 22(2):9-25, 1987.
-[^14]:     Richard Kelsey, William Clinger, and Jonathan Rees. Revised<sup>5</sup> report on the algorithmic language Scheme. Higher-Order and Symbolic Computation, 11(1):7–105, 1998.
-[^15]:     Eugene E. Kohlbecker, Daniel P. Friedman, Matthias Felleisen, and Bruce Duba. Hygienic macro expansion. In Proceedings of the 1986 ACM Conference on Lisp and Functional Programming, pages 151–161, 1986.
-[^16]:     Eugene E. Kohlbecker Jr. Syntactic Extensions in the Programming Language Lisp. PhD thesis, Indiana University, August 1986.
-[^17]:     Jacob Matthews and Robert Bruce Findler. An operational semantics for R5RS Scheme. In J. Michael Ashley and Michael Sperber, editors, Proceedings of the Sixth Workshop on Scheme and Functional Programming, pages 41–54, Tallin, Estonia, September 2005. Indiana University Technical Report TR619.
-[^18]:     Jacob Matthews and Robert Bruce Findler. An operational semantics for Scheme. Journal of Functional Programming, 2007. From <http://www.cambridge.org/journals/JFP/>.
-[^19]:     Jacob Matthews, Robert Bruce Findler, Matthew Flatt, and Matthias Felleisen. A visual environment for developing context-sensitive term rewriting systems. In Proceedings 15th Conference on Rewriting Techniques and Applications, Aachen, June 2004. Springer-Verlag.
-[^20]:     MIT Department of Electrical Engineering and Computer Science. Scheme manual, seventh edition, September 1984.
-[^21]:     Jonathan A. Rees, Norman I. Adams IV, and James R. Meehan. The T manual. Yale University Computer Science Department, fourth edition, January 1984.
+[^14]:     Richard Kelsey, William Clinger, and Jonathan Rees. Revised<sup>5</sup> report on the algorithmic language Scheme. *Higher-Order and Symbolic Computation*, 11(1):7–105, 1998.
+[^15]:     Eugene E. Kohlbecker, Daniel P. Friedman, Matthias Felleisen, and Bruce Duba. Hygienic macro expansion. In *Proceedings of the 1986 ACM Conference on Lisp and Functional Programming*, pages 151–161, 1986.
+[^16]:     Eugene E. Kohlbecker Jr. *Syntactic Extensions in the Programming Language Lisp*. PhD thesis, Indiana University, August 1986.
+[^17]:     Jacob Matthews and Robert Bruce Findler. An operational semantics for R5RS Scheme. In J. Michael Ashley and Michael Sperber, editors, *Proceedings of the Sixth Workshop on Scheme and Functional Programming*, pages 41–54, Tallin, Estonia, September 2005. Indiana University Technical Report TR619.
+[^18]:     Jacob Matthews and Robert Bruce Findler. An operational semantics for Scheme. *Journal of Functional Programming*, 2007. From <http://www.cambridge.org/journals/JFP/>.
+[^19]:     Jacob Matthews, Robert Bruce Findler, Matthew Flatt, and Matthias Felleisen. A visual environment for developing context-sensitive term rewriting systems. In *Proceedings 15th Conference on Rewriting Techniques and Applications*, Aachen, June 2004. Springer-Verlag.
+[^20]:     MIT Department of Electrical Engineering and Computer Science. *Scheme manual, seventh edition*, September 1984.
+[^21]:     Jonathan A. Rees, Norman I. Adams IV, and James R. Meehan. *The T manual*. Yale University Computer Science Department, fourth edition, January 1984.
 [^22]:     Michael Sperber, R. Kent Dybvig, Matthew Flatt, and Anton van Straaten. Revised<sup>6</sup> report on the algorithmic language Scheme (Non-Normative appendices). <http://www.r6rs.org/>, 2007.
 [^23]:     Michael Sperber, R. Kent Dybvig, Matthew Flatt, and Anton van Straaten. Revised<sup>6</sup> report on the algorithmic language Scheme (Rationale). <http://www.r6rs.org/>, 2007.
 [^24]:     Michael Sperber, R. Kent Dybvig, Matthew Flatt, Anton van Straaten, Richard Kelsey, William Clinger, and Jonathan Rees. Revised<sup>6</sup> report on the algorithmic language Scheme (Libraries). <http://www.r6rs.org/>, 2007.
-[^25]:     Guy Lewis Steele Jr. Common Lisp: The Language. Digital Press, Burlington, MA, second edition, 1990.
-[^26]:     Texas Instruments, Inc. TI Scheme Language Reference Manual, November 1985. Preliminary version 1.0.
-[^27]:     The Unicode Consortium. The Unicode standard, version 5.0.0. defined by: The Unicode Standard, Version 5.0 (Boston, MA, Addison-Wesley, 2007. ISBN 0-321-48091-0), 2007.
-[^28]:     William M. Waite and Gerhard Goos. Compiler Construction. Springer-Verlag, 1984.
-[^29]:     Andrew Wright and Matthias Felleisen. A syntactic approach to type soundness. Information and Computation, 115(1):38–94, 1994. First appeared as Technical Report TR160, Rice University, 1991.
+[^25]:     Guy Lewis Steele Jr. *Common Lisp: The Language*. Digital Press, Burlington, MA, second edition, 1990.
+[^26]:     Texas Instruments, Inc. *TI Scheme Language Reference Manual*, November 1985. Preliminary version 1.0.
+[^27]:     The Unicode Consortium. *The Unicode standard, version 5.0.0*. defined by: The Unicode Standard, Version 5.0 (Boston, MA, Addison-Wesley, 2007. ISBN 0-321-48091-0), 2007.
+[^28]:     William M. Waite and Gerhard Goos. *Compiler Construction*. Springer-Verlag, 1984.
+[^29]:     Andrew Wright and Matthias Felleisen. A syntactic approach to type soundness. *Information and Computation*, 115(1):38–94, 1994. First appeared as Technical Report TR160, Rice University, 1991.
 
