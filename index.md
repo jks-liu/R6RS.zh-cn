@@ -1978,14 +1978,124 @@ null?
 
 `(else <expression1> <expression2> ...)`。
 
-*语义*：一个`cond`表达式通过以下方式求值，按顺序连续地对`<test>`表达式进行求值直到它们其中一个的值是真值（见第5.7小节）。当一个`<test>`的值是真值的时候，就会顺序地对它`<cond clause>`中剩余的`<expression>`进行求值，且`<cond clause>`中最后一个`<expression>`的结果会作为整个`cond`表达式的结果被返回。如果被选择的`<cond clause>`只包含`<test>`且没有`<expression>`，那么`<test>`的值会作为结果被返回。如果被选择的`<cond clause>`使用`=>`辅助形式，
+*语义*：一个`cond`表达式通过以下方式求值，按顺序连续地对`<test>`表达式进行求值直到它们其中一个的值是真值（见第5.7小节）。当一个`<test>`的值是真值的时候，就会顺序地对它`<cond clause>`中剩余的`<expression>`进行求值，且`<cond clause>`中最后一个`<expression>`的结果会作为整个`cond`表达式的结果被返回。如果被选择的`<cond clause>`只包含`<test>`且没有`<expression>`，那么`<test>`的值会作为结果被返回。如果被选择的`<cond clause>`使用`=>`辅助形式，那么`<expression>`被计算。它的值必须是一个过程。这个过程必须接受一个参数；它被以`<test>`的值调用，且过程返回的值作为`cond`表达式的值返回。如果所有的`<test>`的值都是`#f`，那么条件表达式返回未定义的值；如果有一个`else`子句，那么它的`<expression>`被计算，且最后一个的值被返回。
+
+~~~ scheme
+(cond ((> 3 2) 'greater)
+      ((< 3 2) 'less))          ‌⇒  greater
+(cond ((> 3 3) 'greater)
+      ((< 3 3) 'less)
+      (else 'equal))            ‌⇒  equal
+(cond ('(1 2 3) => cadr)
+      (else #f))                ‌⇒  2
+~~~
+
+对于一个有下列的形式之一的`<cond clause>`
+
+~~~ scheme
+(<test> <expression1> ...)
+(else <expression1> <expression2> ...)
+~~~
+
+最后一个`<expression>`在尾上下文中，如果`cond`形式它自己在的话。一个如下形式的`<cond clause>`
+
+`(<test> => <expression>)`
+
+来自`<expression>`求值结果的过程的（隐式）调用在尾上下文中如果`cond`形式它自己在的话。见第11.20小节。
+
+一个更简单形式的`cond`的参考定义可以在附录B中被找到。
+
+`\(\texttt{(case <key> <case clause$_1$> <case clause$_2$> ...)}\)` 语法
+
+*语法*：`<Key>`必须是一个表达式。每一个`<case clause>`必须有下列形式之一：
+
+~~~ scheme
+((<datum\(_1\)> ...) <expression\(_1\)> <expression\(_2\)> ...)
+(else <expression\(_1\)> <expression\(_2\)> ...)
+~~~
+
+第二个形式，其指定一个“`else`子句”，只可以作为最后一个`<case clause>`出现。每一个`<datum>`是一些对象的一个外部表示。`<Datum>`表示的数据不需要有区别。
+
+*语义*：一个`case`按如下求值。`<key>`被求值，且它的结果被和每个`<case clause>`中的`<datum>`表示的数据轮流比较，比较的依据是`eqv?`（见第11.5小节），以从左到右的顺序在整个子句的集合中进行。如果求值后`<key>`的值等于一个`<case clause>`的数据，对应的表达式被从左向右地求值，且`<case clause>`最后一个表达式的结果将作为`case`表达式的结果被返回。如果求值后的`<key>`的值和每个子句中的数据都不一样，那么如果有一个`else`子句的话，它的表达式被计算且最后一个的结果作为`case`表达式的结果被返回；否则`case`表达式的返回未定义的值。
+
+~~~ scheme
+; 本示例已根据勘误表修改
+(case (* 2 3)
+  ((2 3 5 7) 'prime)
+  ((1 4 6 8 9) 'composite))     ‌⇒  composite
+(case (car '(c d))
+  ((a) 'a)
+  ((b) 'b))                     ‌⇒  unspecified
+(case (car '(c d))
+  ((a e i o u) 'vowel)
+  ((w y) 'semivowel)
+  (else 'consonant))            ‌⇒  consonant
+~~~
+
+一个`<case clause>`的最后一个`<expression>`在尾上下文中，如果`case`表达式它自己在的话；见第11.20小节。
+
+`\(\texttt{(and <test$_1$> ...)}\)` 语法
+
+*语法*：`<Test>`必须是一个表达式。
+
+*语义*：如果没有`<test>`，`#t`被返回。否则`<test>`表达式被从左向右地求值，直到一个`<test>`返回`#f`，或到达最后一个`<test>`。前一种情况下，`and`表达式在不计算剩余表达式的情况下返回`#f`。后一种情况，最后一个表达式被计算且它的值被返回。
+
+~~~ scheme
+(and (= 2 2) (> 2 1))           ‌⇒  #t
+(and (= 2 2) (< 2 1))           ‌⇒  #f
+(and 1 2 'c '(f g))             ‌⇒  (f g)
+(and)                           ‌⇒  #t
+~~~
+
+`and`关键词可以使用`syntax-rules`（见第11.19小节）根据`if`进行定义，如下所示：
+
+~~~ scheme
+(define-syntax and
+  (syntax-rules ()
+    ((and) #t)
+    ((and test) test)
+    ((and test1 test2 ...)
+     (if test1 (and test2 ...) #f))))
+~~~
+
+最后一个`<test>`表达式在尾上下文中，如果`and`表达式它自己在的话；见第11.20小节。
+
+`\(\texttt{(or <test$_1$> ...)}\)` 语法
+
+*语法*：`<Test>`必须是一个表达式。
+
+*语义*：如果没有`<test>`，那么`#f`被返回。否则，`<test>`按照从左到右的顺序被求值，直到一个`<tesst>`返回真值*val*（见第5.7小节），或到达最后一个`<test>`。在前一种情况，`or`表达式在不计算剩余表达式的情况下返回*val*。后一种情况，最后一个表达式被求值，且它的值被返回。
+
+~~~ scheme
+(or (= 2 2) (> 2 1))            ‌⇒  #t
+(or (= 2 2) (< 2 1))            ‌⇒  #t
+(or #f #f #f) ‌⇒  #f
+(or '(b c) (/ 3 0))             ‌⇒  (b c)
+~~~
+
+`or`关键词可以使用`syntax-rules`（见第11.19小节）根据`if`进行定义，如下所示：
+
+~~~ scheme
+(define-syntax or
+  (syntax-rules ()
+    ((or) #f)
+    ((or test) test)
+    ((or test1 test2 ...)
+     (let ((x test1))
+       (if x x (or test2 ...))))))
+~~~
+
+最后一个`<test>`表达式在尾上下文中，如果`or`表达式它自己也在的话；见第11.20小节。
+
+### 11.4.6. 绑定结构 <!-- Binding constructs -->
+
 
 
 
 
 
 <!--
-  （勘误：11.4.5）
+  （勘误：11.5）
 
   TODO：将逗号由中文改为英文
 -->
