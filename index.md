@@ -1695,9 +1695,290 @@ x   ‌⇒  28
 
 尽管输出的结构是实现定义的。
 
-因为定义被表达式在一个`<top-level body>`中可以交错地出现（见第8章），所以`<top-level body>`扩展器的处理有时更加复杂。
+因为定义被表达式在一个`<top-level body>`中可以交错地出现（见第8章），所以`<top-level body>`扩展器的处理有时更加复杂。它的行为想上面描述的`<body>`或`<library body>`以及以下例外：当扩展器发现一个非定义，它推迟其扩展并继续扫描定义。一旦它到达形式集合 的结尾，那么它处理推迟的右手边和内部表达式，然后从被定义的变量中生成等价于`letrec*`的形式，扩展右手边表达式，且扩展内部表达式。对于每一个出现在内部变量定义之前的内部表达式`<expression>`，在对应的地方一个哑绑定被创建以`letrec*`绑定的集合的形式，其左边是一个新鲜的临时变量，右边等价于`(begin <expression> <unspecified>)`，其中`<unspecified>`是没有副作用的，所以从左到右的求值顺序被保留。`begin`的包装使得`<expression>`可以求值得到任意数量的值。
 
+# 11. 基本库 <!-- Base library -->
 
+本章描述Scheme的`(rnrs base (6))`库，其导出了很多通常和Scheme一起的过程和语法绑定。
+
+第11.20小节定义了来自`(rnrs base (6))`库的从结构上识别尾调用和尾上下文的规则。
+
+## 11.1. 基本类型 <!-- Base types -->
+
+没有变量满足下列谓词中的多个：
+
+~~~ scheme
+boolean?          pair?
+symbol?           number?
+char?             string?
+vector?           procedure?
+null?
+~~~
+
+这些谓词定义了基本的类型*布尔*，*点对*，*符号*，*数字*，*字符*，*字符串*，*向量*，以及*过程*。此外，空表是一个特殊的对象，它有自己的类型。
+
+注意，尽管有一个单独的布尔类型，但是，任何Scheme值在条件测试中都可以被当作一个布尔值使用；见5.7小节。
+
+## 11.2. 定义 <!-- Definitions -->
+
+定义出现在一个`<top-level body>`（8.1小节）中，`<library body>`的最上面（7.1小节），或`<body>`的最上面（11.3小节）。
+
+一个`<definition>`可以是一个变量定义（11.2.1小节），或一个关键词定义（11.2.1小节）。扩展到定义或定义组（打包在一个`begin`, `let-syntax`, 或`letrec-syntax`形式中）中的宏使用也可以出现在任何其它定义可以出现的地方。
+
+### 11.2.1. 变量定义 <!-- Variable definitions -->
+
+本节描述的`define`形式是一个用作创建变量绑定的`<definition>`，且可以出现在其它定义可以出现的任何地方。
+
+| `(define <variable> <expression>)‌‌` | 语法 
+| `(define <variable>)‌‌` | 语法 
+| `(define (<variable> <formals>) <body>)‌‌` | 语法 
+| `(define (<variable> . <formal>) <body>)‌‌` | 语法
+
+`define`的第一个形式绑定`<variable>`到一个新的位置，然后将`<expression>`的值赋值给这个位置。
+
+~~~ scheme
+(define add3
+  (lambda (x) (+ x 3)))
+(add3 3)                            ‌⇒  6
+(define first car)
+(first '(1 2))                      ‌⇒  1
+~~~
+
+`<expression>`的继续不应该被调用多于一次。
+
+*实现的责任*：实现应当检测`<expression>`的继续被调用多于一次的情况。如果实现检测到这个的话，它必须抛出一个条件类型是`&assertion`的异常。
+
+`define`的第二种形式等价于
+
+`(define <variable> <unspecified>)`
+
+其中`<unspecified>`是一个返回未定义值得无副作用的表达式。
+
+在`define`的第三个形式中，`<formals>`必须或者是零个或多个变量的序列，或者是一个或多个变量的序列，其跟着一个点`.`和另一个变量（就像在一个`lambda`表达式中一样，见11.4.2小节）。这个形式等价于
+
+<!-- TODO：句号是程序的一部分吗？ -->
+
+~~~ scheme
+(define <variable>
+  (lambda (<formals>) <body>)).
+~~~
+
+在`define`的第四个形式中，`<formal>`必须是一个单独的变量。
+
+~~~ scheme
+(define <variable>
+  (lambda <formal> <body>)).
+~~~
+
+### 11.2.2. 语法定义 <!-- Syntax definitions -->
+
+本节描述的`define-syntax`形式是一个用作创建关键词绑定的`<definition>`，其可以出现在任何其它定义可以出现的地方。
+
+`(define-syntax <keyword> <expression>)` 语法
+
+绑定`<keyword>`到`<expression>`的值，其必须在宏扩展的阶段求值得到一个转换器。宏转换器可以使用11.19小节描述的`syntax-rules`和`identifier-syntax`形式创建。见库的第12.3小节，那儿有一个转换器更全面的描述。
+
+通过`define-syntax`建立的关键词绑定在其出现的整个内部都是可见的，除非被其它绑定覆盖外都是可见的，就像`define`建立的变量绑定一样。通过一组定义建立的绑定，不管是关键词还是变量定义，在定义它们自己中是可见的。
+
+*实现的责任*：实现应该检测`<expression>`的值是不是一个适当的转换器。
+
+例子：
+
+~~~ scheme
+(let ()
+  (define even?
+    (lambda (x)
+      (or (= x 0) (odd? (- x 1)))))
+  (define-syntax odd?
+    (syntax-rules ()
+      ((odd?  x) (not (even? x)))))
+  (even? 10))                       ‌⇒ #t
+~~~
+
+<!-- TODO:
+  在所有的地方加上第：
+  x章（小节）是不通顺的，那么x.y章（小节）也是不通顺的。
+-->
+从左到右的处理顺序（第10章）的言外之意是一个定义可以影响后续的形式是否也是一个定义。
+
+例子：
+
+~~~ scheme
+(let ()
+  (define-syntax bind-to-zero
+    (syntax-rules ()
+      ((bind-to-zero id) (define id 0))))
+  (bind-to-zero x)
+  x) ‌⇒ 0
+~~~
+
+任何出现在`let`表达式外面的`bind-to-zero`的绑定都不会影响其行为。
+
+## 11.3. 内部 <!-- Bodies -->
+
+`lambda`, `let`, `let*`, `let-values`, `let*-values`, `letrec`, 或`letrec*`表达式的`<body>`，或由零个或多个跟着一个或多个表达式的定义。
+
+`<definition> ... <expression1> <expression2> ...`
+
+通过一个定义定义的标识符在`<body>`中局部的。也就是说，标识符被绑定到，且绑定的作用域是这个`<body>`（见第5.2小节）。
+
+例子
+
+~~~ scheme
+(let ((x 5))
+  (define foo (lambda (y) (bar x y)))
+  (define bar (lambda (a b) (+ (* a b) a)))
+  (foo (+ x 3)))                ‌⇒  45
+~~~
+
+当`begin`, `let-syntax`, 或`letrec-syntax`形式先于第一个表达式出现在内部的时候，它们被拼接到内部；见第11.4.7小节。内部的一些或所以<!-- TODO -->，包括`begin`, `let-syntax`, 或`letrec-syntax`形式里面的部分，可以通过一个宏使用指定（见第9.2小节）。
+
+一个包含变量定义的被扩展的`<body>`（见第10章）总是可以被转换成一个等价的`letrec*`表达式。比如，上面例子中的`let`表达式等价于
+
+~~~ scheme
+(let ((x 5))
+  (letrec* ((foo (lambda (y) (bar x y)))
+            (bar (lambda (a b) (+ (* a b) a))))
+    (foo (+ x 3))))
+~~~
+
+## 11.4. 表达式 <!-- Expressions -->
+
+本节的条目描述`(rnrs base (6))`库中的表达式，除了第9.1小节描述的基本表达式类型，其可以出现在`<expression>`句法变量的位置中。
+
+### 11.4.1. 引用（Quotation）
+
+`(quote <datum>)` 语法
+
+*语法*：`<Datum>`应该是一个句法数据。
+
+*语义*：`quote <datum>)`的值是`<datum>`表示的数据值（见第4.3小节）。这个符号被用作包含常量。
+
+~~~ scheme
+(quote a)                     ‌⇒  a
+(quote #(a b c))              ‌⇒  #(a b c)
+(quote (+ 1 2))               ‌⇒  (+ 1 2)
+~~~
+
+正如第4.3.5小节所说，`(quote <datum>)`可以使用缩写`'<datum>`：
+
+~~~ scheme
+'"abc"               ‌⇒  "abc"
+'145932              ‌⇒  145932
+'a                   ‌⇒  a
+'#(a b c)            ‌⇒  #(a b c)
+'()                  ‌⇒  ()
+'(+ 1 2)             ‌⇒  (+ 1 2)
+'(quote a)           ‌⇒  (quote a)
+''a                  ‌⇒  (quote a)
+~~~
+
+正如第5.10小节所说，常量是不可变得。
+
+<p><font size="2"><i>注意：</i>是<code>quote</code>表达式值得不同常数可以共享相同的位置。</font></p>
+
+### 11.4.2 过程 <!-- Procedures -->
+
+`(lambda <formals> <body>)` 语法
+
+*语法*：`<Formals>`必须是一个下面描述的形参（formal parameter）列表，且`<body>`必须和第11.3小节描述的一样。
+
+<!-- TODO：将所有的“evaluate to”翻译成“的值是” -->
+*语义*：一个`lambda`表达式的值是一个过程。当`lambda`表达式被求值时的有效环境被作为过程的一部分被记忆。当过程随后以一些参数被调用的时候，`lambda`表达式被求值时使用的环境通过绑定参数列表中的变量到新的位置的方式被扩展，且相应的实参值被存储到那些位置。然后，`lambda`表达式内部的表达式（其可能包含定义，因此可能表现为一个`letrec*`形式，见第11.3小节）在扩展的环境中被顺序地求值。内部最后一个表达式的结果作为过程调用的结果被返回。
+
+~~~ scheme
+(lambda (x) (+ x x))            ‌⇒  a procedure
+((lambda (x) (+ x x)) 4)        ‌⇒  8
+
+((lambda (x)
+   (define (p y)
+     (+ y 1))
+   (+ (p x) x))
+ 5)                             ‌⇒ 11
+
+(define reverse-subtract
+  (lambda (x y) (- y x)))
+(reverse-subtract 7 10)         ‌⇒  3
+
+(define add4
+  (let ((x 4))
+    (lambda (y) (+ x y))))
+(add4 6)                        ‌⇒  10
+~~~
+
+`<Formals>`必须有下列的形式之一：
+
+* `\(\texttt{(<variable$_1$> ...)}\)` :过程拥有固定数量的参数。当过程被调用时，参数将被存储在相应变量的绑定中。
+* `<variable>`:过程拥有任意数量的参数。当过程被调用时，实参的序列被转换为一个新创建的表，该表存储在󰀎variable󰀏的绑定中。
+* `\(\texttt{(<variable$_1$> ... <variable$_n$> . <variable$_{n+1}$>)}\)`:如果一个由空格分隔的句点出现在最后一个变量之前，该过程就拥有n个或更多个参数，这里的n是句点前面形参的个数（至少要有一个）。存储在最后一个参数绑定中的值是一个新创建的表。除了已和其他形参匹配的所有其他实参外，剩余的实参都被存入该表中。
+
+~~~ scheme
+((lambda x x) 3 4 5 6)          ‌⇒  (3 4 5 6)
+((lambda (x y . z) z)
+ 3 4 5 6)                       ‌⇒  (5 6)
+~~~
+
+在`<formals>`中任何`<variable>`必须不能出现超过一次。
+
+### 11.4.3. 条件表达式（Conditionals）
+
+| `(if <test> <consequent> <alternate>)‌‌` | 语法 
+| `(if <test> <consequent>)‌‌` | 语法
+
+*语法*：`<Test>`, `<consequent>`, 和`<alternate>`必须是表达式。
+
+*语义*：一个`if`表达式按如下方式计算：首先，计算`<test>`的值。如果产生一个真值（见第5.7小节），然后`<consequent>`被计算，且它的值被返回。否则，`<alternate>`被计算，且它的值被返回。如果`<test>`产生`#f`且没有指定`<alternate>`，那么，表达式的结果是未定义的。
+
+~~~ scheme
+(if (> 3 2) 'yes 'no)           ‌⇒  yes
+(if (> 2 3) 'yes 'no)           ‌⇒  no
+(if (> 3 2)
+    (- 3 2)
+    (+ 3 2))                    ‌⇒  1
+(if #f #f)                    ‌⇒ unspecified
+~~~
+
+`<Consequent>`和`<alternate>`表达式在尾上下文中，如果`if`表达式它自己在的话；见第11.20小节。
+
+### 11.4.4. 赋值 <!-- Assignments -->
+
+`(set! <variable> <expression>)` 语法
+
+<!-- 将前面所有的出现在句首的<>的第一个字母大写 -->
+`<Expression>`被计算，且结果值被存进`<variable>`绑定的位置。<Variable>必须在包含`set!`表达式的区域或顶层被绑定。`set!`表达式的结果是未定义的。
+
+~~~ scheme
+(let ((x 2))
+  (+ x 1)
+  (set! x 4)
+  (+ x 1)) ‌⇒  5
+~~~
+
+如果`<variable>`引用一个不可修改的绑定，那么这时一个语法错误。
+
+<p><font size="2"><i>注意：</i>标识符<code>set!</code>同时以级别1被导出。见第11.19小节。</font></p>
+
+### 11.4.5. 派生条件表达式（Derived conditionals）
+
+| |
+|:-|-:
+| `(cond <cond clause1> <cond clause2> ...)‌‌` |  语法
+| `=>` | 辅助语法
+| `else` | 辅助语法
+
+语法：每一个` <cond clause>`必须是形式
+
+`(<test> <expression1> ...)`
+
+其中`<test>`是一个表达式。或有另一种选择，一个`<cond clause>`可以是形式
+
+`(<test> => <expression>)`
+
+最后一个`<cond clause>`可以是一个“`else`子句”，其有形式
+
+`(else <expression1> <expression2> ...)`。
+
+*语义*：一个`cond`表达式通过以下方式求值，按顺序连续地对`<test>`表达式进行求值直到它们其中一个的值是真值（见第5.7小节）。当一个`<test>`的值是真值的时候，就会顺序地对它`<cond clause>`中剩余的`<expression>`进行求值，且`<cond clause>`中最后一个`<expression>`的结果会作为整个`cond`表达式的结果被返回。如果被选择的`<cond clause>`只包含`<test>`且没有`<expression>`，那么`<test>`的值会作为结果被返回。如果被选择的`<cond clause>`使用`=>`辅助形式，
 
 
 
