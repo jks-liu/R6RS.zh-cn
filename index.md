@@ -2161,6 +2161,73 @@ null?
                 ‌⇒  #t
 ~~~
 
+在不赋值或引用任何`<variable>`的值的情况下，计算每个`<init>`应该是可能的。在`letrec`的大部分常规使用中，所有的`init`是`lambda`表达式，此时限制被自动满足。另一个限制是，每个`<init>`的继续不能被调用多于一次。
+
+*实现的责任*：实现必须在`<init>`表达式求值（使用一个特定的求值顺序且<!-- TODO -->顺序`<init>`表达式的值）期间检测`<variable>`的引用。如果实现检测到这样一个限制的违反，它必须抛出一个条件类型是`&assertion`的异常。实现可以也可以不检测每个`<init>`的继续是否被调用多于一次。可是，如果实现检测到的话，它必须抛出一个条件类型是`&assertion`的异常。
+
+`(letrec* <bindings> <body>)` 语法
+
+*语法*：`<Bindings>`必须有形式
+
+`\(\texttt{((<variable$_1$> <init$_1$>) ...)}\)`，
+
+其中，每一个`<init>`是一个表达式，且`<body>`如第11.3小节描述。在`<variable>`中任何变量不能出现超过一次。
+
+*语义*：`<Variable>`被绑定到新鲜的位置，每个`<variable>`被按从左向右的顺序分配给对应的`<init>`的求值结果，`<body>`在结果环境中被求值，且`<body>`中最后一个表达式的值被返回。尽管求值和赋值的顺序是从左向右的，但是每一个`<variable>`的绑定将整个`letrec*`表达式作为其作用域，这使得定义相互递归的过程成为可能。
+
+~~~ scheme
+(letrec* ((p
+           (lambda (x)
+             (+ 1 (q (- x 1)))))
+          (q
+           (lambda (y)
+             (if (zero? y)
+                 0
+                 (+ 1 (p (- y 1))))))
+          (x (p 5))
+          (y x))
+  y)
+                ‌⇒  5
+~~~
+
+在不赋值或引用对应的`<variable>`或任何在`<bindings>`跟随它的任何绑定的`<variable>`的值的情况下，计算每个`<init>`必须是可能的。如果实现检测到这样一个限制的违反，它必须抛出一个条件类型是`&assertion`的异常。实现可以也可以不检测每个`<init>`的继续是否被调用多于一次。可是，如果实现检测到的话，它必须抛出一个条件类型是`&assertion`的异常。
+
+`(let-values <mv-bindings> <body>)` 语法
+
+*语法*：`<Mv-bindings>`必须有形式
+
+`\(\texttt{((<formals$_1$> <init$_1$>) ...)}\)`，
+
+
+其中，每一个`<init>`是一个表达式，且`<body>`如第11.3小节描述。在`<formals>`集合中任何变量必须不能出现超过一次。
+
+*语义*：`<Init>`在当前的环境中被求值（以一些未定义的顺序），且出现在`<formals>`中的变量被绑定到包含`<init>`返回值的新鲜位置，其中`<formals>`匹配返回值就像`lambda`表达式中的`<formals>`在过程调用中匹配参数一样。然后，`<body>`在扩展后的环境中被求值，且`<body>`中最后一个表达式的值被返回。每个变量绑定将`<body>`作为它的作用域。如果`<formals>`不匹配的话，那么一个条件类型是`&assertion`的异常被抛出。
+
+~~~ scheme
+(let-values (((a b) (values 1 2))
+             ((c d) (values 3 4)))
+  (list a b c d))                ‌⇒ (1 2 3 4)
+
+(let-values (((a b . c) (values 1 2 3 4)))
+  (list a b c))                  ‌⇒ (1 2 (3 4))
+
+(let ((a 'a) (b 'b) (x 'x) (y 'y))
+  (let-values (((a b) (values x y))
+               ((x y) (values a b)))
+    (list a b x y)))             ‌⇒ (x y a b)
+~~~
+
+`(let*-values <mv-bindings> <body>)` 语法
+
+*语法*：`<Mv-bindings>`必须有形式
+
+`\(\texttt{((<formals$_1$> <init$_1$>) ...)}\)`，
+
+
+其中，每一个`<init>`是一个表达式，且`<body>`如第11.3小节描述。在每个`<formals>`中，任何变量必须不能出现超过一次。<!-- TODO：这和下面的注意矛盾 -->
+
+*语义*：`let*-value`形式类似于`let-value`，但是`<init>`被计算和绑定被创建是按从左到右的顺序进行的，每个`<formals>`绑定的作用域除了`<body>`还包括它的右边。因此，第二个`<init>`在第一个`<formals>`可见且被初始化的环境中被求值，以此类推。
+
 
 
 
