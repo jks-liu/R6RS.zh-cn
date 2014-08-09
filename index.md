@@ -2287,7 +2287,6 @@ null?
 * *Obj\\\(_1\\\)*和*obj\\\(_2\\\)*是点对，向量，字符串，或记录，或哈希表，向其内部应用相同的访问器（也就是`car`, `cdr`, `vector-ref`, `string-ref`, 或记录访问器）但产生的值在`eqv?`下返回`#f`。
 * *Obj\\\(_1\\\)*和*obj\\\(_2\\\)*是过程，但对于某些参数有不同的行为（返回不同的值或有不同的副作用）。
 
-
 <p><font size="2"><i>注意：</i>当<i>obj\(_1\)</i>和<i>obj\(_2\)</i>是数字对象时，`eqv?`过程返回`#t`并不意味着`=`在相同的<i>obj\(_1\)</i>和<i>obj\(_2\)</i>参数下也返回`#t`。</font></p>
 
 ~~~ scheme
@@ -2370,7 +2369,7 @@ null?
 (eq? "" "")                     ‌⇒  unspecified
 (eq? '() '())                   ‌⇒  #t
 (eq? 2 2)                       ‌⇒  unspecified
-(eq? #\A #\A) ‌⇒  unspecified
+(eq? #\A #\A)                   ‌⇒  unspecified
 (eq? car car)                   ‌⇒  unspecified（本条已根据勘误表修改）
 (let ((n (+ 2 3)))
   (eq? n n))                    ‌⇒  unspecified
@@ -2382,14 +2381,93 @@ null?
   (eq? p p))                    ‌⇒  unspecified
 ~~~
 
+`\(\texttt{(equal? obj$_1$ obj$_2$)}\)` 过程
 
+`equal?`谓词返回`#t`当且仅当它的参数（可能无限地）到正则树（regular trees）的展开作为有序树是一样的（ordered trees）。<!-- TODO -->
+
+`equal?`谓词对待点对和向量作为有出边（outgoing edges）的节点，使用`string=?`比较字符串，使用`bytevector=?`比较字节向量（见库的第2章），且使用`eqv?`比较其它节点。
+
+~~~ scheme
+(equal? 'a 'a)                  ‌⇒  #t
+(equal? '(a) '(a))              ‌⇒  #t
+(equal? '(a (b) c)
+        '(a (b) c))             ‌⇒  #t
+(equal? "abc" "abc")            ‌⇒  #t
+(equal? 2 2)                    ‌⇒  #t
+(equal? (make-vector 5 'a)
+        (make-vector 5 'a))     ‌⇒  #t
+(equal? '#vu8(1 2 3 4 5)
+        (u8-list->bytevector
+         '(1 2 3 4 5))          ‌⇒  #t
+(equal? (lambda (x) x)
+        (lambda (y) y))         ‌⇒  unspecified
+
+(let* ((x (list 'a))
+       (y (list 'a))
+       (z (list x y)))
+  (list (equal? z (list y x))
+        (equal? z (list x x))))             
+                                ‌‌⇒  (#t #t)
+~~~
+
+<p><font size="2"><i>注意：</i><code>equal?</code>必须总是可以终止的，哪怕它的参数存在循环。</font></p>
+
+## 11.6. 过程谓词 <!-- Procedure predicate -->
+
+`(procedure? obj)` 过程
+
+返回`#t`如果*obj*是一个过程，否则返回`#f`。
+
+~~~ scheme
+(procedure? car)            ‌⇒  #t
+(procedure? 'car)           ‌⇒  #f
+(procedure? (lambda (x) (* x x)))   
+                            ‌⇒  #t
+(procedure? '(lambda (x) (* x x)))  
+                            ‌⇒  #f
+~~~
+
+## 11.7. 算术（Arithmetic）
+
+这里描述的过程实现了在第3章描述的数值塔上通用的算术。本节描述的通用过程既接受精确数也接受非精确数对象作为其参数，并根据它们参数的数值子类型执行强制转换和选取适当的操作。
+
+库的第11章描述了定义其它数值过程的库。
+
+### 11.7.1. 精确性和非精确性的传播 <!-- Propagation of exactness and inexactness -->
+
+下面列出的过程在传递给它们的参数都是精确的时候必须返回数学上正确的精确结果：
+
+~~~ scheme
++            -            *
+max          min          abs
+numerator    denominator  gcd
+lcm          floor        ceiling
+truncate     round        rationalize
+real-part    imag-part    make-rectangular
+~~~
+
+下面列出的过程当传递给它们的参数都是精确的且没有除数是零的时候必须返回正确的精确结果：
+
+~~~ scheme
+/
+div          mod           div-and-mod
+div0         mod0          div0-and-mod0
+~~~
+
+此外，过程`expt`必须返回正确的精确结果，当传递给它的第一个参数是一个精确的实数对象且第二个参数是一个精确的整数对象。
+
+通用的规则是，一般操作返回正确精确的结果，当所有传递给它们的参数都是精确的且结果是数学上明确定义的，但是当任何一个参数是非精确的时候返回一个非精确结果。这条规则的例外包括`sqrt`, `exp`, `log`, `sin`, `cos`, `tan`, `asin`, `acos`, `atan`, `expt`, `make-polar`, `magnitude`, 和`angle`，其甚至可以（但不要求）在传递精确参数的时候返回非精确的结果，如这些过程的规范所示。
+
+上面规则的一个普遍的例外是，一个实现可以返回一个精确结果尽管其参数是非精确的，但这个精确的结果对于所有可能的对这个非精确参数的精确替代，都应该是正确的。一个例子是`(* 1.0 0)`，其可以返回`0`（精确地）或`0.0`（非精确的）。
+
+### 11.7.2. 无穷大和非数的表示性（Representability）<!-- of infinities and NaNs -->
 
 
 
 
 
 <!--
-  （勘误：11.6）
+  （勘误：11.6（9），11.7.4）
 
   TODO：将逗号由中文改为英文
 -->
