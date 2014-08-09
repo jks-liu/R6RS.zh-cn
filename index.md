@@ -14,7 +14,7 @@ tagline: R6RS简体中文翻译
 **<center>2007年09月26日</center>**
 
 [<center>在GitHub联系译者</center>](https://github.com/jks-liu/R6RS.zh-cn)
-<center>已完成35%，最后修改于2014年08月07日</center>
+<center>已完成38%，最后修改于2014年08月09日</center>
 
 # 摘要 <!-- SUMMARY -->
 
@@ -2290,7 +2290,97 @@ null?
 
 <p><font size="2"><i>注意：</i>当<i>obj\(_1\)</i>和<i>obj\(_2\)</i>是数字对象时，`eqv?`过程返回`#t`并不意味着`=`在相同的<i>obj\(_1\)</i>和<i>obj\(_2\)</i>参数下也返回`#t`。</font></p>
 
+~~~ scheme
+(eqv? 'a 'a)                     ‌⇒  #t
+(eqv? 'a 'b)                     ‌⇒  #f
+(eqv? 2 2)                       ‌⇒  #t
+(eqv? '() '())                   ‌⇒  #t
+(eqv? 100000000 100000000)       ‌⇒  #t
+(eqv? (cons 1 2) (cons 1 2))     ‌⇒  #f
+(eqv? (lambda () 1)
+      (lambda () 2))             ‌⇒  #f
+(eqv? #f 'nil)                   ‌⇒  #f
+~~~
 
+下面的例子展示了上面的规则没有完全定义的`eqv?`的行为。对于这些情况，我们只能说`eqv?`的返回值必须是一个布尔。
+
+~~~ scheme
+(let ((p (lambda (x) x)))
+  (eqv? p p))                    ‌⇒  unspecified
+(eqv? "" "")                     ‌⇒  unspecified
+(eqv? '#() '#())                 ‌⇒  unspecified
+(eqv? (lambda (x) x)
+      (lambda (x) x))            ‌⇒  unspecified
+(eqv? (lambda (x) x)
+      (lambda (y) y))            ‌⇒  unspecified
+(eqv? +nan.0 +nan.0)             ‌⇒  unspecified
+~~~
+
+下面的例子集合展示了对有本地状态的过程使用`eqv?`的情况。对`gen-counter`的每一次调用都必须付汇一个不同的过程，因为每个过程都有它自己内部的计数。`gen-loser`的调用返回的过程被调用的时候行为是一样的。然而，`eqv?`可以不检测这种相等。
+
+~~~ scheme
+(define gen-counter
+  (lambda ()
+    (let ((n 0))
+      (lambda () (set! n (+ n 1)) n))))
+(let ((g (gen-counter)))
+  (eqv? g g))           ‌⇒  unspecified
+(eqv? (gen-counter) (gen-counter))
+                        ‌⇒  #f
+
+(define gen-loser
+  (lambda ()
+    (let ((n 0))
+      (lambda () (set! n (+ n 1)) 27))))
+(let ((g (gen-loser)))
+  (eqv? g g))           ‌⇒  unspecified
+(eqv? (gen-loser) (gen-loser))
+                        ‌⇒  unspecified
+
+(letrec ((f (lambda () (if (eqv? f g) 'both 'f)))
+         (g (lambda () (if (eqv? f g) 'both 'g))))
+  (eqv? f g)) ‌⇒  unspecified
+
+(letrec ((f (lambda () (if (eqv? f g) 'f 'both)))
+         (g (lambda () (if (eqv? f g) 'g 'both))))
+  (eqv? f g))           ‌⇒  #f
+~~~
+
+实现可以在适当的时候在常量间共享结构。（根据勘误表，此处省略一句话。）因此，作用在常量上的`eqv?`的返回值有时是实现定义的。
+
+~~~ scheme
+(eqv? '(a) '(a))                 ‌⇒  unspecified
+(eqv? "a" "a")                   ‌⇒  unspecified
+(eqv? '(b) (cdr '(a b)))         ‌⇒  unspecified
+(let ((x '(a)))
+  (eqv? x x))                    ‌⇒  #t
+~~~
+
+`\(\texttt{(eq? obj$_1$ obj$_2$)}\)` 过程
+
+`eq?`谓词和`eqv?`类似，除了在一些情况其识别差别的能力比`eqv?`更加精细之外。
+
+`eq?`和`eqv?`确保在符号，布尔，空表，点对，过程，非空字符串，字节向量，和向量，以及记录的行为是一样的。`eq?`在数字对象，字符上的行为是实现定义的，但是它总是或者返回`#t`或者返回`#f`，且只有当`eqv?`返回`#t`时它才有可能返回`#t`。`eq?`谓词在空表，空向量，空字节向量和空字符串上的行为也可以是不一样的。
+
+~~~ scheme
+(eq? 'a 'a)                     ‌⇒  #t
+(eq? '(a) '(a))                 ‌⇒  unspecified
+(eq? (list 'a) (list 'a))       ‌⇒  #f
+(eq? "a" "a")                   ‌⇒  unspecified
+(eq? "" "")                     ‌⇒  unspecified
+(eq? '() '())                   ‌⇒  #t
+(eq? 2 2)                       ‌⇒  unspecified
+(eq? #\A #\A) ‌⇒  unspecified
+(eq? car car)                   ‌⇒  unspecified（本条已根据勘误表修改）
+(let ((n (+ 2 3)))
+  (eq? n n))                    ‌⇒  unspecified
+(let ((x '(a)))
+  (eq? x x))                    ‌⇒  #t
+(let ((x '#()))
+  (eq? x x))                    ‌⇒  unspecified
+(let ((p (lambda (x) x)))
+  (eq? p p))                    ‌⇒  unspecified
+~~~
 
 
 
@@ -2299,7 +2389,7 @@ null?
 
 
 <!--
-  （勘误：11.5）
+  （勘误：11.6）
 
   TODO：将逗号由中文改为英文
 -->
