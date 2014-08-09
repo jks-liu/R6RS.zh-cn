@@ -2462,6 +2462,143 @@ div0         mod0          div0-and-mod0
 
 ### 11.7.2. 无穷大和非数的表示性（Representability）<!-- of infinities and NaNs -->
 
+数值操作的规范被书写就好像无穷大和非数是可以表示的，且指定许多操作，这些操作和数字对象相关，其在方法上和IEEE-754的二进制浮点算术标准相一致。Scheme的一个实现可以也可以不表示无穷大和非数；可是，一个实现必须抛出一个可继续的条件类型是`&no-infinities`或`&no-nans`（分别地见库的第11.3小节）的异常，在任何不能表示一个按规范说明的无穷大或非数的时候。在这种情况下，异常处理程序的继续是一个可以接受无穷大或非数的继续。这个要求也适用于数字对象和外部表示之间的转换，包括读取程序源代码。
+
+### 11.7.3 常用操作的语义 <!-- Semantics of common operations -->
+
+一些操作是几个算术过程的语义基础。本节描述的这些操作的行为用作以后的参考。
+
+#### 11.7.3.1. 整数除法 <!-- Integer division -->
+
+Scheme执行整数除法的操作依赖于数学操作*div*, *mod*, *div\\\(_0\\\)*, 和*mod\\\(_0\\\)*，它们定义如下：
+
+*div*, *mod*, *div\\\(_0\\\)*, 和*mod\\\(_0\\\)*每个都接受两个实数*x\\\(_1\\\)*和*x\\\(_2\\\)*做为操作数，其中*x\\\(_2\\\)*必须是非零。
+
+*div*返回一个整数，*mod*返回一个实数。它们的结果规定如下：
+
+$$
+\begin{eqnarray*}
+x_1~\mathrm{div}~x_2 &=& n_d\\
+x_1~\mathrm{mod}~x_2 &=& x_m
+\end{eqnarray*}
+$$
+
+其中
+
+$$
+\begin{array}{c}
+x_1 = n_d \cdot x_2 + x_m\\
+0 \leq x_m < |x_2|
+\end{array}
+$$
+
+例子：
+
+$$
+\begin{eqnarray*}
+123~\mathrm{div}~10    &=&  12\\
+123~\mathrm{mod}~10    &=&  3\\
+123~\mathrm{div}~\textrm{$-10$}   &=&  -12\\
+123~\mathrm{mod}~\textrm{$-10$}   &=&  3\\
+-123~\mathrm{div}~10    &=&  -13\\
+-123~\mathrm{mod}~10    &=&  7\\
+-123~\mathrm{div}~\textrm{$-10$}   &=&  13\\
+-123~\mathrm{mod}~\textrm{$-10$}   &=&  7
+\end{eqnarray*}
+$$
+
+*div\\\(_0\\\)*和*mod\\\(_0\\\)*与*div*和*mod*类似，除了*mod\\\(_0\\\)*的结果在一个以零为中点的半开的区间中。它们的结果规定如下：
+
+$$
+\begin{eqnarray*}
+x_1~\mathrm{div}_0~x_2 &=& n_d\\
+x_1~\mathrm{mod}_0~x_2 &=& x_m
+\end{eqnarray*}
+$$
+
+其中
+
+$$
+\begin{array}{c}
+x_1 = n_d \cdot x_2 + x_m\\
+-|\frac{x_2}{2}| \leq x_m < |\frac{x_2}{2}|
+\end{array}
+$$
+
+例子：
+
+$$
+\begin{eqnarray*}
+123~\mathrm{div}_0~10    &=&  12\\
+123~\mathrm{mod}_0~10    &=&  3\\
+123~\mathrm{div}_0~\textrm{$-10$}   &=&  -12\\
+123~\mathrm{mod}_0~\textrm{$-10$}   &=&  3\\
+-123~\mathrm{div}_0~10    &=&  -12\\
+-123~\mathrm{mod}_0~10    &=&  -3\\
+-123~\mathrm{div}_0~\textrm{$-10$}   &=&  12\\
+-123~\mathrm{mod}_0~\textrm{$-10$}   &=&  -3
+\end{eqnarray*}
+$$
+
+#### 11.7.3.2. 超越函数（Transcendental functions）
+
+
+通常，超越函数`\(\log\)`, `\(\sin^{-1}\)`
+(arcsine), `\(\cos^{-1}\)` (arccosine), 和`\(\tan^{-1}\)`是多重定义的。`\(\log z\)`被定义为虚部的值域是`\(-\pi\)`（包括，如果区分`-0.0`的话，否则不包括）到`\(\pi\)`（包括）。`\(\log 0\)`是未定义的。
+
+对于非实数的`\(z\)`，`\(\log z\)`根据实数上的log定义如下
+
+$$
+\log z = \log |z| + (\mathrm{angle}~z)i
+$$
+
+其中`\(\mathrm{angle}~z\)`是`\(z = a\cdot e^{ib}\)`按如下方式指定的角
+
+$$\mathrm{angle}~z = b+2\pi n$$
+
+其中，`\(-\pi \leq \mathrm{angle}~z\leq \pi\)`，且对某些整数`\(n\)`，`\(\mathrm{angle}~z = b+2\pi n\)`。
+
+在一个参数log定义版本的基础上，两参数版本`\(\log\)`, `\(\sin^{-1} z\)`, `\(\cos^{-1} z\)`,
+`\(\tan^{-1} z\)`, 和两参数版本`\(\tan^{-1}\)`的值可以根据下列公式定义：
+
+$$
+\begin{eqnarray*}
+\log z~b &=& \frac{\log z}{\log b}\\
+\sin^{-1} z &=& -i \log (i z + \sqrt{1 - z^2})\\
+\cos^{-1} z &=& \pi / 2 - \sin^{-1} z\\
+\tan^{-1} z &=& (\log (1 + i z) - \log (1 - i z)) / (2 i)\\
+\tan^{-1} x~y &=& \mathrm{angle}(x+ yi)
+\end{eqnarray*}
+$$
+
+`\(\tan^{-1} x~y\)`的值域如下表所示。星号（*）指示这个条目适用于区别负零的实现。
+
+$$
+\begin{array}{clll}
+& y \texttt{条件} & x \texttt{条件} & \texttt{结果$r$的值域}\\\hline
+& y = 0.0 & x > 0.0 & 0.0\\
+\ast & y = +0.0  & x > 0.0 & +0.0\\     
+\ast & y = -0.0 & x > 0.0 & -0.0\\
+& y > 0.0 & x > 0.0 & 0.0 < r < \frac{\pi}{2}\\
+& y > 0.0 & x = 0.0 & \frac{\pi}{2}\\
+& y > 0.0 & x < 0.0 & \frac{\pi}{2} < r < \pi\\
+& y = 0.0 & x < 0 & \pi\\
+\ast & y = +0.0 & x < 0.0 & \pi\\
+\ast & y = -0.0 & x < 0.0 & -\pi\\      
+&y < 0.0 & x < 0.0 & -\pi< r< -\frac{\pi}{2}\\
+&y < 0.0 & x = 0.0 & -\frac{\pi}{2}\\
+&y < 0.0 & x > 0.0 & -\frac{\pi}{2} < r< 0.0\\    
+&y = 0.0 & x = 0.0 & \texttt{未定义}\\
+\ast& y = +0.0 & x = +0.0 & +0.0\\
+\ast& y = -0.0 & x = +0.0& -0.0\\
+\ast& y = +0.0 & x = -0.0 & \pi\\
+\ast& y = -0.0 & x = -0.0 & -\pi\\
+\ast& y = +0.0 & x = 0 & \frac{\pi}{2}\\
+\ast& y = -0.0 & x = 0    & -\frac{\pi}{2}
+\end{array}
+$$
+
+
 
 
 
