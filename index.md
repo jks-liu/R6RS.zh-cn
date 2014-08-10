@@ -2598,9 +2598,55 @@ $$
 \end{array}
 $$
 
+### 11.7.4. 数值操作 <!-- Numerical operations -->
 
+#### 11.7.4.1. 数值类型谓词 <!-- Numerical type predicates -->
 
+| `(number? obj)` | 过程
+| `(complex? obj)` | 过程
+| `(real? obj)` | 过程
+| `(rational? obj)` | 过程
+| `(integer? obj)` | 过程
 
+这些数值类型谓词可以被应用于任何类型的参数。如果对象是命名类型的数字对象，它们返回`#t`，否则返回`#f`。通常，如果一个类型谓词对一个数字对象返回真，那么，所有更高的类型谓词对那些数字对象也返回真。因此，如果一个类型谓词对一个数字对象返回假，那么，所有更低的类型谓词对那些数字对象也返回假。
+
+如果*z*是一个复数对象，那么`(real? z)`为真，当且仅当`(zero? (imag-part z))`和`(exact? (imag-part z))`同时为真。
+
+如果*x*是一个实数对象，那么`(rational? x)`为真，当且仅当存在精确的整数对象*k\\\(_1\\\)*和*k\\\(_2\\\)*使得`\(\texttt{(= x (/ k$_1$ k$_2$))}\)`和`\(\texttt{(= (numerator x) k$_1$)}\)`和`\(\texttt{(= (denominator x) k$_2$)}\)`都为真。因此，无限大和非数不是有理数对象。
+
+如果*q*是一个有理数字对象，那么，`(integer? q)`为真，当且仅当如果`(= (denominator q) 1)`为真。如果*q*不是一个有利数字对象，那么`(integer? q)`是`#f`。
+
+~~~ scheme
+(complex? 3+4i)                        ‌⇒  #t
+(complex? 3)                           ‌⇒  #t
+(real? 3)                              ‌⇒  #t
+(real? -2.5+0.0i)                      ‌⇒  #f
+(real? -2.5+0i)                        ‌⇒  #t
+(real? -2.5)                           ‌⇒  #t
+(real? #e1e10)                         ‌⇒  #t
+(rational? 6/10)                       ‌⇒  #t
+(rational? 6/3)                        ‌⇒  #t
+(rational? 2)                          ‌⇒  #t
+(integer? 3+0i)                        ‌⇒  #t
+(integer? 3.0)                         ‌⇒  #t
+(integer? 8/4)                         ‌⇒  #t
+(number? +nan.0)                       ‌⇒  #t
+(complex? +nan.0)                      ‌⇒  #t
+(real? +nan.0)                         ‌⇒  #t
+(rational? +nan.0)                     ‌⇒  #f
+(complex? +inf.0)                      ‌⇒  #t
+(real? -inf.0)                         ‌⇒  #t
+(rational? -inf.0)                     ‌⇒  #f
+(integer? -inf.0)                      ‌⇒  #f
+~~~
+
+<p><font size="2"><i>注意：</i>除了<code>number?</code>之外，这些类型谓词的行为在非精确数字对象上是不可靠的，因为任何不精确都可以影响结果。</font></p>
+
+| `(real-valued? obj)` | 过程
+| `(rational-valued? obj)` | 过程
+| `(integer-valued? obj)` | 过程
+
+这些数值类型谓词可被应用于任何类型的参数。`real-valued?`过程返回`#t`，如果这个对象是一个数字对象且在`=`的意义上等于某个实数对象，或如果这个对象是一个非数，或一个实部是非数虚部在`zero?`的意义上是零的复数对象，
 
 
 <!--
