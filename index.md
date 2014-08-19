@@ -14,7 +14,7 @@ tagline: R6RS简体中文翻译
 **<center>2007年09月26日</center>**
 
 [<center>在GitHub联系译者</center>](https://github.com/jks-liu/R6RS.zh-cn)
-<center>已完成38%，最后修改于2014年08月09日</center>
+<center>已完成42%，最后修改于2014年08月19日</center>
 
 # 摘要 <!-- SUMMARY -->
 
@@ -2254,9 +2254,9 @@ null?
   and prints  4 plus 1 equals 5
 ~~~
 
-## 11.5 等价谓词 <!-- Equivalence predicates -->
+## 11.5 等价谓词 {#s11-5}
 
-一个*谓词*是一个总是返回布尔值（`#t`或`#f`）的过程。一个*等价谓词*在计算上模拟数学上的等价关系（它是对称的（symmetric），自反的（reflexive），且传递的（transitive））。在本节表述的等价谓词中，`eq?`是最好或最精细的，`equal?`是最粗糙的。`eqv?`比`eq?`的辨别能力稍差。
+一个*谓词*是一个总是返回布尔值（`#t`或`#f`）的过程。一个*等价谓词*在计算上模拟数学上的等价关系（它是[对称的（symmetric），自反的（reflexive），且传递的（transitive）](/r6rs-translation-experience/#symmetric-reflexive-transitive)）。在本节表述的等价谓词中，`eq?`是最好或最精细的，`equal?`是最粗糙的。`eqv?`比`eq?`的辨别能力稍差。
 
 `\(\texttt{(eqv? obj$_1$ obj$_2$)}\)` 过程
 
@@ -2648,11 +2648,123 @@ $$
 
 这些数值类型谓词可被应用于任何类型的参数。`real-valued?`过程返回`#t`，如果这个对象是一个数字对象且在`=`的意义上等于某个实数对象，或如果这个对象是一个非数，或一个实部是非数虚部在`zero?`的意义上是零的复数对象。`rational-valued?`和`integer-valued?`过程返回`#t`，如果这个对象是一个数字对象，且在`=`的意义下等于名字中的类型的某些对象，否则返回`#f`。
 
+~~~ scheme
+(real-valued? +nan.0)                  ‌⇒  #t
+(real-valued? +nan.0+0i)               ‌⇒  #t
+(real-valued? -inf.0)                  ‌⇒  #t
+(real-valued? 3)                       ‌⇒  #t
+(real-valued? -2.5+0.0i)               ‌⇒  #t
+(real-valued? -2.5+0i)                 ‌⇒  #t
+(real-valued? -2.5)                    ‌⇒  #t
+(real-valued? #e1e10)                  ‌⇒  #t
+(rational-valued? +nan.0)              ‌⇒  #f
+(rational-valued? -inf.0)              ‌⇒  #f
+(rational-valued? 6/10)                ‌⇒  #t
+(rational-valued? 6/10+0.0i)           ‌⇒  #t
+(rational-valued? 6/10+0i)             ‌⇒  #t
+(rational-valued? 6/3)                 ‌⇒  #t
+(integer-valued? 3+0i)                 ‌⇒  #t
+(integer-valued? 3+0.0i)               ‌⇒  #t
+(integer-valued? 3.0)                  ‌⇒  #t
+(integer-valued? 3.0+0.0i)             ‌⇒  #t
+(integer-valued? 8/4)                  ‌⇒  #t
+~~~
+
+<p><font size="2"><i>注意：</i>这些过程测试一个给定的数字对象在住损失数值精度的情况下是否可以被正确地转换为指定的类型。特别地，这些谓词的行为和<code>real?</code>, <code>rational?</code>, 和<code>integer?</code>在虚部是非精确的零的复数对象上的行为是不一样的。</font></p>
+
+<p><font size="2"><i>注意：</i>这些类型谓词在非精确数字对象上的行为是不可靠的，这是因为任何的非精确可能影响结果。</font></p>
+
+| `(exact? z)`‌‌ | 过程 
+| `(inexact? z)‌‌` | 过程
+
+这些数值谓词给出了量的精确性的测试。对任意的数字对象，有且只有一个谓词的值为真。
+
+~~~ scheme 
+(exact? 5)                   ‌⇒  #t
+(inexact? +inf.0)            ‌⇒  #t
+~~~
+
+#### 11.7.4.2. 通用转换 {#s11-7-4-2}
+
+| `(inexact z)‌‌` | 过程
+| `(exact z)`‌‌ | 过程 
+
+`inexact`过程返回`z`的非精确表示。如果适当类型的非精确数字对象被绑定了精度，那么，返回值是一个接近参数的非精确数字对象。如果一个精确参数没有合理地接近非精确等价物，那么一个条件类型是`&implementation-violation`的异常可以被抛出。
+
+<p><font size="2"><i>注意：</i>对于一个量级有限的实数对象，如果它大到以至于没有合理的作为一个非精确数的合理的近似，一个合理的非精确等价物可以是<code>+inf.0</code>或<code>-inf.0</code>。类似地，一个各部分都是有限的复数对象的非精确表示可以有无限的部分。</font></p>
+
+`exact`过程返回`z`的一个精确表示。返回值是数值上最接近于参数的精确数字对象；在大部分情况下，这个过程的结果应当在数值上等于它的参数。如果一个非精确参数没有合理的精确等价物，那么一个条件类型是`&implementation-violation`的异常可以被抛出。
+
+这些过程在一个实现定义的范围中实现了精确和非精确整数对象的自然的一一对应。
+
+`inexact`和`exact`过程是[幂等（idempotent）](/r6rs-translation-experience/#idempotent)的。
+
+#### 11.7.4.3. 算术操作 {#s11-7-4-3}
+
+| `\(\texttt{(= z$_1$ z$_2$ z$_3$ ...)}\)` | 过程
+| `\(\texttt{(< x$_1$ x$_2$ x$_3$ ...)}\)` | 过程
+| `\(\texttt{(> x$_1$ x$_2$ x$_3$ ...)}\)` | 过程
+| `\(\texttt{(<= x$_1$ x$_2$ x$_3$ ...)}\)` | 过程
+| `\(\texttt{(>= x$_1$ x$_2$ x$_3$ ...)}\)` | 过程
+
+这些过程返回`#t`，如果它们的参数（分别地）：相等，单调递增，单调递减，单调非递减，单调非递增，其它情况返回`#f`。
+
+~~~ scheme
+(= +inf.0 +inf.0)           ‌⇒  #t
+(= -inf.0 +inf.0)           ‌⇒  #f
+(= -inf.0 -inf.0)           ‌⇒  #t
+~~~
+
+对于任何的既不是无穷大也不是非数的实数对象`x`（以下条目已根据勘误表修改）：
+
+~~~ scheme
+(< -inf.0 x +inf.0))        ‌⇒  #t
+(> +inf.0 x -inf.0))        ‌⇒  #t
+~~~
+
+对任何数字对象`z`：
+
+~~~ scheme
+(= +nan.0 z)               ‌⇒  #f
+~~~
+
+对任何实数对象`x`，
+
+~~~ scheme
+(< +nan.0 x)               ‌⇒  #f
+(> +nan.0 x)               ‌⇒  #f
+~~~
+
+这些谓词必须是[传递的](/r6rs-translation-experience/#symmetric-reflexive-transitive)。
+
+<p><font size="2"><i>注意：</i>这些谓词在类Lisp语言的传统实现中不是传递的。</font></p>
+
+<p><font size="2"><i>注意：</i>尽管用这些谓词比较非精确数字对象是可以的，但是，结果可能是不可靠的，这时因为很小的不精确都可能影响结果；对`=`和`zero?`（下面）尤其是这样。<br>
+如果有疑问的话，请咨询数值分析师。
+</font></p>
+
+| `(zero? z)` | 过程
+| `(positive? x)` | 过程
+| `(negative? x)` | 过程
+| `(odd? n)` | 过程
+| `(even? n)` | 过程
+| `(finite? x)` | 过程
+| `(infinite? x)` | 过程
+| `(nan? x)` | 过程
+
+这些数值谓词测试一个数字对象的一个特定的属性，返回`#t`或`#f`。`zero?`过程
+
+
+
+
+
 
 <!--
   （勘误：11.6（9），11.7.4）
-
   TODO：将逗号由中文改为英文
+  TEMPLATE: 
+<p><font size="2"><i>注意：</i></font></p>
+/r6rs-translation-experience/
 -->
 
 # 附录E 语言的变化 <!-- Language changes -->
