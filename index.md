@@ -3067,12 +3067,100 @@ $$
 (expt 0.0 0.0)              ‌⇒  1.0
 ~~~
 
+| `\(\texttt{(make-rectangular x$_1$ x$_2$)}\)` | 过程
+| `\(\texttt{(make-polar x$_3$ x$_4$)}\)` | 过程
+| `\(\texttt{(real-part z)}\)` | 过程
+| `\(\texttt{(imag-part z)}\)` | 过程
+| `\(\texttt{(magnitude z)}\)` | 过程
+| `\(\texttt{(angle z)}\)` | 过程
+
+假设\\(a_1\\)，\\(a_2\\)，\\(a_3\\)和\\(a_4\\)是实数，且*c*是一个复数，那么下面的式子成立：
+
+$$c = a_1 + a_2 i = a_3 e^{i a_4}$$
+
+如果\\(x_1\\)，\\(x_2\\)，\\(x_3\\)和\\(x_4\\)分别是表示\\(a_1\\)，\\(a_2\\)，\\(a_3\\)和\\(a_4\\)的数字对象，那么，`\(\texttt{(make-rectangular $x_1$ $x_2$}\)`返回*c*，`\(\texttt{(make-polar $x_3$ $x_4$)}\)`也返回*c*。
+
+~~~ scheme
+(make-rectangular 1.1 2.2) 
+‌‌          ⇒ 1.1+2.2i ; 大约
+(make-polar 1.1 2.2) 
+‌‌          ⇒ 1.1@2.2 ; 大约
+~~~
+
+对应地，如果`\(-\pi \leq a_4 \leq \pi\)`，且如果*z*是一个表示*c*的数字对象，那么`(real-part z)`返回\\(a_1\\)，`(imag-part z)`返回\\(a_2\\)，`(magnitude z)`返回\\(a_3\\)，`(angle z)`返回\\(a_4\\)。
+
+~~~ scheme
+(real-part 1.1+2.2i)              ‌⇒ 1.1 ; 大约
+(imag-part 1.1+2.2i)              ‌⇒ 2.2 ; 大约（本条已根据勘误表修改）
+(magnitude 1.1@2.2)               ‌⇒ 1.1 ; 大约
+(angle 1.1@2.2)                   ‌⇒ 2.2 ; 大约
+(angle -1.0)         
+‌‌                    ⇒ 3.141592653589793 ; 大约
+(angle -1.0+0.0i)    
+‌‌                    ⇒ 3.141592653589793 ; 大约
+(angle -1.0-0.0i)    
+‌‌                    ⇒ -3.141592653589793 ; 大约
+                    ; 如果区别-0.0的话
+(angle +inf.0)      ‌⇒ 0.0
+(angle -inf.0)       
+‌‌                    ⇒ 3.141592653589793 ; 大约
+~~~
+
+此外，假设\\(x_1\\)和\\(x_2\\)是这样的，\\(x_1\\)，\\(x_2\\)其中一个是无穷大，那么
+
+~~~ scheme
+(make-rectangular \(x_1\) \(x_2\)) ‌  ⇒ z
+(magnitude z)               ‌⇒ +inf.0
+~~~
+
+`make-polar`，`magnitude`和`angle`过程可以返回非精确的结果甚至当传递精确参数的时候。
+
+~~~ scheme
+(angle -1)                    
+‌‌            ⇒ 3.141592653589793 ; 大约
+~~~
+
+#### 11.7.4.4. 数值输入和输出 {#s11-7-4-4}
+
+| `(number->string z)` | 过程
+| `(number->string z radix)` | 过程
+| `(number->string z radix precision)` | 过程
+
+*Radix（基数）*必须是一个精确的整数对象，可以是2，8，10或16。如果省略的话，*radix*默认是10。如果一个*precision（精度）*被指定的话，那么*z*必须是一个非精确的复数对象，*precision*必须是一个精确的整数对象，且*radix*必须是10。`number->string`过程接受一个数字对象和一个基数且在给定的基数下返回一个作为传入的数字对象的外部表示的字符串，使得
+
+~~~ scheme
+(let ((number z) (radix radix))
+  (eqv? (string->number
+          (number->string number radix)
+          radix)
+        number))
+~~~
+
+为真。如果没有可能的结果让这个表达式为真，那么一个条件类型是`&implementation-restriction`的异常被抛出。
+
+<p><font size="2"><i>注意：</i>错误情况只会出现在当<i>z</i>不是一个复数对象或是一个实部或虚部是非有理的时候。</font></p>
+
+如果一个*precision*被指定，那么结果的非精确实部<!-- TODO -->的表示指定一个显式的`<mantissa width>`*p*，除非它们是无穷大或非数，且为了上面的表达式为真*p*至少是*p* ≥ *precision*。
+
+如果*z*是非精确的，基数是10，且上面的表达式和条件可以被一个包含小数点的结果满足，那么这个结果包含小数点且使用能让上面表达式和条件为真的最少的数字表示[^4][^7]（不包括指数，尾部的零，和位数宽度）；否则结果的格式是未定义的。
+
+`number->string`的结果从不包含一个显式的基数前缀。
+
+| `(string->number string)` | 过程
+| `(string->number string radix)` | 过程
+
+返回*string*表示的最大精度的数字对象。*Radix*必须是一个必须是一个精确的整数对象，可以是2，8，10或16。如果提供的话，*radix*是可以被字符串中的显式的基数前缀（比如，`"#o177"`）覆盖的默认基数。如果*radix*没有被提供，那么默认的基数是10.如果*string*不是一个语法上合法的数字对象的表示或者不是一个零分母的实数对象的符号，那么`string->number`返回`#f`。
+
+
+
 
 
 
 <!--
   （勘误：11.6（9），11.7.4）
   TEMPLATE: 
+`\(\)`
+`\(\texttt{}\)`
 <p><font size="2"><i>注意：</i></font></p>
 /r6rs-translation-experience/
   TODO：将逗号由中文改为英文
