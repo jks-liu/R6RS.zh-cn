@@ -3161,7 +3161,7 @@ $$c = a_1 + a_2 i = a_3 e^{i a_4}$$
 (string->number "+nan.0")              ‌⇒  +nan.0
 ~~~
 
-<p><font size="2"><i>注意（已根据勘误表修改）：</i>如果<code>string->number</code>的参数是一个字符串，且指定了一个合法的基数，它必须返回一个数字对象或<code>#f</code>；它不可以抛出一个异常。<br>（也就是说，<code>string->number</code>可以在它的参数不是一个字符串时抛出一个异常。）</font></p>
+<p><font size="2"><i>注意（已根据勘误表修改<!-- TODO：JFP的勘误表错把它标到第11.6节 -->）：</i>如果<code>string->number</code>的参数是一个字符串，且指定了一个合法的基数，它必须返回一个数字对象或<code>#f</code>；它不可以抛出一个异常。<br>（也就是说，<code>string->number</code>可以在它的参数不是一个字符串时抛出一个异常。）</font></p>
 
 ## 11.8. 布尔 {#s11-8}
 
@@ -3275,12 +3275,101 @@ $$c = a_1 + a_2 i = a_3 e^{i a_4}$$
 | `(cdddar pair)` | **过程**
 | `(cddddr pair)` | **过程**
 
+这些过程是`car`和`cdr`的组合。例如，`caddr`可定义为：
+
+`(define caddr (lambda (x) (car (cdr (cdr x)))))`。
+
+Scheme提供最高可达四层的任意组合。总共有二十八个这样的过程。
+
+`(null? obj)` 过程
+
+如果*obj*是一个空表则返回`#t`，否则返回`#f`。
+
+`(list? obj)` 过程
+
+如鞥*obj*是一个表则返回`#t`，否则返回`#f`。按照定义，所有的表都是长度有限且以空表结尾的点对链。
+
+~~~ scheme
+(list? '(a b c))     ‌⇒  #t
+(list? '())          ‌⇒  #t
+(list? '(a . b))     ‌⇒  #f
+~~~
+
+`(list obj ...)` 过程
+
+返回新分配的它的参数的表。
+
+~~~ scheme
+(list 'a (+ 3 4) 'c)            ‌⇒  (a 7 c)
+(list)                          ‌⇒  ()
+~~~
+
+`(length list)` 过程
+
+返回表的长度。
+
+~~~ scheme
+(length '(a b c))               ‌⇒  3
+(length '(a (b) (c d e)))       ‌⇒  3
+(length '())                    ‌⇒  0
+~~~
+
+| `(append list ... obj)` | 过程
+| `(append)` | 过程（根据勘误表添加）
+
+返回一个可能的非严格表，其包含第一个*list*以及跟在其后的其它*list*的元素，*obj*作为最后点对的cdr域。如果*obj*不是一个表，那么结果是一个非严格表。如果在没有参数的情况下调用，`append`过程返回空表。
+
+~~~ scheme
+(append '(x) '(y))              ‌⇒  (x y)
+(append '(a) '(b c d))          ‌⇒  (a b c d)
+(append '(a (b)) '((c)))        ‌⇒  (a (b) (c))
+(append '(a b) '(c . d))        ‌⇒  (a b c . d)
+(append '() 'a)                 ‌⇒  a
+(append)                        ‌⇒  ()
+(append 'a)                     ‌⇒ a
+~~~
+
+如果`append`包含非空的点对链，它总是新分配。如果没有点对被分配，*obj*被返回。返回值由所有参数的新的点对组成，除了最后一个参数；最后一个参数仅仅是被放在新的结构的结尾（本句根据勘误表添加）。
+
+`(reverse list)` 过程
+
+返回一个新分配的表，其以逆序的方式包含*list*中的元素。
+
+~~~ scheme
+(reverse '(a b c))              ‌⇒  (c b a)
+(reverse '(a (b c) d (e (f))))  
+‌‌                    ⇒  ((e (f)) d (b c) a)
+~~~
+
+`(list-tail list k)` 过程
+
+*List*应该是一个长度至少是*k*的表。`list-tail`过程返回*list*点对的子链，通过省略前*k*个元素获得。
+
+`(list-tail '(a b c d) 2)                 ‌⇒  (c d)`
+
+*实现限制：*实现必须检测*list*至少是长度*k*的点对的链。它不需要检查超过这个长度的点对的链。
+
+`(list-ref list k)` 过程
+
+*List*必须是一个长度至少是*k + 1*的表。`list-ref`过程返回*list*的第k个元素（已根据勘误表修改<!-- TODO：勘误表错把这个标到了第11.6节。 -->）。
+
+`(list-ref '(a b c d) 2)                 ‌⇒ c`
+
+*实现限制：*实现必须检测*list*至少是长度*k + 1*的点对的链。它不需要检查超过这个长度的点对的链。
+
+`\(\texttt{(map proc $list_1$ $list_2$ ...)}\)` 过程
+
+所有的*list*应该有相同的长度。*Proc*应该接受和*list*一样多的参数且返回一个单独的值。*Proc*不应该更改任何一个*list*。
+
+
+
+
 
 
 
 
 <!--
-  勘误：11.6（9）
+  勘误：11.17
   TEMPLATE: 
 `\(\)`
 `\(\texttt{}\)`
