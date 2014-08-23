@@ -1909,7 +1909,7 @@ null?
 `<Formals>`必须有下列的形式之一：
 
 * `\(\texttt{(<variable$_1$> ...)}\)` :过程拥有固定数量的参数。当过程被调用时，参数将被存储在相应变量的绑定中。
-* `<variable>`:过程拥有任意数量的参数。当过程被调用时，实参的序列被转换为一个新创建的表，该表存储在󰀎variable󰀏的绑定中。
+* `<variable>`:过程拥有任意数量的参数。当过程被调用时，实参的序列被转换为一个新创建的表，该表存储在<variable>的绑定中。
 * `\(\texttt{(<variable$_1$> ... <variable$_n$> . <variable$_{n+1}$>)}\)`:如果一个由空格分隔的句点出现在最后一个变量之前，该过程就拥有n个或更多个参数，这里的n是句点前面形参的个数（至少要有一个）。存储在最后一个参数绑定中的值是一个新创建的表。除了已和其他形参匹配的所有其他实参外，剩余的实参都被存入该表中。
 
 ~~~ scheme
@@ -2881,8 +2881,8 @@ $$
 (/ 1.0 0)                              ‌⇒  +inf.0
 (/ -1 0.0)                             ‌⇒  -inf.0
 (/ +inf.0)                             ‌⇒  0.0
-(/ 0 0)                                  &assertion异常
-(/ 3 0)                                  &assertion异常
+(/ 0 0)                                ⇒  &assertion异常
+(/ 3 0)                                ⇒  &assertion异常
 (/ 0 3.5)                              ‌⇒  0.0
 (/ 0 0.0)                              ‌⇒  +nan.0
 (/ 0.0 0)                              ‌⇒  +nan.0
@@ -3287,7 +3287,7 @@ Scheme提供最高可达四层的任意组合。总共有二十八个这样的�
 
 `(list? obj)` 过程
 
-如鞥*obj*是一个表则返回`#t`，否则返回`#f`。按照定义，所有的表都是长度有限且以空表结尾的点对链。
+如果*obj*是一个表则返回`#t`，否则返回`#f`。按照定义，所有的表都是长度有限且以空表结尾的点对链。
 
 ~~~ scheme
 (list? '(a b c))     ‌⇒  #t
@@ -3347,7 +3347,7 @@ Scheme提供最高可达四层的任意组合。总共有二十八个这样的�
 
 `(list-tail '(a b c d) 2)                 ‌⇒  (c d)`
 
-*实现限制：*实现必须检测*list*至少是长度*k*的点对的链。它不需要检查超过这个长度的点对的链。
+*实现责任：*实现必须检测*list*至少是长度*k*的点对的链。它不需要检查超过这个长度的点对的链。
 
 `(list-ref list k)` 过程
 
@@ -3355,13 +3355,198 @@ Scheme提供最高可达四层的任意组合。总共有二十八个这样的�
 
 `(list-ref '(a b c d) 2)                 ‌⇒ c`
 
-*实现限制：*实现必须检测*list*至少是长度*k + 1*的点对的链。它不需要检查超过这个长度的点对的链。
+*实现责任：*实现必须检测*list*至少是长度*k + 1*的点对的链。它不需要检查超过这个长度的点对的链。
 
 `\(\texttt{(map proc $list_1$ $list_2$ ...)}\)` 过程
 
 所有的*list*应该有相同的长度。*Proc*应该接受和*list*一样多的参数且返回一个单独的值。*Proc*不应该更改任何一个*list*。
 
+`map`过程将*proc*逐个元素地应用到*list*的元素上且返回一个按顺序的结果的表。*Proc*总是在相同的`map`本身的动态环境中被调用。*proc*应用到*list*元素的顺序是未定义的。如果从`map`出现多个返回，早期返回的返回值不会被改变<!-- TODO：什么意思？ -->。
 
+~~~ scheme
+(map cadr '((a b) (d e) (g h)))   
+‌‌                        ⇒  (b e h)
+
+(map (lambda (n) (expt n n))
+     '(1 2 3 4 5))                
+‌‌                        ⇒  (1 4 27 256 3125)
+
+(map + '(1 2 3) '(4 5 6))         ‌⇒  (5 7 9)
+
+(let ((count 0))
+  (map (lambda (ignored)
+         (set! count (+ count 1))
+         count)
+       '(a b)))                 ‌⇒  (1 2) or (2 1)
+~~~
+
+*实现责任：*实现应该检查所有的*list*有相同的长度。实现必须检查在*proc*上应用了上面描述的生存期的限制。一个实现可以在应用之前检查*proc*是不是一个合适的参数。
+
+`\(\texttt{(for-each proc $list_1$ $list$2$ ...)}\)` 过程
+
+所有的*list*应该有相同的长度。*Proc*应该接受和*list*一样多的参数。*Proc*不应该更改任何一个*list*。
+
+`for-each`过程以副作用为目的将*proc*逐个元素地应用到*list*的元素上，以从第一个元素到最后一个元素的顺序。*Proc*总是在相同的`for-each`本身的动态环境中被调用<!-- TODO：意思不太明白，上面的map也是 -->。`for-each`的返回值是未定义的。
+
+~~~ scheme
+(let ((v (make-vector 5)))
+  (for-each (lambda (i)
+              (vector-set! v i (* i i)))
+            '(0 1 2 3 4))
+  v)                                ‌⇒  #(0 1 4 9 16)
+
+(for-each (lambda (x) x) '(1 2 3 4)) 
+‌‌                               ⇒ 未定义
+
+(for-each even? '()) ‌          ⇒ 未定义
+~~~
+
+*实现责任：*实现应该检查所有的*list*有相同的长度。实现必须检查在*proc*上应用了上面描述的生存期的限制。一个实现可以在应用之前检查*proc*是不是一个合适的参数。
+
+
+<p><font size="2"><i>注意：</i><code>proc</code>的实现可以也可以不在最后一个元素上对<i>proc</i>实行尾调用。</font></p>
+
+## 11.10. 符号 {#s11-10}
+
+符号是建立在如下事实上的对象，两个符号是相同的（从`eq?`，`eqv?`和`equal?`的意义来说）当且仅当它们的名字以同样的方式拼写。一个符号字面量使用`quote`形式。
+
+`(symbol? obj)` 过程
+
+如果*obj*是一个符号则返回`#t`，否则返回`#f`。
+
+~~~ scheme
+(symbol? 'foo)          ‌⇒  #t
+(symbol? (car '(a b)))  ‌⇒  #t
+(symbol? "bar")         ‌⇒  #f
+(symbol? 'nil)          ‌⇒  #t
+(symbol? '())           ‌⇒  #f
+(symbol? #f)     ‌       ⇒  #f
+~~~
+
+`(symbol->string symbol)` 过程
+
+以不可变字符串的形式返回*symbol*的名字。
+
+~~~ scheme
+(symbol->string 'flying-fish)     
+                                  ‌⇒  "flying-fish"
+(symbol->string 'Martin)          ‌⇒  "Martin"
+(symbol->string
+   (string->symbol "Malvina"))
+                                  ‌⇒  "Malvina"
+~~~
+
+`\(\texttt{(symbol=? $symbol_1$ $symbol_2$ $symbol_3$ ...)}\)`
+
+如果符号是一样的则返回`#t`，也就是说如果它们的名字拼写相同的话。
+
+`(string->symbol string)` 过程
+
+返回名字是*string*的符号。
+
+~~~ scheme
+(eq? 'mISSISSIppi 'mississippi)  
+‌‌⇒  #f
+(string->symbol "mISSISSIppi")  
+‌‌⇒the symbol with name "mISSISSIppi"
+(eq? 'bitBlt (string->symbol "bitBlt"))     
+‌‌⇒  #t
+(eq? 'JollyWog
+     (string->symbol
+       (symbol->string 'JollyWog)))  
+‌‌⇒  #t
+(string=? "K. Harper, M.D."
+          (symbol->string
+            (string->symbol "K. Harper, M.D.")))  
+‌‌⇒  #t
+~~~
+
+## 11.11. 字符 {#s11-11}
+ 
+字符是表示Unicode标量值得对象[^27]。
+
+
+<p><font size="2"><i>注意：</i>
+Unicode在最新版本的*Unicode标量值*（在0到#x10FFF之间的整数，不包括区间#xD800到#xDFFF）和人类可读“字符”直接定义了一个标准的映射。更精确地说，Unicode区别字形（glyphs），其被印刷供人类阅读，和字符（characters），其实映射到字形的抽象入口（有时那在某种程度上对周围字符敏感）。此外，标量值的不同序列有时对应于相同的字符。标量，字符，字形之间的关系是微妙和复杂的。<br>
+尽管有这样的复杂性，大部分一个有教养的人可以称之为“字符”的东西可以被单个Unicode标量值表示（尽管一些Unicode标量值的序列可以表示那个同样的字符）。比如，罗马字母，斯拉夫字母，希伯来辅音，和大部分中文字符都在这个类别中。
+Unicode标量值不包括区间#xD800到#xDFFF，其是Unicode*码位（code points）*范围的一部分。然而，这个范围内的Unicode码位，即所谓的*代理（surrogates）*，是一个UTF-16编码的人工制品，且只能出现在特定的Unicode编码中。因此，所有的字符代表码位，但是，代理码位没有字符的表示法。
+</font></p>
+
+`(char? obj)‌‌procedure` 过程
+
+如果*obj*是一个字符则返回`#t`，否则返回`#f`。
+
+| `(char->integer char)` | 过程
+| `(integer->char sv)` | 过程
+
+*Sv*必须是一个Unicode标量值，也就是说，一个属于`\(\left[0, \#x\textrm{D7FF}\right] \cup  \left[\#x\textrm{E000}, \#x\textrm{10FFFF}\right]\)`的非负精确整数对象。
+
+传递一个字符，`char->integer`以一个精确整数对象的形式返回它的Unicode标量值。对于一个Unicode标量值*sv*，`integer->char`返回与其相关的字符。
+
+~~~ scheme
+(integer->char 32) ‌        ⇒ #\space
+(char->integer (integer->char 5000))
+‌                           ⇒ 5000
+(integer->char #\xD800)    ⇒ &assertion异常
+~~~
+
+| `\(\texttt{(char=? $char_1$ $char_2$ $char_3$ ...)}\)` | 过程
+| `\(\texttt{(char<? $char_1$ $char_2$ $char_3$ ...)}\)` | 过程
+| `\(\texttt{(char>? $char_1$ $char_2$ $char_3$ ...)}\)` | 过程
+| `\(\texttt{(char<=? $char_1$ $char_2$ $char_3$ ...)}\)` | 过程
+| `\(\texttt{(char>=? $char_1$ $char_2$ $char_3$ ...)}\)` | 过程
+
+这些过程根据根据字符的标量值给它们强加了一个总体的顺序。
+
+~~~ scheme
+(char<? #\z #\ß) ‌⇒ #t
+(char<? #\z #\Z) ‌⇒ #f
+~~~
+
+## 11.12. 字符串 {#s11-12}
+
+字符串是字符的序列。
+
+字符串的*长度*是它包含的字符的数量。当字符串被创建的时候这个数被固定。一个字符串的*合法索引（valid indices）*是小于字符串长度的整数。一个字符串的第一个字符的索引是0，第二个是1，以此类推。
+
+`(string? obj)` 过程
+
+如果*obj*是一个字符串则返回`#t`，否则返回`#f`。
+
+| `(make-string k)` | 过程
+| `(make-string k char)` | 过程
+
+返回一个新分配的长度是*k*的字符串。如果传递了*char*参数，那么这个字符串的所有元素被初始化为*char*，否则*字符串*的内容是未定义的。
+
+`(string char ...)` 过程
+
+返回一个新分配的由其参数组成的字符串。
+
+`(string-length string)` 过程
+
+以一个精确整数对象的形式返回给定的*string*中字符的数量。
+
+`(string-ref string k)` 过程
+
+*K*必须是*string*的一个合法的索引。`string-ref`以从零开始的索引返回*string*的第*k*个字符。
+
+<p><font size="2"><i>注意：</i>实现应该让<code>string-ref</code>在常数时间内运行完成。</font></p>
+
+`\(\texttt{(string=? $string_1$ $string_2$ $string_3$ ...)}\)`
+
+如果所有的字符串的长度都是一样的且包含相同的字符则返回`#t`。否则`string=?`过程返回`#f`。
+
+~~~ scheme
+(string=? "Straße" "Strasse") 
+‌‌                            ⇒ #f
+~~~
+
+| `\(\texttt{(string<? $string_1$ $string_2$ $string_3$ ...)}\)` | 过程
+| `\(\texttt{(string>? $string_1$ $string_2$ $string_3$ ...)}\)` | 过程
+| `\(\texttt{(string<=? $string_1$ $string_2$ $string_3$ ...)}\)` | 过程
+| `\(\texttt{(string>=? $string_1$ $string_2$ $string_3$ ...)}\)` | 过程
+
+这些操作是字符上对应于顺序的字符串的词典扩展。比如，
 
 
 
