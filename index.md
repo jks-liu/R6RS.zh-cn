@@ -3361,7 +3361,7 @@ Scheme提供最高可达四层的任意组合。总共有二十八个这样的�
 
 所有的*list*应该有相同的长度。*Proc*应该接受和*list*一样多的参数且返回一个单独的值。*Proc*不应该更改任何一个*list*。
 
-`map`过程将*proc*逐个元素地应用到*list*的元素上且返回一个按顺序的结果的表。*Proc*总是在相同的`map`本身的动态环境中被调用。*proc*应用到*list*元素的顺序是未定义的。如果从`map`出现多个返回，早期返回的返回值不会被改变<!-- TODO：什么意思？ -->。
+`map`过程将*proc*逐个元素地应用到*list*的元素上且返回一个按顺序的结果的表。*Proc*总是在相同的`map`本身的动态环境中被调用<!-- TODO：意思不太明白 -->。*proc*应用到*list*元素的顺序是未定义的。如果从`map`出现多个返回，早期返回的返回值不会被改变<!-- TODO：什么意思？ -->。
 
 ~~~ scheme
 (map cadr '((a b) (d e) (g h)))   
@@ -3546,10 +3546,40 @@ Unicode标量值不包括区间#xD800到#xDFFF，其是Unicode*码位（code poi
 | `\(\texttt{(string<=? $string_1$ $string_2$ $string_3$ ...)}\)` | 过程
 | `\(\texttt{(string>=? $string_1$ $string_2$ $string_3$ ...)}\)` | 过程
 
-这些操作是字符上对应于顺序的字符串的词典扩展。比如，
+这些操作是字符上对应于顺序的字符串的词典扩展。比如，`string<?`是`char<?`在字符上的顺序在字符串上的词典序。如果两个字符串长度不同，但多达较短字符串的长度是一样的，那么较短的字符串在词典序上被认为小于较长的字符串。
 
+~~~ scheme
+(string<? "z" "ß") ‌⇒ #t
+(string<? "z" "zz") ‌⇒ #t
+(string<? "z" "Z") ‌⇒ #f
+~~~
 
+`(substring string start end)` 过程
 
+*String*必须是一个字符串，且*start*和*end*必须是一个精确的整数对象，且符合
+
+$$0 \leq start \leq end \leq \texttt{(string-length  $string$)}\rm。$$
+
+`substring`过程返回一个新分配的字符串，其形成于*string*以索引*start*（包括）开始及以*end*结束（不包括）的字符。
+
+`(string-append string ...)` 过程
+
+返回一个新分配的字符串，其字符是给定字符串的串联。
+
+~~~ scheme
+| `(string->list string)` | 过程
+| `(list->string list)` | 过程
+~~~
+
+*List*必须是一个字符的表。`string->list`过程返回一个新分配的字符的表，这些字符是组成给定字符串的字符。`list->string`过程返回一个新分配的字符串，其由*list*当中的字符组成。从`equal?`的角度来说，`string->list`和`list->string`是互逆的过程。
+
+`\(\texttt{(string-for-each proc $string_1$ $string_2$ ...)}\)` 过程
+
+所有的*string*必须有相同的长度。*Proc*应该接受和*string*个数相同的参数。`string-for-each`过程将*proc*逐个元素地应用到*string*的字符上，其以副作用为目的，并且是按照从第一个字符到最后一个的顺序。*Proc*总是在相同的`string-for-each`本身的动态环境中被调用<!-- TODO：意思不太明白 -->。`string-for-each`的返回值是未定义的。
+
+类似于`for-each`。
+
+*实现责任：*
 
 
 
