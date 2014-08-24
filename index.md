@@ -3644,6 +3644,92 @@ $$0 \leq start \leq end \leq \texttt{(string-length  $string$)}\rm。$$
              ; 应当抛出&assertion异常
 ~~~
 
+| `(vector->list vector)` | 过程
+| `(list->vector list)` | 过程
+
+`vector->list`过程返回一个新分配的由包含在*vector*中元素的对象组成的表。`list->vector`过程返回一个新创建的由表*list*中的元素初始化的向量。
+
+~~~ scheme
+(vector->list '#(dah dah didah))  
+‌‌                ⇒  (dah dah didah)
+(list->vector '(dididit dah))   
+‌‌                ⇒  #(dididit dah)
+~~~
+
+`(vector-fill! vector fill)` 过程
+
+将*fill*存储到*vector*的每一个元素中，且返回未定义的值。
+
+
+`\(\texttt{(vector-map proc $vector_1$ $vector_2$ ...)}\)` 过程
+
+所有的*vector*必须有相同的长度。*Proc*应该接受和*vector*个数相同的参数，且返回一个单独的值。
+
+`vector-map`过程将*proc*逐个元素地应用到*vector*的元素上且返回一个按顺序的结果的向量。*Proc*总是在相同的`vector-map`本身的动态环境中被调用<!-- TODO：意思不太明白 -->。*proc*应用到*vector*元素的顺序是未定义的。如果从`vector-map`出现多个返回，早期返回的返回值不会被改变<!-- TODO：什么意思？ -->。
+
+类似于`map`。
+
+*实现责任：*实现必须检查在*proc*上应用了上面描述的生存期的限制。一个实现可以在应用之前检查*proc*是不是一个合适的参数。
+
+`\(\texttt{(vector-for-each proc $vector_1$ $vector_2$ ...)}\)` 过程
+
+所有的*vector*必须有相同的长度。*Proc*应该接受和*vector*个数相同的参数。`vector-for-each`过程将*proc*逐个元素地应用到*vector*的字符上，其以副作用为目的，并且是按照从第一个字符到最后一个的顺序。*Proc*总是在相同的`vector-for-each`本身的动态环境中被调用<!-- TODO：意思不太明白 -->。`vector-for-each`的返回值是未定义的。
+
+类似于`for-each`。
+
+*实现责任：*实现必须检查在*proc*上应用了上面描述的生存期的限制。一个实现可以在应用之前检查*proc*是不是一个合适的参数。
+
+## 11.14. 错误（Errors）和违规行为（violations） {#s11-14}
+
+| `\(\texttt{(error $who$ $message$ $irritant_1$ ...)}\)` | 过程
+| `\(\texttt{(assertion-violation $who$ $message$ $irritant_1$ ...)}\)` | 过程
+
+*Who*必须是一个字符串或一个符号或`#f`。*Message*必须是一个字符串。*Irritant*是任意的对象。
+
+这些过程抛出一个异常。当一个错误出现的时候，`error`过程应当被调用，通常由程序在与外部世界或用户交互时已经出错的一些事情导致。`assertion-violation`过程在一个过程被非法调用的时候应当被调用，或者是传递了非法数量的参数，或者传递了未被指定处理的参数。
+
+*Who*参数应当描述检测到异常的过程或操作。*Message*参数应当应当描述外部情况。*Irritant*应当是检测到操作的操作的参数<!-- TODO：什么意思 -->。
+
+异常提供的条件对象（见库的第7章）有下列的条件类型：
+
+* 如果*who*不是`#f`，那么条件有条件类型`&who`，*who*作为它的域的值。在哪种情况下，*who*应当是检测到异常的过程或条目的名字。如果它是`#f`，那么条件没有条件类型`&who`。
+* 条件有条件类型`&message`，*message*作为它的域的值。
+* 条件有条件类型`&irritant`，*irritant*的表作为它的域的值。
+
+此外，`error`创建的条件有条件类型`&error`，且`assertion-violation`创建的条件有条件类型`&assertion`。
+
+~~~ scheme
+(define (fac n)
+  (if (not (integer-valued? n))
+      (assertion-violation
+       'fac "non-integral argument" n))
+  (if (negative? n)
+      (assertion-violation
+       'fac "negative argument" n))
+  (letrec
+    ((loop (lambda (n r)
+             (if (zero? n)
+                 r
+                 (loop (- n 1) (* r n))))))
+      (loop n 1)))
+
+(fac 5) ‌⇒ 120
+(fac 4.5)   &assertion异常
+(fac -3)   &assertion异常
+~~~
+
+`(assert <expression>)` 语法
+
+一个`assert`形式通过计算`<expression>`被求值。如果`<expression>`返回一个真值，那么那个值被从`assert`表达式返回。如果`<expression>`返回`#f`，那么一个条件类型是`&assertion`和`&message`的异常被抛出。条件对象提供的消息是实现定义的。
+
+<p><font size="2"><i>注意：</i>实现应当利用这样的事实，<code>assert</code>是提供尽可能多关于断言（assertion）错误位置信息的语法。</font></p>
+
+## 11.15. 控制特性 {#s11-15}
+
+本章<!-- TODO：应该是本节 -->描述了各种以特殊方式控制程序执行流程的基本过程。
+
+
+
 
 
 
