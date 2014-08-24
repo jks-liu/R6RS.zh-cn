@@ -3579,7 +3579,71 @@ $$0 \leq start \leq end \leq \texttt{(string-length  $string$)}\rm。$$
 
 类似于`for-each`。
 
-*实现责任：*
+*实现责任：*实现必须检查在*proc*上应用了上面描述的生存期的限制。一个实现可以在应用之前检查*proc*是不是一个合适的参数。
+
+`(string-copy string)` 过程
+
+返回给定*string*的一个新分配的副本。
+
+## 11.13. 向量 {#s11-13}
+
+向量是一个异构结构（heterogeneous structures），其元素由整数索引。向量通常比相同长度的表占据更少的空间，访问随机选定的元素时，向量需要的平均时间通常也比表少。
+
+一个向量的*长度*是其包含的元素的数量。这个数量是一个非负整数，其在向量创建的时候就被确定。一个向量的合法索引是小于向量长度的精确非负整数对象。在向量中，第一个元素的索引是零，且最后一个元素的索引比向量的长度小一。
+
+和表常量一样，向量常量必须被引用（quoted）：
+
+~~~ scheme
+'#(0 (2 2 2 2) "Anna")  
+‌‌              ⇒  #(0 (2 2 2 2) "Anna")
+~~~
+
+`(vector? obj)` 过程
+
+如果*obj*是一个向量则返回`#t`，否则过程返回`#f`。
+
+| `(make-vector k)` | 过程
+| `(make-vector k fill)` | 过程
+
+返回一个新分配的*k*个元素的向量。如果给了第二个参数，那么每个元素被初始化为*fill*。否则每个元素的初始化内容是未定义的。
+
+`(vector obj ...)` 过程
+
+返回一个新分配的向量，其元素包含给定的参数。类似与`list`。
+
+`(vector 'a 'b 'c)               ‌⇒  #(a b c)`
+
+`(vector-length vector)` 过程
+
+以一个精确整数对象的形式返回*vector*中元素的数量。
+
+`(vector-ref vector k)` 过程
+
+*K*必须是*vector*的一个合法的索引。`vector-ref`过程返回*vector*元素*k*的内容。
+
+~~~ scheme
+(vector-ref '#(1 1 2 3 5 8 13 21) 5)  
+‌‌                        ⇒  8
+~~~
+
+`(vector-set! vector k obj)` 过程
+
+*K*必须是*vector*的一个合法的索引。`vector-set!`过程将*obj*存储到*vector*的元素*k*中，且返回未定义的值。
+
+给`vector-set!`传递一个不可改变的向量应当导致一个条件类型是`&assertion`的异常被抛出。
+
+~~~ scheme
+(let ((vec (vector 0 '(2 2 2 2) "Anna")))
+  (vector-set! vec 1 '("Sue" "Sue"))
+  vec)      
+‌‌             ⇒  #(0 ("Sue" "Sue") "Anna")
+
+(vector-set! '#(0 1 2) 1 "doe")  
+‌‌             ⇒  未定义的
+             ; 常向量
+             ; 应当抛出&assertion异常
+~~~
+
 
 
 
