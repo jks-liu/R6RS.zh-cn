@@ -1023,7 +1023,7 @@ Scheme是一个拥有块结构的静态作用域的语言。顶层程序或库�
 
 Scheme的实现必须是*严格尾递归的*。发生在叫做*尾上下文（tail contexts）*的特定句法上下文的过程调用是*尾调用（tail calls）*。一个Scheme实现是严格尾递归的，如果它支持无限数量的活动尾调用。一个调用时*活动的（active）*如果被调用的过程可以返回。注意，这里所说的返回既包括了通过当前继续从调用中返回的情况，也包括了事先以`call-with-current-continuation`过程捕获继续，后来再调用该继续以便从调用中返回的情况。不存在被捕获的继续时，调用最多只能返回一次，活动调用就是那些还没有返回的调用。一个严格尾递归的正式定义可以在Clinger的论文[^5]中被发现。来自`(rnrs base (6))`库的结构上识别尾调用的规则在11.20小节被描述。
 
-## 5.12. 动态生存期（Dynamic extent）<!-- and the dynamic environment -->和动态环境
+## 5.12. 动态生存期（Dynamic extent）和动态环境 {#s5-12}
 
 对于一个过程调用，在它开始和它返回的过程之间的时间叫做它的*动态生存期*。在Scheme中，`call-with-current-continuation`（11.15小节）允许在它的过程调用返回之后重新进入一个动态生存期。因此，一个调用的动态生存期可能不是一个单独的，连贯的时间段。
 
@@ -3728,16 +3728,93 @@ $$0 \leq start \leq end \leq \texttt{(string-length  $string$)}\rm。$$
 
 本章<!-- TODO：应该是本节 -->描述了各种以特殊方式控制程序执行流程的基本过程。
 
+`\(\texttt{(apply proc $arg_1$ ... rest-args)}\)` 过程
+
+`rest-args`必须是一个表。*Proc*应当接受*n*个元素，其中*n*是*arg*的数量加上*rest-args*的长度。`apply`过程以表`\(\texttt{(append (list $arg_1$ ...) rest-args)}\)`的元素作为真实参数调用*proc*。
+
+如果一个`apply`的调用在尾上下文中，那么对`proc`的调用也在尾上下文中。
+
+~~~ scheme
+(apply + (list 3 4))              ‌    ⇒  7
+
+(define compose
+  (lambda (f g)
+    (lambda args
+      (f (apply g args)))))
+
+((compose sqrt *) 12 75)              ‌⇒  30
+~~~
+
+| `(call-with-current-continuation proc)` | 过程
+| `(call/cc proc)` | 过程
+
+*Proc*应当接受一个参数。过程`call-with-current-continuation`（这和过程`call/cc`是一样的）将当前的继续作为“逃逸过程”打包，且作为参数传递给*proc*。这个逃逸过程是一个Scheme过程，如果它在随后被调用的话，将会放弃任何在随后起作用的继续，取而代之以恢复逃逸过程创建时起作用的继续。调用逃逸过程可以导致`dynamic-wind`安装的`before`和`after`过程被调用。
+
+逃逸过程的参数数量与最初调用`call-with-current-continuation`时的继续的参数数量相同。
+
+传入`proc`的逃逸过程像其他Scheme过程那样拥有无限的生存期。它可以被存入变量或数据结构中，可以被调用任意多次。
+
+如果对`call-with-current-continuation`的调用发生在尾上下文中，那么对*proc*的调用也在尾上下文中。
+
+以下示例只显示了`call-with-current-continuation`的一些用法。如果所有真实的应用都像这些示例一样简单，像`call-with-current-continuation`这样强大的过程也就没有存在的必要了。
+
+~~~ scheme
+(call-with-current-continuation
+  (lambda (exit)
+    (for-each (lambda (x)
+                (if (negative? x)
+                    (exit x)))
+              '(54 0 37 -3 245 19))
+    #t))                        ‌⇒  -3
+
+(define list-length
+  (lambda (obj)
+    (call-with-current-continuation
+      (lambda (return)
+        (letrec ((r
+                  (lambda (obj)
+                    (cond ((null? obj) 0)
+                          ((pair? obj)
+                           (+ (r (cdr obj)) 1))
+                          (else (return #f))))))
+          (r obj))))))
+
+(list-length '(1 2 3 4))            ‌⇒  4
+
+(list-length '(a b . c))            ‌⇒  #f
+(call-with-current-continuation procedure?)
+                            ‌⇒  #t
+~~~
 
 
+{:refdef .note}
+*注意：*调用一个逃逸过程会从新进入调用`call-with-current-continuation`的动态生存期，且因此恢复它的动态环境；见[第5.12小节](#s5-12)。
+{: refdef}
 
+`(values obj ...)` 过程
+
+把所有的参数传递给它的继续。`values`过程可以像如下方式定义：
+
+~~~ scheme
+(define (values . things)
+  (call-with-current-continuation 
+    (lambda (cont) (apply cont things))))
+~~~
+
+一系列中表达式中所有非最终表达式的继续，比如在`lambda`, `begin`, `let`, `let*`, `letrec`, `letrec*`, `let-values`, `let*-values`, `case`, 和`cond形式中，通常接受任意数量的值。
+
+除了这些和`call-with-values`, `let-values`, 以及`let*-values创建的继续，继续隐式地接受一个单独的值，比如`<operator>`和过程调用的`<operator>`或在条件语句中的`<text>`表达式的继续，都精确地接受一个值。
 
 
 <!--
-  勘误：11.17
+``  勘误：11.17
   TEMPLATE: 
 `\(\)`
 `\(\texttt{}\)`
+更改所有的note
+{:refdef .note}
+*注意：*
+{: refdef}
 <p><font size="2"><i>注意：</i></font></p>
 /r6rs-translation-experience/
   TODO：将逗号由中文改为英文
