@@ -3803,7 +3803,28 @@ $$0 \leq start \leq end \leq \texttt{(string-length  $string$)}\rm。$$
 
 一系列中表达式中所有非最终表达式的继续，比如在`lambda`, `begin`, `let`, `let*`, `letrec`, `letrec*`, `let-values`, `let*-values`, `case`, 和`cond形式中，通常接受任意数量的值。
 
-除了这些和`call-with-values`, `let-values`, 以及`let*-values创建的继续，继续隐式地接受一个单独的值，比如`<operator>`和过程调用的`<operator>`或在条件语句中的`<text>`表达式的继续，都精确地接受一个值。
+除了这些和`call-with-values`, `let-values`, 以及`let*-values创建的继续，继续隐式地接受一个单独的值，比如`<operator>`和过程调用的`<operator>`或在条件语句中的`<text>`表达式的继续，都精确地接受一个值。给继续传递不当数量的值的效果是未定义的。
+
+`(call-with-values producer consumer)` 过程
+
+*Producer*必须是一个过程，且必须接受零个值。*Consumer*必须是一个过程，且必须接受和*produce*过程返回值个数一样多的值。`call-with-values`过程会调用*producer*，调用时没有参数且有如下继续，当传递给这个继续一些值，会以这些值作为参数调用*consumer*过程。*consumer*调用的继续和*call-with-values*调用的继续相同。
+
+~~~ scheme
+(call-with-values (lambda () (values 4 5))
+                  (lambda (a b) b))
+                                                   ‌⇒  5
+
+(call-with-values * -)                             ‌⇒  -1
+~~~
+
+如果*call-with-values*调用发生在尾上下文中，那么*consumer*调用也在尾上下文中。
+
+*实现责任：*在*producer*返回后，实现必须检查*consumer*必须接受和*producer*<!-- TODO：原文误写为consumer -->返回值一样多的值。
+
+`(dynamic-wind before thunk after)` 过程
+
+
+
 
 
 <!--
