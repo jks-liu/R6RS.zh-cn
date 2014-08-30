@@ -3823,6 +3823,71 @@ $$0 \leq start \leq end \leq \texttt{(string-length  $string$)}\rm。$$
 
 `(dynamic-wind before thunk after)` 过程
 
+*Before*, *thunk*, 和*after*必须是过程，且每个都应当接受零个参数。这些过程可以返回任意数量的值。`dynamic-wind`以无参数的方式调用*thunk*，返回这个调用的结果。此外，每当进入*trunk*调用的动态生存期的时候，`dynamic-wind`会以无参数的方式调用*before*，每当离开*trunk*调用的动态生存期的时候，`dynamic-wind`会以无参数的方式调用*after*。因此，在缺少`call-with-current-continuation`创建的逃逸过程调用的情况下，`dynamic-wind`按顺序调用*before*, *thunk*, *after*。
+
+尽管对*before*和*after*的调用不被认为是在*thunk*调用的动态生存期内，但是，出现在*thunk*调用动态生存期内的任何其它的`dynamic-wind`调用的*before*和*after*过程被认为是在*thunk*调用的动态生存期里面的。
+
+更精确地说，一个逃逸过程将控制权转移出一组零个或多个活动的`dynamic-wind`调用*x*……的动态生存期且将控制权转移入一组零个或多个活动的`dynamic-wind`调用*y*……它离开最近*x*的动态生存期，且以无参数的方式调用其对应的*after*过程。如果*after*过程返回的话，逃逸过程继续到下一个最近的*x*，以此类推。一旦每一个*x*都以这种方式被处理了，逃逸过程以无参数的方式调用最不接近的*y*对应的*before*过程。如果*before*过程返回的话，逃逸过程重新进入最近*y*的动态生存期，然后继续处理下一个最近的*y*，以此类推。一旦每一个*y*都以这种方式被处理了，控制权被转移到逃逸过程打包的继续。
+
+*实现责任：*实现必须检查在*thunk*和*after*上的限制，只要它们被实际调用。
+
+~~~ scheme
+(let ((path '())
+      (c #f))
+  (let ((add (lambda (s)
+               (set! path (cons s path)))))
+    (dynamic-wind
+      (lambda () (add 'connect))
+      (lambda ()
+        (add (call-with-current-continuation
+               (lambda (c0)
+                 (set! c c0)
+                 'talk1))))
+      (lambda () (add 'disconnect)))
+    (if (< (length path) 4)
+        (c 'talk2)
+        (reverse path))))
+    
+‌‌                        ⇒ (connect talk1 disconnect
+                           connect talk2 disconnect)
+
+(let ((n 0))
+  (call-with-current-continuation
+    (lambda (k)
+      (dynamic-wind
+        (lambda ()
+          (set! n (+ n 1))
+          (k))
+        (lambda ()
+          (set! n (+ n 2)))
+        (lambda ()
+          (set! n (+ n 4))))))
+  n) ‌                          ⇒ 1
+
+(let ((n 0))
+  (call-with-current-continuation
+    (lambda (k)
+      (dynamic-wind
+        values
+        (lambda ()
+          (dynamic-wind
+            values
+            (lambda ()
+              (set! n (+ n 1))
+              (k))
+            (lambda ()
+              (set! n (+ n 2))
+              (k))))
+        (lambda ()
+          (set! n (+ n 4))))))
+  n) ‌                          ⇒ 7
+~~~
+
+
+{:refdef .note}
+*注意：*进入一个动态生存期会恢复它的动态环境；见[第5.12小节](#s5-12)。
+{: refdef}
+
 
 
 
