@@ -899,7 +899,7 @@ Scheme点对的句法数据最常用的符号是“点”符号<tt>(<datum<sub>1
 
 这是一个字节向量的外部表示，也是一个计算结果为字节向量的表达式。
 
-### 4.3.5 缩写（Abbreviations）
+### 4.3.5 缩写（Abbreviations） {#s4-3-5}
 
 ~~~ scheme
 '<datum>‌‌ 
@@ -1860,7 +1860,7 @@ null?
 (quote (+ 1 2))               ‌⇒  (+ 1 2)
 ~~~
 
-正如第4.3.5小节所说，`(quote <datum>)`可以使用缩写`'<datum>`：
+正如[第4.3.5小节](#s4-3-5)所说，`(quote <datum>)`可以使用缩写`'<datum>`：
 
 ~~~ scheme
 '"abc"               ‌⇒  "abc"
@@ -3888,6 +3888,104 @@ $$0 \leq start \leq end \leq \texttt{(string-length  $string$)}\rm。$$
 *注意：*进入一个动态生存期会恢复它的动态环境；见[第5.12小节](#s5-12)。
 {: refdef}
 
+## 11.16. 迭代 {#s11-16}
+
+`(let <variable> <bindings> <body>)` 语法
+
+“命名`let`（Named `let`）”是`let`在语法上的一个变体，其提供一个通用的循环结构，同时也被用作表达递归。除了`<variable>`用`<body>`绑定到一个过程之外，它和普通的`let`有相同的语法和语义，其中这个过程的变量是被绑定的变量，内部是`<body>`。因此，`<body>`的执行可以通过调用`<variable>`命名的过程被重复。
+
+~~~ scheme
+(let loop ((numbers '(3 -2 1 6 -5))
+           (nonneg '())
+           (neg '()))
+  (cond ((null? numbers) (list nonneg neg))
+        ((>= (car numbers) 0)
+         (loop (cdr numbers)
+               (cons (car numbers) nonneg)
+               neg))
+        ((< (car numbers) 0)
+         (loop (cdr numbers)
+               nonneg
+               (cons (car numbers) neg))))) 
+‌‌              ⇒  ((6 1 3) (-5 -2))
+~~~
+
+## 11.17. 准引用（Quasiquotation） {#s11-17}
+
+|:-|-:
+| `(quasiquote <qq template>)‌‌` | 语法 
+| `unquote‌‌auxiliary ` | 辅助语法 
+| `unquote-splicing‌‌auxiliary ` | 辅助语法 
+
+“反引用（Backquote）”或“准引用”在构造表或向量结构时是有用的，尤其是在需要的结构中只有一些是提前知道的时候。
+
+*语法：*`<Qq template>`应该与本条目最后的语法说明的一样。
+
+*语义：*如果没有`unquote`或`unquote-splicing`形式出现在`<qq template>`里面，那么`(quasiquote <qq template>)`计算结果和`(quote <qq template>)`计算结果是一样的。
+
+如果一个`(unquote <expression> ...)`形式出现在`<qq template>`里面，那么`<expression>`会被求值（“解引用（unquoted）”）且它们的结果会被插入到结构中来代替`unquote`形式。
+
+如果一个`(unquote-splicing <expression> ...)`形式出现在`<qq template>`里面，那么`<expression>`的结果必须是一个表；然后，表中的左右小括号会被“剥离（stripped away）”，且表中的元素会被插入到结构中来代替`unquote-splicing`形式。
+
+任何`unquote-splicing`或多操作的`unquote`形式智能出现在一个表或向量的`<qq template>`中。
+
+正如[第4.3.5小节](#s4-3-5)所提到的，`(quasiquote <qq template>)`可以被简写成`` `<qq template> ``，`(unquote <expression>)`可以被简写成`,<expression>`，且`(unquote-splicing <expression>)`可以被简写成`,@<expression>`。
+
+~~~ scheme
+`(list ,(+ 1 2) 4)  ‌⇒  (list 3 4)
+(let ((name 'a)) `(list ,name ',name)) 
+‌‌          ⇒  (list a (quote a))
+`(a ,(+ 1 2) ,@(map abs '(4 -5 6)) b) 
+‌‌          ⇒  (a 3 4 5 6 b)
+`(( foo ,(- 10 3)) ,@(cdr '(c)) . ,(car '(cons))) 
+‌‌          ⇒  ((foo 7) . cons)
+`#(10 5 ,(- 4) ,@(map - '(16 9)) 8) 
+‌‌          ⇒  #(10 5 -4 -16 -9 8)
+(let ((name 'foo))
+  `((unquote name name name)))
+‌‌          ⇒ (foo foo foo)
+(let ((name '(foo)))
+  `((unquote-splicing name name name)))
+‌‌          ⇒ (foo foo foo)
+(let ((q '((append x y) (sqrt 9))))
+  ``(foo ,,@q)) 
+‌‌          ⇒ `(foo
+                 (unquote (append x y) (sqrt 9)))
+(let ((x '(2 3))
+      (y '(4 5)))
+  `(foo (unquote (append x y) (- 9)))) 
+‌‌          ⇒ (foo (2 3 4 5) -9)
+~~~
+
+准引用格式可以嵌套。置换操作只作用于那些与最外层`quasiquote`有同样嵌套级别的解除引用的元素。每进入一个后续的准引用，嵌套级别就增加一，每进入一个解除引用的语法单元，嵌套级别就减少一。
+
+~~~ scheme
+`(a `(b ,(+ 1 2) ,(foo ,(+ 1 3) d) e) f) 
+‌‌          ⇒  (a `(b ,(+ 1 2) ,(foo 4 d) e) f)
+(let ((name1 'x)
+      (name2 'y))
+  `(a `(b ,,name1 ,',name2 d) e)) 
+‌‌          ⇒  (a `(b ,x ,'y d) e)
+~~~
+
+一个`quasiquote`表达式可以返回新鲜的，可变的结构，也可以返回字面结构，其中每个结构都是在表达式求值期间在运行时被构造。不需要被重建的部分总是字面的。因此，
+
+`(let ((a 3)) `((1 2) ,a ,4 ,'five 6))`
+
+可以等价于下面两个表达式之一：
+
+~~~ scheme
+'((1 2) 3 4 five 6)
+(let ((a 3)) 
+  (cons '(1 2)
+        (cons a (cons 4 (cons 'five '(6))))))
+~~~
+
+可是，它不等价于这个表达式：
+
+`(let ((a 3)) (list (list 1 2) a 4 'five 6))`
+
+
 
 
 
@@ -3918,7 +4016,7 @@ $$0 \leq start \leq end \leq \texttt{(string-length  $string$)}\rm。$$
 * 现在，`#`是定界符（delimiter）。
 * 字节向量字面量语法已被添加。
 * 匹配的中括号可以和小括号等价得使用。
-* 数据语法的简写`#'` (即`syntax`), `` #` `` (即`quasisyntax`), `#,` (即`unsyntax`), and `#,@` (即`unsyntax-splicing`)被添加；见4.3.5小节。<!-- TODO: 1. read-syntax 应该是 datum-syntax；2. 括号不对 -->
+* 数据语法的简写`#'` (即`syntax`), `` #` `` (即`quasisyntax`), `#,` (即`unsyntax`), and `#,@` (即`unsyntax-splicing`)被添加；见[第4.3.5小节](#s4-3-5)。<!-- TODO: 1. read-syntax 应该是 datum-syntax；2. 括号不对 -->
 * `#`不再可以用在数字的表示中替换数字。
 * 现在，数字对象的外部表示可以包括一个尾数宽度。
 * 非输和无限大的字面量被添加。
