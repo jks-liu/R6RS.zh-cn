@@ -1518,7 +1518,7 @@ expand
 145932     ‌          ⇒  145932
 #t   ‌                ⇒  #t
 "abc"      ‌          ⇒  "abc"
-#vu8(2 24 123) ‌      ⇒ #vu8(2 24 123)
+#vu8(2 24 123) ‌      ⇒  #vu8(2 24 123)
 ~~~
 
 就像5.10小节描述的那样，一个字面量表达式的值是不可改变的。
@@ -1935,7 +1935,7 @@ null?
 (if (> 3 2)
     (- 3 2)
     (+ 3 2))                    ‌⇒  1
-(if #f #f)                    ‌⇒ unspecified
+(if #f #f)                    ‌  ⇒ unspecified
 ~~~
 
 `<Consequent>`和`<alternate>`表达式在尾上下文中，如果`if`表达式它自己在的话；见第11.20小节。
@@ -3911,6 +3911,7 @@ $$0 \leq start \leq end \leq \texttt{(string-length  $string$)}\rm。$$
 
 ## 11.17. 准引用（Quasiquotation） {#s11-17}
 
+| |
 |:-|-:
 | `(quasiquote <qq template>)‌‌` | 语法 
 | `unquote‌‌auxiliary ` | 辅助语法 
@@ -4011,7 +4012,7 @@ $$0 \leq start \leq end \leq \texttt{(string-length  $string$)}\rm。$$
 
 在`<quasiquotation>`中，`<list qq template D>`有时会和`<unquotation D>`或`<splicing unquotation D>`混淆。解释为`<unquotation D>`或`<splicing unquotation D>`是优先的。
 
-## 11.18 句法关键词的绑定结构 {#s11-18}
+## 11.18. 句法关键词的绑定结构 {#s11-18}
 
 `let-syntax`和`letrec-syntax`形式绑定关键词。就像`begin`形式一样，一个`let-syntax`或`letrec-syntax`形式可以出现在定义上下文中，在这种情况下，它被当作一个定义，且在内部的形式必须也是定义。一个`let-syntax`或`letrec-syntax`形式也可以出现在一个表达式上下文中，在这种情况下，它们内部的形式必须是表达式。
 
@@ -4106,9 +4107,61 @@ $$0 \leq start \leq end \leq \texttt{(string-length  $string$)}\rm。$$
 ‌‌                            ⇒ (1 1)
 ~~~
 
+除了第一个表达式中的`let-syntax`形式和第二个当中的`letrec-syntax`之外，两个表达式是一样的。在第一个表达式中，出现在`g`中的`f`引用`let`绑定中的变量`f`，而在第二个当中它引用的关键词`f`其绑定是`letrec-syntax`形式建立的。
+
+## 11.19. 宏转换器 {#s11-19}
+
+| |
+|-|-:
+| `(syntax-rules (<literal> ...) <syntax rule> ...)` | 语法（扩展）
+| `_` | 辅助语法（扩展）
+| `...` | 辅助语法（扩展）
+
+*语法：*每一个`<literal>`必须是一个标识符。每一个`<syntax rule>`必须有如下形式：
+
+`(<srpattern> <template>)`
+
+一个`<srpattern>`是`<pattern>`的受限形式，也就是说，一个非空的`<pattern>`是下列的四个由小括号包围的形式之一，其第一个子形式是一个标识符或一个下划线`_`。一个`<pattern>`是一个标识符，常量，或下面当中的一个。
+
+~~~ scheme
+(<pattern> ...)
+(<pattern> <pattern> ... . <pattern>)
+(<pattern> ... <pattern> <ellipsis> <pattern> ...)
+(<pattern> ... <pattern> <ellipsis> <pattern> ... . <pattern>)
+#(<pattern> ...)
+#(<pattern> ... <pattern> <ellipsis> <pattern> ...)
+~~~
+
+一个`<ellipsis>`是标识符“`...`”（三个句号（译注：必须是西文句号））。`<Template>`是一个模式变量，一个不是模式变量的标识符，一个模式数据，或下列形式之一。
+
+~~~ scheme
+(<subtemplate> ...)
+(<subtemplate> ... . <template>)
+#(<subtemplate> ...)
+~~~
+
+一个`<subtemplate>`是一个`<template>`跟着零个或多个省略号（译注：必须是西文省略号）。
+
+*语义：*在宏扩展期间，`syntax-rules`的实例通过指定一系列的卫生重写规则被求值为一个新的宏转换器。一个关键词与`syntax-rules`指定的转换器相关联的宏的使用与`<syntax rule>`包含的模式相匹配，以最左边的`<syntax rule>`开始。当发现一个匹配的时候，宏使用根据模板被卫生地转录。没有匹配是一个语法错误。
+
+出现在`<pattern>中的标识符可以是一个下划线（`_`），一个列在字面量`(<literal> ...)`的表中的字面量标识符，或一个省略号（`...`）。所有出现在`<pattern>`中的其它标识符都是*模式变量（pattern variables）*。省略号或下划线出现在`(<literal> ...)`中是一个语法错误。
+
+尽管`<srpattern>`的第一个子形式可以是一个标识符，但是标识符不涉及到匹配，且不被认为是一个模式变量或一个字面量标识符。
 
 
+模式变量匹配任意的输入子形式且被用作引用输入的元素。在`<pattern>`中同样的模式变量出现超过一次是一个语法错误。
 
+下划线也匹配任意的输入子形式，但不是模式变量，且不能被用作引用那些元素。`<Pattern>`中可以出现多个下划线。
+
+一个字面量标识符匹配一个输入子形式当且仅当输入子形式是一个标识符且或者在输入表达式中它的出现和在字面量的表中它的出现有相同的词法绑带，或者两个标识符有相同的名字且都没有词法绑定。
+
+一个跟着一个省略号的子模式可以匹配零个或多个输入元素。
+
+更正式地说，一个输入形式*F*匹配一个模式*P*当且仅当下列之一成立：
+
+* *P*是一个下划线（`_`）。
+* *P*是一个模式变量。
+* 
 
 
 
