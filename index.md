@@ -3566,10 +3566,9 @@ $$0 \leq start \leq end \leq \texttt{(string-length  $string$)}\rm。$$
 
 返回一个新分配的字符串，其字符是给定字符串的串联。
 
-~~~ scheme
 | `(string->list string)` | 过程
 | `(list->string list)` | 过程
-~~~
+
 
 *List*必须是一个字符的表。`string->list`过程返回一个新分配的字符的表，这些字符是组成给定字符串的字符。`list->string`过程返回一个新分配的字符串，其由*list*当中的字符组成。从`equal?`的角度来说，`string->list`和`list->string`是互逆的过程。
 
@@ -3953,7 +3952,7 @@ $$0 \leq start \leq end \leq \texttt{(string-length  $string$)}\rm。$$
                  (unquote (append x y) (sqrt 9)))
 (let ((x '(2 3))
       (y '(4 5)))
-  `(foo (unquote (append x y) (- 9)))) 
+  `(foo (unquote (append x y) (- 9)))) ;（已根据勘误表修改）
 ‌‌          ⇒ (foo (2 3 4 5) -9)
 ~~~
 
@@ -3985,13 +3984,137 @@ $$0 \leq start \leq end \leq \texttt{(string-length  $string$)}\rm。$$
 
 `(let ((a 3)) (list (list 1 2) a 4 'five 6))`
 
+`<Qq template>`中的`quasiquote`、`unquote`或
+`unquote-splicing`标识符出现在不符合上述描述的其它位置是一个语法错误。
+
+下面准引用表达式的语法不是上下文无关的。他作为生成无限数量产生式规则的一个配方。想象在*D* = 1, 2, 3, ...时下列规则的副本。*D*跟踪嵌套深度。
+
+~~~ bnf
+<qq template> → <qq template 1>
+<qq template 0> → <expression>
+<quasiquotation D> → (quasiquote <qq template D>)
+<qq template D> → <lexeme datum>
+‌ ∣ <list qq template D>
+    ∣ <vector qq template D>
+    ∣ <unquotation D>
+<list qq template D> → (<qq template or splice D>*)
+    ∣ (<qq template or splice D>+ . <qq template D>)
+    ∣ <quasiquotation D + 1>
+<vector qq template D> → #(<qq template or splice D>*)
+<unquotation D> → (unquote <qq template D−1>)
+<qq template or splice D> → <qq template D>
+    ∣ <splicing unquotation D>
+<splicing unquotation D> →
+       (unquote-splicing <qq template D−1>*)
+    ∣ (unquote <qq template D−1>*)
+~~~
+
+在`<quasiquotation>`中，`<list qq template D>`有时会和`<unquotation D>`或`<splicing unquotation D>`混淆。解释为`<unquotation D>`或`<splicing unquotation D>`是优先的。
+
+## 11.18 句法关键词的绑定结构 {#s11-18}
+
+`let-syntax`和`letrec-syntax`形式绑定关键词。就像`begin`形式一样，一个`let-syntax`或`letrec-syntax`形式可以出现在定义上下文中，在这种情况下，它被当作一个定义，且在内部的形式必须也是定义。一个`let-syntax`或`letrec-syntax`形式也可以出现在一个表达式上下文中，在这种情况下，它们内部的形式必须是表达式。
+
+`(let-syntax <bindings> <form> ...)` 语法
+
+*语法：*`<Bindings>`必须有如下形式：
+
+`((<keyword> <expression>) ...)`
+
+每个`<keyword>`是一个标识符，且每个`<expression>`是一个在宏扩展时期可以被求值为转换器的表达式。转换器可以通过`syntax-rules`或`identifier-syntax`（见[第11.19小节](#s11-19)）创建，或通过库的第12章描述的其它机制之一创建。在关键词绑定列表中`<keyword>`出现超过一个是一个语法语法错误。
+
+*语义：*`<Form>`在语法环境中被扩展，此句法环境通过扩展`let-syntax`形式的句法环境以宏的方式获得，其关键词是`<keyword>`，绑定到特定的转换器。每个`<keyword>`的绑定以`<form>`作为它的作用范围。
+
+不管是在定义还是在表达式上下文中，`let-syntax`形式中的`<form>`被当作在一个隐含的`begin`中；见[第11.4.7小节](#s11-4-7)。因此，在`<form>`扩展结果中的定义和出现在`let-syntax`形式中的定义有相同的作用范围。
+
+*实现责任：*实现应当检测`<expression>`的值是否有可能不是一个转换器。
+
+~~~ scheme
+(let-syntax ((when (syntax-rules ()
+                     ((when test stmt1 stmt2 ...)
+                      (if test
+                          (begin stmt1
+                                 stmt2 ...))))))
+  (let ((if #t))
+    (when if (set! if 'now))
+    if))                           ‌⇒  now
+
+(let ((x 'outer))
+  (let-syntax ((m (syntax-rules () ((m) x))))
+    (let ((x 'inner))
+      (m))))                       ‌⇒  outer
+(let ()
+  (let-syntax
+    ((def (syntax-rules ()
+            ((def stuff ...) (define stuff ...)))))
+    (def foo 42))
+  foo) ‌                            ⇒ 42
+
+(let ()
+  (let-syntax ())
+  5) ‌                              ⇒ 5
+~~~
+
+`(letrec-syntax <bindings> <form> ...)` 语法
+
+*语法：*和`let-syntax`一样。
+
+*语义：*`<Form>`在语法环境中被扩展，此句法环境通过扩展`letrec-syntax`形式的句法环境以宏的方式获得，其关键词是`<keyword>`，绑定到特定的转换器。每个`<keyword>`的绑定以`<bindings>`以及`<form>`作为它的作用范围，所以，转换器可以将形式转译成通过`letrec-syntax`形式引入的宏的使用。
+
+不管是在定义还是在表达式上下文中，`letrec-syntax`形式中的`<form>`被当作在一个隐含的`begin`中；见[第11.4.7小节](#s11-4-7)。因此，在`<form>`扩展结果中的定义和出现在`letrec-syntax`形式中的定义有相同的作用范围。
+
+*实现责任：*实现应当检测`<expression>`的值是否有可能不是一个转换器。
+
+~~~ scheme
+(letrec-syntax
+  ((my-or (syntax-rules ()
+            ((my-or) #f)
+            ((my-or e) e)
+            ((my-or e1 e2 ...)
+             (let ((temp e1))
+               (if temp
+                   temp
+                   (my-or e2 ...)))))))
+  (let ((x #f)
+        (y 7)
+        (temp 8)
+        (let odd?)
+        (if even?))
+    (my-or x
+           (let temp)
+           (if y)
+           y)))        ‌⇒  7
+~~~
+
+下面的例子突出了`let-syntax`和`letrec-syntax`的不同。
+
+~~~ scheme
+(let ((f (lambda (x) (+ x 1))))
+  (let-syntax ((f (syntax-rules ()
+                    ((f x) x)))
+               (g (syntax-rules ()
+                    ((g x) (f x)))))
+    (list (f 1) (g 1)))) 
+‌‌                            ⇒ (1 2)
+
+(let ((f (lambda (x) (+ x 1))))
+  (letrec-syntax ((f (syntax-rules ()
+                       ((f x) x)))
+                  (g (syntax-rules ()
+                       ((g x) (f x)))))
+    (list (f 1) (g 1)))) 
+‌‌                            ⇒ (1 1)
+~~~
+
+
+
 
 
 
 
 
 <!--
-``  勘误：11.17
+``  勘误：11.19
   TEMPLATE: 
 `\(\)`
 `\(\texttt{}\)`
