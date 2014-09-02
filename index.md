@@ -3382,7 +3382,7 @@ Scheme提供最高可达四层的任意组合。总共有二十八个这样的�
 
 *实现责任：*实现应该检查所有的*list*有相同的长度。实现必须检查在*proc*上应用了上面描述的生存期的限制。一个实现可以在应用之前检查*proc*是不是一个合适的参数。
 
-`\(\texttt{(for-each proc $list_1$ $list$2$ ...)}\)` 过程
+`\(\texttt{(for-each proc $list_1$ $list_2$ ...)}\)` 过程
 
 所有的*list*应该有相同的长度。*Proc*应该接受和*list*一样多的参数。*Proc*不应该更改任何一个*list*。
 
@@ -3802,7 +3802,7 @@ $$0 \leq start \leq end \leq \texttt{(string-length  $string$)}\rm。$$
 
 一系列中表达式中所有非最终表达式的继续，比如在`lambda`, `begin`, `let`, `let*`, `letrec`, `letrec*`, `let-values`, `let*-values`, `case`, 和`cond形式中，通常接受任意数量的值。
 
-除了这些和`call-with-values`, `let-values`, 以及`let*-values创建的继续，继续隐式地接受一个单独的值，比如`<operator>`和过程调用的`<operator>`或在条件语句中的`<text>`表达式的继续，都精确地接受一个值。给继续传递不当数量的值的效果是未定义的。
+除了这些和`call-with-values`, `let-values`, 以及`let*-values`创建的继续，继续隐式地接受一个单独的值，比如`<operator>`和过程调用的`<operator>`或在条件语句中的`<text>`表达式的继续，都精确地接受一个值。给继续传递不当数量的值的效果是未定义的。
 
 `(call-with-values producer consumer)` 过程
 
@@ -4312,7 +4312,22 @@ p               ‌⇒ (15 . 5) ; （已根据勘误表修改）
 
 * 如果一个`cond`表达式在尾上下文中，且有一个`\(\texttt{($<expression_1>$ => $<expression_2>$)}\)`形式的子句，那么对`\(<expression_2>\)`求值结果的过程的（隐含）调用在尾上下文中。`\(<Expression_2>\)`它自己不在尾上下文中。
 
-特定的内置过程也必须执行尾调用。
+特定的内置过程也必须执行尾调用。传递给`apply`和`call-with-current-continuation`的第一个参数，和传递给`call-with-values`的第二个参数必须通过尾调用被调用。
+
+在下面的例子中，唯一的尾调用是`f`调用。`g`和`h`调用都不是尾调用。`x`的引用在尾上下文中，但它不是一个调用，因此不是一个尾调用。
+
+~~~ scheme
+(lambda ()
+  (if (g)
+      (let ((x (h)))
+        x)
+      (and (g) (f))))
+~~~
+
+{:refdef .note}
+*注意：*实现可以把一些非尾调用，比如上面的`h`调用，当作尾调用来求值。在上面的例子中，`let`表达式可以以尾调用`f`的方式来编译。（`h`返回不确定数量值得可能性可以被忽略，这时因为在那种情况下`let`的作用明显是未定义且依赖于实现的。）
+{: refdef}
+
 
 
 
