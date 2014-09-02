@@ -4213,6 +4213,106 @@ $$0 \leq start \leq end \leq \texttt{(string-length  $string$)}\rm。$$
 
 后者可以导致一个断言违规。
 
+\\(
+\\begin{array}{lr} 
+  \\texttt{(identifier-syntax $\<template\>$)} & 语法（扩展）\\\
+  \\begin{array}{l} 
+    \\texttt{(identifier-syntax} \\\
+    \\quad\\quad\\texttt{($\<id_1\>$ $\<template_1\>$)} \\\
+    \\quad\\quad\\texttt{((set! $\<id_2\>$ $\<pattern\>$)} \\\
+    \\quad\\quad\\quad\\texttt{$\<template_2\>$))}
+  \\end{array} & 语法（扩展）\\\
+  \\texttt{set!} & 辅助语法（扩展） 
+\\end{array}
+\\)
+
+*语法：*`<Id>`必须是标识符。`<Template>`必须为`syntax-rules`。
+
+*语义：*当一个关键词被绑定到一个由`identifier-syntax`的第一个形式产生的转换器的时候，关键词的引用在绑定的范围内被`<template>`代替。
+
+~~~ scheme
+(define p (cons 4 5))
+(define-syntax p.car (identifier-syntax (car p)))
+p.car ‌⇒ 4
+(set! p.car 15) ‌⇒  &syntax（语法）异常
+~~~
+
+更常用的，`identifier-syntax`的第二个形式允许转换器决定当`set!`被使用时会发生什么。在这种情况下，标识符它自己的使用被`\(<template_1>\)`代替，和标识符一起`set!`的使用被`\(<template_2>\)`代替。
+
+~~~ scheme
+(define p (cons 4 5))
+(define-syntax p.car
+  (identifier-syntax
+    (_ (car p))
+    ((set! _ e) (set-car! p e))))
+(set! p.car 15)
+p.car           ‌⇒ 15
+p               ‌⇒ (15 . 5) ; （已根据勘误表修改）
+~~~
+
+## 11.20. 尾调用和尾上下文 {#s11-20}
+
+*尾调用*是一个发生在*尾上下文*中的过程调用。尾上下文被以归纳的方式定义。注意，对于一个特定的lambda表达式，其尾上下文总是确定的。
+
+* 一个lambda表达式内部的最后一个表达式，即下面用`<tail expression>`表示的，是在尾上下文中。
+
+~~~ scheme
+(lambda <formals>
+  <definition>* 
+  <expression>* <tail expression>)
+~~~
+
+* 如果下面表达式的一个在尾上下文中，那么用`<tail expression>`表示的子表达式也在尾上下文中。这些来源于本章中所描述的形式语法规范，把有些`<expression>`出现的地方改成了`<tail expression>`。只有那些包含尾上下文的规则被列在了这儿。
+
+~~~ scheme
+(if <expression> <tail expression> <tail expression>)
+(if <expression> <tail expression>)
+
+(cond <cond clause>+)
+(cond <cond clause>* (else <tail sequence>))
+
+(cāse <expression>
+  <case clause>+)
+(cāse <expression>
+  <case clause>*
+  (else <tail sequence>))
+
+(and <expression>* <tail expression>)
+(or <expression>* <tail expression>)
+
+(let <bindings> <tail body>)
+(let <variable> <bindings> <tail body>)
+(let* <bindings> <tail body>)
+(letrec* <bindings> <tail body>)
+(letrec <bindings> <tail body>)
+(let-values <mv-bindings> <tail body>)
+(let*-values <mv-bindings> <tail body>)
+
+(let-syntax <bindings> <tail body>)
+(letrec-syntax <bindings> <tail body>)
+
+(begin <tail sequence>)
+~~~
+
+一个`<cond clause>`是
+
+`(<test> <tail sequence>)`，
+
+一个`<case clause>`是
+
+`((<datum>*) <tail sequence>)`，
+
+一个`<tail body>`是
+
+`<definition>* <tail sequence>`，
+
+且一个`<tail sequence>`是
+
+`<expression>* <tail expression>`。
+
+* 如果一个`cond`表达式在尾上下文中，且有一个`\(\texttt{($<expression_1>$ => $<expression_2>$)}\)`形式的子句，那么对`\(<expression_2>\)`求值结果的过程的（隐含）调用在尾上下文中。`\(<Expression_2>\)`它自己不在尾上下文中。
+
+特定的内置过程也必须执行尾调用。
 
 
 
