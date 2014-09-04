@@ -4,6 +4,23 @@ title: 算法语言Scheme修订<sup>6</sup>报告
 tagline: R6RS简体中文翻译
 ---
 
+$$
+\newcommand{\ensuremath}[1]{#1}
+\renewcommand{\mbox}[1]{#1}
+\renewcommand{\textrm}[1]{ {\rm #1} }
+\renewcommand{\textbf}[1]{ {\bf #1} }
+\renewcommand{\textit}[1]{ {\it #1} }
+
+\newcommand{\cf}{\tt}
+
+\newcommand{\nt}[1]{\textit{#1}}
+\newcommand{\sy}[1]{ {\cf #1} }
+\newcommand{\va}[1]{ {\cf #1} } % TODO: FIXME: A blank MUST between two `{'
+
+\newcommand{\semfalse}{\texttt{#f}}
+\newcommand{\semtrue}{\texttt{#t}}
+$$
+
 <center><font size="4">M</font>ICHAEL <font size="4">S</font>PERBER</center>  
 <center><font size="4">R. K</font>ENT <font size="4">D</font>YBVIG, <font size="4">M</font>ATTHEW <font size="4">F</font>LATT, <font size="4">A</font>NTON <font size="4">V</font>AN <font size="4">S</font>TRAATEN</center>  
 <center>(编辑)</center>  
@@ -4386,6 +4403,57 @@ $$
 以后，我们会以更复杂的方式利用显示的求值上下文。
 
 ## A.2. 语法 {#Aa-2}
+
+
+$$
+\begin{array}{lr@{}ll}
+\\
+\mathcal{P} & ::=~~& \texttt{(}\sy{store}~\texttt{(}\nt{sf}~\cdots\texttt{)}~\nt{es}\texttt{)}~~\mid~~\textbf{uncaught exception: } \nt{v}~~\mid~~\textbf{unknown: } \textit{description}\\
+\mathcal{A} & ::=~~& \texttt{(}\sy{store}~\texttt{(}\nt{sf}~\cdots\texttt{)}~\texttt{(}\va{values}~\nt{v}~\cdots\texttt{)}\texttt{)}~~\mid~~\textbf{uncaught exception: } \nt{v}~~\mid~~\textbf{unknown: } \textit{description}\\
+\mathcal{R} & ::=~~& \texttt{(}\va{values}~\ensuremath{\mathcal{R}_v}~\cdots\texttt{)}~~\mid~~\sy{exception}~~\mid~~\sy{unknown}\\
+\ensuremath{\mathcal{R}_v} & ::=~~& \sy{pair}~~\mid~~\va{null}~~\mid~~'\nt{sym}~~\mid~~\nt{sqv}~~\mid~~\sy{condition}~~\mid~~\sy{procedure}\\
+\nt{sf} & ::=~~& \texttt{(}\nt{x}~\nt{v}\texttt{)}~~\mid~~\texttt{(}\nt{x}~\sy{bh}\texttt{)}~~\mid~~\texttt{(}\nt{pp}~\texttt{(}\va{cons}~\nt{v}~\nt{v}\texttt{)}\texttt{)}\\
+\nt{es} & ::=~~& '\nt{seq}~~\mid~~'\nt{sqv}~~\mid~~'\texttt{()}~~\mid~~\texttt{(}\sy{begin}~\nt{es}~\nt{es}~\cdots\texttt{)}\\
+&\mid~~~~&
+\texttt{(}\sy{begin0}~\nt{es}~\nt{es}~\cdots\texttt{)}~~\mid~~\texttt{(}\nt{es}~\nt{es}~\cdots\texttt{)}~~\mid~~\texttt{(}\sy{if}~\nt{es}~\nt{es}~\nt{es}\texttt{)}~~\mid~~\texttt{(}\sy{set\mbox{\texttt{!}}}~\nt{x}~\nt{es}\texttt{)}~~\mid~~\nt{x}~~\mid~~\nt{nonproc}\\
+&\mid~~~~&
+\nt{pproc}~~\mid~~\texttt{(}\sy{lambda}~\nt{f}~\nt{es}~\nt{es}~\cdots\texttt{)}~~\mid~~\texttt{(}\sy{letrec}~\texttt{(}\texttt{(}\nt{x}~\nt{es}\texttt{)}~\cdots\texttt{)}~\nt{es}~\nt{es}~\cdots\texttt{)}\\
+&\mid~~~~&
+\texttt{(}\sy{letrec\mbox{\texttt{*}}}~\texttt{(}\texttt{(}\nt{x}~\nt{es}\texttt{)}~\cdots\texttt{)}~\nt{es}~\nt{es}~\cdots\texttt{)}~~\mid~~\texttt{(}\sy{dw}~\nt{x}~\nt{es}~\nt{es}~\nt{es}\texttt{)}~~\mid~~\texttt{(}\sy{throw}~\nt{x}~\nt{es}\texttt{)}\\
+&\mid~~~~&
+\va{unspecified}~~\mid~~\texttt{(}\sy{handlers}~\nt{es}~\cdots~\nt{es}\texttt{)}~~\mid~~\texttt{(}\sy{l\mbox{\texttt{!}}}~\nt{x}~\nt{es}\texttt{)}~~\mid~~\texttt{(}\sy{reinit}~\nt{x}\texttt{)}\\
+\nt{f} & ::=~~& \texttt{(}\nt{x}~\cdots\texttt{)}~~\mid~~\texttt{(}\nt{x}~\nt{x}~\cdots~\sy{dot}~\nt{x}\texttt{)}~~\mid~~\nt{x}\\
+\nt{s} & ::=~~& \nt{seq}~~\mid~~\texttt{()}~~\mid~~\nt{sqv}~~\mid~~\nt{sym}\\
+\nt{seq} & ::=~~& \texttt{(}\nt{s}~\nt{s}~\cdots\texttt{)}~~\mid~~\texttt{(}\nt{s}~\nt{s}~\cdots~\sy{dot}~\nt{sqv}\texttt{)}~~\mid~~\texttt{(}\nt{s}~\nt{s}~\cdots~\sy{dot}~\nt{sym}\texttt{)}\\
+\nt{sqv} & ::=~~& \nt{n}~~\mid~~\semtrue{}~~\mid~~\semfalse{}\\
+\\
+\nt{p} & ::=~~& \texttt{(}\sy{store}~\texttt{(}\nt{sf}~\cdots\texttt{)}~\nt{e}\texttt{)}\\
+\nt{e} & ::=~~& \texttt{(}\sy{begin}~\nt{e}~\nt{e}~\cdots\texttt{)}~~\mid~~\texttt{(}\sy{begin0}~\nt{e}~\nt{e}~\cdots\texttt{)}~~\mid~~\texttt{(}\nt{e}~\nt{e}~\cdots\texttt{)}~~\mid~~\texttt{(}\sy{if}~\nt{e}~\nt{e}~\nt{e}\texttt{)}~~\mid~~\texttt{(}\sy{set\mbox{\texttt{!}}}~\nt{x}~\nt{e}\texttt{)}\\
+&\mid~~~~&
+\texttt{(}\sy{handlers}~\nt{e}~\cdots~\nt{e}\texttt{)}~~\mid~~\nt{x}~~\mid~~\nt{nonproc}~~\mid~~\nt{proc}~~\mid~~\texttt{(}\sy{dw}~\nt{x}~\nt{e}~\nt{e}~\nt{e}\texttt{)}~~\mid~~\va{unspecified}\\
+&\mid~~~~&
+\texttt{(}\sy{letrec}~\texttt{(}\texttt{(}\nt{x}~\nt{e}\texttt{)}~\cdots\texttt{)}~\nt{e}~\nt{e}~\cdots\texttt{)}~~\mid~~\texttt{(}\sy{letrec\mbox{\texttt{*}}}~\texttt{(}\texttt{(}\nt{x}~\nt{e}\texttt{)}~\cdots\texttt{)}~\nt{e}~\nt{e}~\cdots\texttt{)}\\
+&\mid~~~~&
+\texttt{(}\sy{l\mbox{\texttt{!}}}~\nt{x}~\nt{es}\texttt{)}~~\mid~~\texttt{(}\sy{reinit}~\nt{x}\texttt{)}\\
+\\
+\nt{v} & ::=~~& \nt{nonproc}~~\mid~~\nt{proc}\\
+\nt{nonproc} & ::=~~& \nt{pp}~~\mid~~\va{null}~~\mid~~'\nt{sym}~~\mid~~\nt{sqv}~~\mid~~\texttt{(}\sy{make\mbox{\texttt{-}}cond}~\nt{string}\texttt{)}\\
+\nt{proc} & ::=~~& \texttt{(}\sy{lambda}~\nt{f}~\nt{e}~\nt{e}~\cdots\texttt{)}~~\mid~~\nt{pproc}~~\mid~~\texttt{(}\sy{throw}~\nt{x}~\nt{e}\texttt{)}\\
+\nt{pproc} & ::=~~& \nt{aproc}~~\mid~~\nt{proc1}~~\mid~~\nt{proc2}~~\mid~~\va{list}~~\mid~~\va{dynamic\mbox{\texttt{-}}wind}~~\mid~~\va{apply}~~\mid~~\va{values}\\
+\nt{proc1} & ::=~~& \va{null\mbox{\texttt{?}}}~~\mid~~\va{pair\mbox{\texttt{?}}}~~\mid~~\va{car}~~\mid~~\va{cdr}~~\mid~~\va{call\mbox{\texttt{/}}cc}~~\mid~~\va{procedure\mbox{\texttt{?}}}~~\mid~~\va{condition\mbox{\texttt{?}}}~~\mid~~\nt{raise\mbox{\texttt{*}}}\\
+\nt{proc2} & ::=~~& \va{cons}~~\mid~~\sy{consi}~~\mid~~\va{set\mbox{\texttt{-}}car\mbox{\texttt{!}}}~~\mid~~\va{set\mbox{\texttt{-}}cdr\mbox{\texttt{!}}}~~\mid~~\va{eqv\mbox{\texttt{?}}}~~\mid~~\va{call\mbox{\texttt{-}}with\mbox{\texttt{-}}values}~~\mid~~\va{with\mbox{\texttt{-}}exception\mbox{\texttt{-}}handler}\\
+\nt{aproc} & ::=~~& \va{\mbox{\texttt{+}}}~~\mid~~\va{\mbox{\texttt{-}}}~~\mid~~\va{\mbox{\texttt{/}}}~~\mid~~\va{\mbox{\texttt{*}}}\\
+\nt{raise\mbox{\texttt{*}}} & ::=~~& \va{raise\mbox{\texttt{-}}continuable}~~\mid~~\va{raise}\\
+\\
+\nt{pp} & ::=~~& \nt{ip}~~\mid~~\nt{mp}\\
+\nt{ip} & ::=~~ &  \textrm{[immutable pair pointers]} \\
+\nt{mp} & ::=~~ &  \textrm{[mutable pair pointers]} \\
+\\
+\nt{sym} & ::=~~ &  \textrm{[variables except \sy{dot}]} \\
+\nt{x} & ::=~~ &  \textrm{[variables except \sy{dot} and keywords]} \\
+\nt{n} & ::=~~ &  \textrm{[numbers]} \\
+\end{array}
+$$
 
 
 
