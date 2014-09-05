@@ -19,6 +19,10 @@ $$
 
 \newcommand{\semfalse}{\texttt{#f}}
 \newcommand{\semtrue}{\texttt{#t}}
+
+\newcommand{\sharpfoo}[1]{ {\tt\##1} }
+\newcommand{\schfalse}{\sharpfoo{f}}
+\newcommand{\schtrue}{\sharpfoo{t}}
 $$
 
 <center><font size="4">M</font>ICHAEL <font size="4">S</font>PERBER</center>  
@@ -31,7 +35,7 @@ $$
 **<center>2007年09月26日</center>**
 
 [<center>在GitHub联系译者</center>](https://github.com/jks-liu/R6RS.zh-cn)
-<center>已完成42%，最后修改于2014年08月19日</center>
+<center>已完成80%，最后修改于2014年09月05日</center>
 
 # 摘要 <!-- SUMMARY -->
 
@@ -4396,7 +4400,7 @@ $$
   \begin{array}{l}
     E[\texttt{((lambda}~\texttt{(}x_1 \cdots\texttt{)}~e\texttt{)}~v_1~\cdots\texttt{)}] \rightarrow
     \\
-    \textrm{\textbf{violation:} wrong argument count} ~~~~~ (\#x_1 \neq \#v_1)
+    \textrm{\textbf{violation:} 错误的参数数量} ~~~~~ (\#x_1 \neq \#v_1)
   \end{array}
 $$
 
@@ -4408,8 +4412,8 @@ $$
 $$
 \begin{array}{lr@{}ll}
 \\
-\mathcal{P} & ::=~~& \texttt{(}\sy{store}~\texttt{(}\nt{sf}~\cdots\texttt{)}~\nt{es}\texttt{)}~~\mid~~\textbf{uncaught exception: } \nt{v}~~\mid~~\textbf{unknown: } \textit{description}\\
-\mathcal{A} & ::=~~& \texttt{(}\sy{store}~\texttt{(}\nt{sf}~\cdots\texttt{)}~\texttt{(}\va{values}~\nt{v}~\cdots\texttt{)}\texttt{)}~~\mid~~\textbf{uncaught exception: } \nt{v}~~\mid~~\textbf{unknown: } \textit{description}\\
+\mathcal{P} & ::=~~& \texttt{(}\sy{store}~\texttt{(}\nt{sf}~\cdots\texttt{)}~\nt{es}\texttt{)}~~\mid~~\textbf{未捕获的异常: } \nt{v}~~\mid~~\textbf{未知: } \textit{description}\\
+\mathcal{A} & ::=~~& \texttt{(}\sy{store}~\texttt{(}\nt{sf}~\cdots\texttt{)}~\texttt{(}\va{values}~\nt{v}~\cdots\texttt{)}\texttt{)}~~\mid~~\textbf{未捕获的异常: } \nt{v}~~\mid~~\textbf{未知: } \textit{description}\\
 \mathcal{R} & ::=~~& \texttt{(}\va{values}~\ensuremath{\mathcal{R}_v}~\cdots\texttt{)}~~\mid~~\sy{exception}~~\mid~~\sy{unknown}\\
 \ensuremath{\mathcal{R}_v} & ::=~~& \sy{pair}~~\mid~~\va{null}~~\mid~~'\nt{sym}~~\mid~~\nt{sqv}~~\mid~~\sy{condition}~~\mid~~\sy{procedure}\\
 \nt{sf} & ::=~~& \texttt{(}\nt{x}~\nt{v}\texttt{)}~~\mid~~\texttt{(}\nt{x}~\sy{bh}\texttt{)}~~\mid~~\texttt{(}\nt{pp}~\texttt{(}\va{cons}~\nt{v}~\nt{v}\texttt{)}\texttt{)}\\
@@ -4446,20 +4450,31 @@ $$
 \nt{raise\mbox{\texttt{*}}} & ::=~~& \va{raise\mbox{\texttt{-}}continuable}~~\mid~~\va{raise}\\
 \\
 \nt{pp} & ::=~~& \nt{ip}~~\mid~~\nt{mp}\\
-\nt{ip} & ::=~~ &  \textrm{[immutable pair pointers]} \\
-\nt{mp} & ::=~~ &  \textrm{[mutable pair pointers]} \\
+\nt{ip} & ::=~~ &  \textrm{[不可变点对指针]} \\
+\nt{mp} & ::=~~ &  \textrm{[可变点对指针]} \\
 \\
-\nt{sym} & ::=~~ &  \textrm{[variables except \sy{dot}]} \\
-\nt{x} & ::=~~ &  \textrm{[variables except \sy{dot} and keywords]} \\
-\nt{n} & ::=~~ &  \textrm{[numbers]} \\
+\nt{sym} & ::=~~ &  \textrm{[除了\sy{dot}的变量]} \\
+\nt{x} & ::=~~ &  \textrm{[除了\sy{dot}的变量和关键词]} \\
+\nt{n} & ::=~~ &  \textrm{[数字]} \\
 \end{array}
 $$
 
+**图A.2a：**程序和观测的语法
+
+图A.2a展示了本报告语义模型的子集。非终结符被写成*斜体*或一种艺术字体（`\(\cal P\)` `\(\cal A\)`, `\(\cal R\)`, 和`\(\cal R_v\)`）且字面量被写成`\(\texttt{等宽}\)`字体。
+
+非终结符`\(\cal P\)`表示可能的程序状态。第一个选择是有一个存储和一个表达式的程序。第二个选择是一个未捕获的异常，及第三个被用作指示它建模的模型没有完全指定原语行为的地方（那些情况具体的细节见[第A.12小节](#Aa-12)）。非终结符`\(\cal A\)`表示程序的最终结果。它和`\(\cal P\)`是一样的除了表达式已经被减少到一些值得序列之外。
+
+非终结符`\(\cal R\)`和`\(\cal R_v\)`表示程序的可观测结果。每个`\(\cal R\)`或者是一个对应于正常终止的程序产生的值的值的序列，或者是一个指示未捕获异常被抛出的标签，或者是`\(\sy{unknown}\)`如果程序到达一个本语义没有指明的情况的话。非终结符`\(\cal R_v\)`指明对于一个特定的值来说可观测的结果是什么：一个点对，空表，一个符号，一个自引用的值（`\(\schtrue\)`, `\(\schfalse\)`和数字），一个条件，或一个过程。
+
+非终结符`\(\nt{sf}\)`产生存储的一个单独元素。存储保持一个程序所有的可变状态。它，连同操作它的规则一起，被更加详细地解释了。
 
 
 
 
+值（*v*）被分成四类：
 
+* 非过程（*nonproc*）包括点对指针
 
 
 
