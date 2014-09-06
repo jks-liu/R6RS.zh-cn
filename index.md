@@ -44,6 +44,19 @@ $$
 \newcommand{\Fstar}{\ensuremath{F^{\star}}}
 \newcommand{\Io}{\ensuremath{I^{\circ}}}
 \newcommand{\Istar}{\ensuremath{I^{\star}}}
+
+\newcommand{\extraspterm}{\\[6pt]}
+
+% It's not available in MathJax default font.
+% \newcommand{\llbracket}{\unicode{x27e6}}
+% \newcommand{\rrbracket}{\unicode{x27e7}}
+% see https://groups.google.com/forum/#!topic/mathjax-users/kCHv2j5wWC8
+\renewcommand{\llbracket}{[\!\![}
+\renewcommand{\rrbracket}{]\!\!]}
+
+\newcommand{\rulename}[1]{\textsf{[#1]}}
+\newcommand{\twolineruleA}[4]{#1 #4 & #3 \\ #2 \\ \\}
+\newcommand{\twolinescruleA}[5]{#1 #5 & #3 \\ #2 ~ ~ ~ #4 \\ \\}
 $$
 
 <center><font size="4">M</font>ICHAEL <font size="4">S</font>PERBER</center>  
@@ -4582,10 +4595,171 @@ $$
 
 图A.2b展示求值上下文的非终结符集合。非终结符*P*控制在不包含任何引用数据的程序中求值在哪儿发生。*E*和*F*求值上下文用于表达式。它们以这种方式被作为考虑因素以至于*PG*，*G*，和*H*求值上下文可以重复使用*F*，且对支持异常和`dynamic-wind`的上下文具有细粒度的控制权。星号变量和圆圈变量，`\(\Estar{}\)`, `\(\Eo{}\)`, `\(\Fstar{}\)`, 和`\(\Fo{}\)`指示在哪儿单个值被提升为多个值，及在哪儿多个值被降级为单个值。*U*上下文被用作管理报告中`set!`, `set-car!`, 和`set-cdr!`未指定的结果（具体细节见[第A.12小节](#Aa-12)）。最后，*S*上下文是被引用表达式可以被简化的地方。求值上下文的精确使用伴随着相关的规则被解释。
 
+<!-- 只有网页版有
+尽管没有被写进语法图中，但是绑定在存储上，以及在`lambda`, `letrec`, 和`letrec*`中的变量序列必须不能包含任意的副本。
+-->
+
+为了将语义的答案（`\(\calA\)`）转换成可观察的结果，我们使用这两个方程：
+
+$$
+\begin{array}{l@{}l}
+\mathscr{O}& : \mathcal{A} \rightarrow \mathcal{R}\\
+\mathscr{O} \llbracket & \texttt{(}\sy{store}~\texttt{(}\nt{sf}~\cdots\texttt{)}~\texttt{(}\va{values}~v_1~\cdots\texttt{)}\texttt{)} \rrbracket = \\ 
+& \texttt{(}\va{values}~\mathscr{O}_{v}\llbracket{}v_1\rrbracket~\cdots\texttt{)} \extraspterm
+\mathscr{O} \llbracket & \textbf{未捕获异常: }\nt{v} \rrbracket = \\ 
+& \sy{exception} \extraspterm
+\mathscr{O} \llbracket & \textbf{未知: } \textit{description} \rrbracket = \\ 
+& \sy{unknown} \extraspterm
+\end{array}
+$$
+
+$$
+\begin{array}{lcl}
+\mathscr{O}_{v} : \nt{v} \rightarrow \ensuremath{\mathcal{R}_v}\\
+\mathscr{O}_{v} \llbracket \nt{pp}_{1} \rrbracket & = &
+\sy{pair} \\
+\mathscr{O}_{v} \llbracket \va{null} \rrbracket & = &
+\va{null} \\
+\mathscr{O}_{v} \llbracket \sy{'}sym_1 \rrbracket & = &
+\sy{'}sym_1 \\
+\mathscr{O}_{v} \llbracket \nt{sqv}_{1} \rrbracket & = &
+\nt{sqv}_{1} \\
+\mathscr{O}_{v} \llbracket \texttt{(}\sy{make\mbox{\texttt{-}}cond}~\nt{string}\texttt{)} \rrbracket & = &
+\sy{condition} \\
+\mathscr{O}_{v} \llbracket \nt{proc} \rrbracket & = &
+\sy{procedure} \\
+\end{array}
+$$
+
+它们排除了存储，且以简单的标签代替复杂的值，这些标签仅仅指示产生的值得种类或者，如果没有值产生的话，命令产生一个未捕获的异常，或者程序到达一个本语义没有指明的状态。
+
+## A.3. 引用 {#Aa-3}
+
+$$
+\begin{array}{lr}
+\twolineruleA
+  {\texttt{(}\sy{store}~\texttt{(}\nt{sf}_{1}~\cdots\texttt{)}~\nt{S}_{1}['\nt{sqv}_{1}]\texttt{)}}
+  {\texttt{(}\sy{store}~\texttt{(}\nt{sf}_{1}~\cdots\texttt{)}~\nt{S}_{1}[\nt{sqv}_{1}]\texttt{)}}
+  {\rulename{6sqv}}
+  {\rightarrow}
+
+\twolineruleA
+  {\texttt{(}\sy{store}~\texttt{(}\nt{sf}_{1}~\cdots\texttt{)}~\nt{S}_{1}['\texttt{()}]\texttt{)}}
+  {\texttt{(}\sy{store}~\texttt{(}\nt{sf}_{1}~\cdots\texttt{)}~\nt{S}_{1}[\va{null}]\texttt{)}}
+  {\rulename{6eseq}}
+  {\rightarrow}
+
+\twolinescruleA
+  {\texttt{(}\sy{store}~\texttt{(}\nt{sf}_{1}~\cdots\texttt{)}~\nt{S}_{1}['\nt{seq}_{1}]\texttt{)}}
+  {\texttt{(}\sy{store}~\texttt{(}\nt{sf}_{1}~\cdots\texttt{)}~\texttt{(}\texttt{(}\sy{lambda}~\texttt{(}\nt{qp}\texttt{)}~\nt{S}_{1}[\nt{qp}]\texttt{)}~\mathscr{Q}_{i}\llbracket{}\nt{seq}_{1}\rrbracket\texttt{)}\texttt{)}}
+  {\rulename{6qcons}}
+  {(\nt{qp} \textrm{ fresh})}
+  {\rightarrow}
+
+\twolinescruleA
+  {\texttt{(}\sy{store}~\texttt{(}\nt{sf}_{1}~\cdots\texttt{)}~\nt{S}_{1}['\nt{seq}_{1}]\texttt{)}}
+  {\texttt{(}\sy{store}~\texttt{(}\nt{sf}_{1}~\cdots\texttt{)}~\texttt{(}\texttt{(}\sy{lambda}~\texttt{(}\nt{qp}\texttt{)}~\nt{S}_{1}[\nt{qp}]\texttt{)}~\mathscr{Q}_{m}\llbracket{}\nt{seq}_{1}\rrbracket\texttt{)}\texttt{)}}
+  {\rulename{6qconsi}}
+  {(\nt{qp} \textrm{ fresh})}
+  {\rightarrow}
+
+\end{array}
+$$
+
+$$
+\begin{array}{lcl}
+\mathscr{Q}_{i} : \nt{seq} \rightarrow \nt{e}\\\mathscr{Q}_{i} \llbracket \texttt{()} \rrbracket & = &
+\va{null} \\
+\mathscr{Q}_{i} \llbracket \texttt{(}\nt{s}_{1}~\nt{s}_{2}~\cdots\texttt{)} \rrbracket & = &
+\texttt{(}\va{cons}~\mathscr{Q}_{i}\llbracket{}\nt{s}_{1}\rrbracket~\mathscr{Q}_{i}\llbracket{}\texttt{(}\nt{s}_{2}~\cdots\texttt{)}\rrbracket\texttt{)} \\
+\mathscr{Q}_{i} \llbracket \texttt{(}\nt{s}_{1}~\sy{dot}~\nt{sqv}_{1}\texttt{)} \rrbracket & = &
+\texttt{(}\va{cons}~\mathscr{Q}_{i}\llbracket{}\nt{s}_{1}\rrbracket~\nt{sqv}_{1}\texttt{)} \\
+\mathscr{Q}_{i} \llbracket \texttt{(}\nt{s}_{1}~\nt{s}_{2}~\nt{s}_{3}~\cdots~\sy{dot}~\nt{sqv}_{1}\texttt{)} \rrbracket & = &
+\texttt{(}\va{cons}~\mathscr{Q}_{i}\llbracket{}\nt{s}_{1}\rrbracket~\mathscr{Q}_{i}\llbracket{}\texttt{(}\nt{s}_{2}~\nt{s}_{3}~\cdots~\sy{dot}~\nt{sqv}_{1}\texttt{)}\rrbracket\texttt{)} \\
+\mathscr{Q}_{i} \llbracket \texttt{(}\nt{s}_{1}~\sy{dot}~\nt{sym}_{1}\texttt{)} \rrbracket & = &
+\texttt{(}\va{cons}~\mathscr{Q}_{i}\llbracket{}\nt{s}_{1}\rrbracket~'\nt{sym}_{1}\texttt{)} \\
+\mathscr{Q}_{i} \llbracket \texttt{(}\nt{s}_{1}~\nt{s}_{2}~\nt{s}_{3}~\cdots~\sy{dot}~\nt{sym}_{1}\texttt{)} \rrbracket & = &
+\texttt{(}\va{cons}~\mathscr{Q}_{i}\llbracket{}\nt{s}_{1}\rrbracket~\mathscr{Q}_{i}\llbracket{}\texttt{(}\nt{s}_{2}~\nt{s}_{3}~\cdots~\sy{dot}~\nt{sym}_{1}\texttt{)}\rrbracket\texttt{)} \\
+\mathscr{Q}_{i} \llbracket \nt{sym}_{1} \rrbracket & = &
+\sy{'}sym_1 \\
+\mathscr{Q}_{i} \llbracket \nt{sqv}_{1} \rrbracket & = &
+\nt{sqv}_{1} \\
+\\\mathscr{Q}_{m} : \nt{seq} \rightarrow \nt{e}\\\mathscr{Q}_{m} \llbracket \texttt{()} \rrbracket & = &
+\va{null} \\
+\mathscr{Q}_{m} \llbracket \texttt{(}\nt{s}_{1}~\nt{s}_{2}~\cdots\texttt{)} \rrbracket & = &
+\texttt{(}\sy{consi}~\mathscr{Q}_{m}\llbracket{}\nt{s}_{1}\rrbracket~\mathscr{Q}_{m}\llbracket{}\texttt{(}\nt{s}_{2}~\cdots\texttt{)}\rrbracket\texttt{)} \\
+\mathscr{Q}_{m} \llbracket \texttt{(}\nt{s}_{1}~\sy{dot}~\nt{sqv}_{1}\texttt{)} \rrbracket & = &
+\texttt{(}\sy{consi}~\mathscr{Q}_{m}\llbracket{}\nt{s}_{1}\rrbracket~\nt{sqv}_{1}\texttt{)} \\
+\mathscr{Q}_{m} \llbracket \texttt{(}\nt{s}_{1}~\nt{s}_{2}~\nt{s}_{3}~\cdots~\sy{dot}~\nt{sqv}_{1}\texttt{)} \rrbracket & = &
+\texttt{(}\sy{consi}~\mathscr{Q}_{m}\llbracket{}\nt{s}_{1}\rrbracket~\mathscr{Q}_{m}\llbracket{}\texttt{(}\nt{s}_{2}~\nt{s}_{3}~\cdots~\sy{dot}~\nt{sqv}_{1}\texttt{)}\rrbracket\texttt{)} \\
+\mathscr{Q}_{m} \llbracket \texttt{(}\nt{s}_{1}~\sy{dot}~\nt{sym}_{1}\texttt{)} \rrbracket & = &
+\texttt{(}\sy{consi}~\mathscr{Q}_{m}\llbracket{}\nt{s}_{1}\rrbracket~'\nt{sym}_{1}\texttt{)} \\
+\mathscr{Q}_{m} \llbracket \texttt{(}\nt{s}_{1}~\nt{s}_{2}~\nt{s}_{3}~\cdots~\sy{dot}~\nt{sym}_{1}\texttt{)} \rrbracket & = &
+\texttt{(}\sy{consi}~\mathscr{Q}_{m}\llbracket{}\nt{s}_{1}\rrbracket~\mathscr{Q}_{m}\llbracket{}\texttt{(}\nt{s}_{2}~\nt{s}_{3}~\cdots~\sy{dot}~\nt{sym}_{1}\texttt{)}\rrbracket\texttt{)} \\
+\mathscr{Q}_{m} \llbracket \nt{sym}_{1} \rrbracket & = &
+\sy{'}sym_1 \\
+\mathscr{Q}_{m} \llbracket \nt{sqv}_{1} \rrbracket & = &
+\nt{sqv}_{1} \\
+\end{array}
+$$
+
+{:refdef .caption #Fa-3}
+**图A.3：**引用
+{: refdef}
+
+
+第一个应用到所有程序的消去规则是[图A.3](#Fa-3)中的规则。前两个规则为被引用的没有引入任何点对的表达式消去引用。最后两个规则将被引用的数据提到表达式的顶部，所以它们只被求值一次，且通过源方程`\(\mathscr{Q}_i\)`和`\(\mathscr{Q}_m\)`将数据转换成对`cons`或者`consi`的调用。
+
+注意，规则`\(\rulename{6qcons}\)`和`\(\rulename{6qconsi}\)`的左边是一样的，这意味着对某一项，一条规则适用，另一条也适用。因此，一个被引用的表达式可以被提出到一系列的`consi`表达式中，其创造不可变点对（见[第A.7小节](#Aa-7)中关于其怎样发生的规则）。
+
+这些规则在任何其它规则之前被应用，这是由它们，及所有的其它规则，应用的上下文决定的。特别地，这些规则在*S*上下文中应用。图A.2b展示了*S*上下文允许这种消去应用到一个*e*的任意的子表达式中，以及左边没有被引用表达式在其中的所有的子表达式，尽管右边的表达式可以有被引用的表达式。相应地，在程序中，这条规则在每个被引用的表达式上应用一次，然后移到程序的开头。剩余的规则在不包含任何被引用的表达式的上下文中应用，其确保在那些规则引用之前这些规则将所有被引用的数据转换成表。
+
+尽管标识符*qp*没有下标，但是PLT Redex的“fresh（新鲜）”声明的语义特别注意确保规则右边的*qp*确实和附加条件中的是一样的。
+
+## A.4. 多个值 {#Aa-4}
+
+$$
+\begin{array}{lr}
+\twolineruleA
+  {\nt{P}_{1}[v_1]_{\star}}
+  {\nt{P}_{1}[\texttt{(}\va{values}~v_1\texttt{)}]}
+  {\rulename{6promote}}
+  {\rightarrow}
+
+\twolineruleA
+  {\nt{P}_{1}[\texttt{(}\va{values}~v_1\texttt{)}]_{\circ}}
+  {\nt{P}_{1}[v_1]}
+  {\rulename{6demote}}
+  {\rightarrow}
+
+\twolineruleA
+  {\nt{P}_{1}[\texttt{(}\va{call\mbox{\texttt{-}}with\mbox{\texttt{-}}values}~\texttt{(}\sy{lambda}~\texttt{()}~\texttt{(}\va{values}~v_2~\cdots\texttt{)}\texttt{)}~v_1\texttt{)}]}
+  {\nt{P}_{1}[\texttt{(}v_1~v_2~\cdots\texttt{)}]}
+  {\rulename{6cwvd}}
+  {\rightarrow}
+
+\twolinescruleA
+  {\nt{P}_{1}[\texttt{(}\va{call\mbox{\texttt{-}}with\mbox{\texttt{-}}values}~v_1~v_2\texttt{)}]}
+  {\nt{P}_{1}[\texttt{(}\va{call\mbox{\texttt{-}}with\mbox{\texttt{-}}values}~\texttt{(}\sy{lambda}~\texttt{()}~\texttt{(}v_1\texttt{)}\texttt{)}~v_2\texttt{)}]}
+  {\rulename{6cwvw}}
+  {(v_1 \neq \texttt{(lambda}~\texttt{()}~\nt{e}\texttt{)})}
+  {\rightarrow}
+
+\end{array}
+$$
+
+{:refdef .caption #Fa-4}
+**图A.4：**多个值和`call-with-values`
+{: refdef}
+
+多个值的基本策略是添加一个将`\((\va{values}~v)\)`降级为*v*的规则和另一个将*v*提升为`\((\va{values}~v)\)`的规则。如果我们允许这些规则应用在一个任意的求值上下文中，可是那么，我们可能会在降级和提升中得到无尽替代的无穷的消去序列。所以，语义只允许在期待单个值得上下文中降级，只允许在期待多个值的上下文中提升。我们通过Felleisen-Hieb框架的一个小的扩展获得这个行为（R<sup>5</sup>RS的操作模型也同样提供）。我们扩展符号使得孔有名字（以下标写成），以及上下文匹配语法可以要求一个特定名字的孔（同样以下标写成，比如`\(E[e]_{\star}\)`）。这个扩展允许我们给孔不同的名字，其期待多个值，以及那些期待单个值，且因此组织上下文的语法。
+
+
+
 
 
 <!--
-```  勘误：11.19
+  勘误：D
   TEMPLATE: 
 `\(\)`
 `\(\texttt{}\)`
@@ -4593,10 +4767,16 @@ $$
 {:refdef .note}
 *注意：*
 {: refdef}
-<p><font size="2"><i>注意：</i></font></p>
+
+
 /r6rs-translation-experience/
   TODO：将逗号由中文改为英文
     改x$_1$为$x_1$
+
+`减少'翻译成`消去`
+
+为所有的caption加上id
+
 -->
 
 # 附录E 语言的变化 {#Ae}
