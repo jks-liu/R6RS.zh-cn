@@ -17,12 +17,33 @@ $$
 \newcommand{\sy}[1]{ {\cf #1} }
 \newcommand{\va}[1]{ {\cf #1} } % TODO: FIXME: A blank MUST between two `{'
 
+\newcommand{\calP}{\ensuremath{\mathcal{P}}}
+\newcommand{\calS}{\ensuremath{\mathcal{S}}}
+\newcommand{\calR}{\ensuremath{\mathcal{R}}}
+\newcommand{\calRv}{\ensuremath{\mathcal{R}_v}}
+\newcommand{\calA}{\ensuremath{\mathcal{A}}}
+\newcommand{\scrO}{\ensuremath{\mathscr{O}}}
+
 \newcommand{\semfalse}{\texttt{#f}}
 \newcommand{\semtrue}{\texttt{#t}}
 
 \newcommand{\sharpfoo}[1]{ {\tt\##1} }
 \newcommand{\schfalse}{\sharpfoo{f}}
 \newcommand{\schtrue}{\sharpfoo{t}}
+
+\newcommand{\either}{*\!\circ}
+\newcommand{\hole}{[~]}
+\newcommand{\holes}{\ensuremath{\hole_{\star}}}
+\newcommand{\holeone}{\ensuremath{\hole_\circ}}
+\newcommand{\holeany}{\ensuremath{\hole_{\either}}}
+
+\newcommand{\beginF}{\ensuremath{\textbf{begin}^{\mbox{\textrm{\textbf{\scriptsize F}}}}}}
+\newcommand{\Eo}{\ensuremath{E^{\circ}}}
+\newcommand{\Estar}{\ensuremath{E^{\star}}}
+\newcommand{\Fo}{\ensuremath{F^{\circ}}}
+\newcommand{\Fstar}{\ensuremath{F^{\star}}}
+\newcommand{\Io}{\ensuremath{I^{\circ}}}
+\newcommand{\Istar}{\ensuremath{I^{\star}}}
 $$
 
 <center><font size="4">M</font>ICHAEL <font size="4">S</font>PERBER</center>  
@@ -4459,7 +4480,9 @@ $$
 \end{array}
 $$
 
+{:refdef .caption}
 **图A.2a：**程序和观测的语法
+{: refdef}
 
 图A.2a展示了本报告语义模型的子集。非终结符被写成*斜体*或一种艺术字体（`\(\cal P\)`<!-- TODO: 少了一个逗号 --> `\(\cal A\)`, `\(\cal R\)`, 和`\(\cal R_v\)`）且字面量被写成`\(\texttt{等宽}\)`字体。
 
@@ -4500,12 +4523,69 @@ $$
 
 值（*v*）被分成四类：
 
-* 非过程（*nonproc*）包括点对指针
+* 非过程（*nonproc*）包括点对指针（pp），空表（null），符号，自引用值（*sqv*），和条件。条件表示报告的条件值，但这儿只包含一条信息且其它情况无效。
+* 用户过程（`(lambda f e e ···)`）包括多参数的lambda表达式和伴随点参数列表的表达式。
+* 基本函数（*pproc*）包括
+  - 算术过程（*aproc*）：`+`, `-`, `/`, 和`*`，
+  - 一个参数的过程（*proc1*）：`null?`, `pair?`, `car`, `cdr`, `call/cc`, `procedure?`, `condition?`, `unspecified?`, `raise`, 和`raise-continuable`,
+  - 两个参数的过程（*proc2*）：`cons`, `set-car!`, `set-cdr!`, `eqv?`, 和`call-with-values`,
+  - 以及`list`, `dynamic-wind`, `apply`, `values`, 和`with-exception-handler。
+* 最后，继续被表示为`throw`表达式，其内部由捕获继续的上下文组成。
+
+图A.2a中非终结符的下面三个集合表示点对（*pp*），其分为不可变点对（*ip*）和可变点对（*mp*）。图A.2a中非终结符的最终集合，*sym*，*x*和*n*，分别表示符号，变量和数字。我们假设非终结符*ip*，*mp*和*sym*全被认为是不想交的。除此之外，假设变量*x*不包括任何关键词或基础操作，因此任何名字和它们相一致的程序变量必须在语义给予程序意义之前被重命名。
+
+$$
+\begin{array}{lr@{}ll}
+\\
+\nt{P} & ::=~~& \texttt{(}\sy{store}~\texttt{(}\nt{sf}~\cdots\texttt{)}~\Estar\texttt{)}\\
+\\
+\nt{E} & ::=~~& \nt{F}[\texttt{(}\sy{handlers}~\nt{proc}~\cdots~\Estar\texttt{)}]~~\mid~~\nt{F}[\texttt{(}\sy{dw}~\nt{x}~\nt{e}~\Estar~\nt{e}\texttt{)}]~~\mid~~\nt{F}\\
+\Estar & ::=~~& \holes~~\mid~~\nt{E}\\
+\Eo & ::=~~& \holeone~~\mid~~\nt{E}\\
+\\
+\nt{F} & ::=~~& \hole~~\mid~~\texttt{(}\nt{v}~\cdots~\Fo~\nt{v}~\cdots\texttt{)}~~\mid~~\texttt{(}\sy{if}~\Fo~\nt{e}~\nt{e}\texttt{)}~~\mid~~\texttt{(}\sy{set\mbox{\texttt{!}}}~\nt{x}~\Fo\texttt{)}~~\mid~~\texttt{(}\sy{begin}~\Fstar~\nt{e}~\nt{e}~\cdots\texttt{)}\\
+&\mid~~~~&
+\texttt{(}\sy{begin0}~\Fstar~\nt{e}~\nt{e}~\cdots\texttt{)}~~\mid~~\texttt{(}\sy{begin0}~\texttt{(}\va{values}~\nt{v}~\cdots\texttt{)}~\Fstar~\nt{e}~\cdots\texttt{)}\\
+&\mid~~~~&
+\texttt{(}\sy{begin0}~\va{unspecified}~\Fstar~\nt{e}~\cdots\texttt{)}~~\mid~~\texttt{(}\va{call\mbox{\texttt{-}}with\mbox{\texttt{-}}values}~\texttt{(}\sy{lambda}~\texttt{()}~\Fstar~\nt{e}~\cdots\texttt{)}~\nt{v}\texttt{)}\\
+&\mid~~~~&
+\texttt{(}\sy{l\mbox{\texttt{!}}}~\nt{x}~\Fo\texttt{)}\\
+\Fstar & ::=~~& \holes~~\mid~~\nt{F}\\
+\Fo & ::=~~& \holeone~~\mid~~\nt{F}\\
+\nt{U} & ::=~~& \texttt{(}\nt{v}~\cdots~\hole~\nt{v}~\cdots\texttt{)}~~\mid~~\texttt{(}\sy{if}~\hole~\nt{e}~\nt{e}\texttt{)}~~\mid~~\texttt{(}\sy{set\mbox{\texttt{!}}}~\nt{x}~\hole\texttt{)}~~\mid~~\texttt{(}\va{call\mbox{\texttt{-}}with\mbox{\texttt{-}}values}~\texttt{(}\sy{lambda}~\texttt{()}~\hole\texttt{)}~\nt{v}\texttt{)}\\
+\\
+\nt{PG} & ::=~~& \texttt{(}\sy{store}~\texttt{(}\nt{sf}~\cdots\texttt{)}~\nt{G}\texttt{)}\\
+\nt{G} & ::=~~& \nt{F}[\texttt{(}\sy{dw}~\nt{x}~\nt{e}~\nt{G}~\nt{e}\texttt{)}]~~\mid~~\nt{F}\\
+\nt{H} & ::=~~& \nt{F}[\texttt{(}\sy{handlers}~\nt{proc}~\cdots~\nt{H}\texttt{)}]~~\mid~~\nt{F}\\
+\\
+\nt{S} & ::=~~& \hole~~\mid~~\texttt{(}\sy{begin}~\nt{e}~\nt{e}~\cdots~\nt{S}~\nt{es}~\cdots\texttt{)}~~\mid~~\texttt{(}\sy{begin}~\nt{S}~\nt{es}~\cdots\texttt{)}~~\mid~~\texttt{(}\sy{begin0}~\nt{e}~\nt{e}~\cdots~\nt{S}~\nt{es}~\cdots\texttt{)}\\
+&\mid~~~~&
+\texttt{(}\sy{begin0}~\nt{S}~\nt{es}~\cdots\texttt{)}~~\mid~~\texttt{(}\nt{e}~\cdots~\nt{S}~\nt{es}~\cdots\texttt{)}~~\mid~~\texttt{(}\sy{if}~\nt{S}~\nt{es}~\nt{es}\texttt{)}~~\mid~~\texttt{(}\sy{if}~\nt{e}~\nt{S}~\nt{es}\texttt{)}~~\mid~~\texttt{(}\sy{if}~\nt{e}~\nt{e}~\nt{S}\texttt{)}\\
+&\mid~~~~&
+\texttt{(}\sy{set\mbox{\texttt{!}}}~\nt{x}~\nt{S}\texttt{)}~~\mid~~\texttt{(}\sy{handlers}~\nt{s}~\cdots~\nt{S}~\nt{es}~\cdots~\nt{es}\texttt{)}~~\mid~~\texttt{(}\sy{handlers}~\nt{s}~\cdots~\nt{S}\texttt{)}~~\mid~~\texttt{(}\sy{throw}~\nt{x}~\nt{e}\texttt{)}\\
+&\mid~~~~&
+\texttt{(}\sy{lambda}~\nt{f}~\nt{S}~\nt{es}~\cdots\texttt{)}~~\mid~~\texttt{(}\sy{lambda}~\nt{f}~\nt{e}~\nt{e}~\cdots~\nt{S}~\nt{es}~\cdots\texttt{)}\\
+&\mid~~~~&
+\texttt{(}\sy{letrec}~\texttt{(}\texttt{(}\nt{x}~\nt{e}\texttt{)}~\cdots~\texttt{(}\nt{x}~\nt{S}\texttt{)}~\texttt{(}\nt{x}~\nt{es}\texttt{)}~\cdots\texttt{)}~\nt{es}~\nt{es}~\cdots\texttt{)}\\
+&\mid~~~~&
+\texttt{(}\sy{letrec}~\texttt{(}\texttt{(}\nt{x}~\nt{e}\texttt{)}~\cdots\texttt{)}~\nt{S}~\nt{es}~\cdots\texttt{)}~~\mid~~\texttt{(}\sy{letrec}~\texttt{(}\texttt{(}\nt{x}~\nt{e}\texttt{)}~\cdots\texttt{)}~\nt{e}~\nt{e}~\cdots~\nt{S}~\nt{es}~\cdots\texttt{)}\\
+&\mid~~~~&
+\texttt{(}\sy{letrec\mbox{\texttt{*}}}~\texttt{(}\texttt{(}\nt{x}~\nt{e}\texttt{)}~\cdots~\texttt{(}\nt{x}~\nt{S}\texttt{)}~\texttt{(}\nt{x}~\nt{es}\texttt{)}~\cdots\texttt{)}~\nt{es}~\nt{es}~\cdots\texttt{)}\\
+&\mid~~~~&
+\texttt{(}\sy{letrec\mbox{\texttt{*}}}~\texttt{(}\texttt{(}\nt{x}~\nt{e}\texttt{)}~\cdots\texttt{)}~\nt{S}~\nt{es}~\cdots\texttt{)}~~\mid~~\texttt{(}\sy{letrec\mbox{\texttt{*}}}~\texttt{(}\texttt{(}\nt{x}~\nt{e}\texttt{)}~\cdots\texttt{)}~\nt{e}~\nt{e}~\cdots~\nt{S}~\nt{es}~\cdots\texttt{)}\\
+\end{array}
+$$
+
+{:refdef .caption}
+**图A.2b：**求值上下文的语法
+{: refdef}
+
+图A.2b展示求值上下文的非终结符集合。非终结符*P*控制在不包含任何引用数据的程序中求值在哪儿发生。*E*和*F*求值上下文用于表达式。它们以这种方式被作为考虑因素以至于*PG*，*G*，和*H*求值上下文可以重复使用*F*，且对支持异常和`dynamic-wind`的上下文具有细粒度的控制权。星号变量和圆圈变量，`\(\Estar{}\)`, `\(\Eo{}\)`, `\(\Fstar{}\)`, 和`\(\Fo{}\)`指示在哪儿单个值被提升为多个值，及在哪儿多个值被降级为单个值。*U*上下文被用作管理报告中`set!`, `set-car!`, 和`set-cdr!`未指定的结果（具体细节见[第A.12小节](#Aa-12)）。最后，*S*上下文是被引用表达式可以被简化的地方。求值上下文的精确使用伴随着相关的规则被解释。
 
 
 
 <!--
-``  勘误：11.19
+```  勘误：11.19
   TEMPLATE: 
 `\(\)`
 `\(\texttt{}\)`
@@ -4540,6 +4620,7 @@ $$
 * 现在，字符指定对应的Unicode标量值。
 * 现在，许多的程序和语言的句法形式是`(rnrs base (6))`库的一部分。一些过程和句法形式被转移到其它库中；见表A.1。
 
+{:refdef .center}
 | 标识符 |  转移到
 |:-|:-
 | `assoc` | (rnrs lists (6))
@@ -4598,8 +4679,11 @@ $$
 | `with-output-to-file` | (rnrs io simple (6))
 | `write` | (rnrs io simple (6))
 | `write-char` |  (rnrs io simple (6))
+{: refdef}
 
-表 A.1：标识符转移到库中
+{:refdef .caption}
+**图A.1：**标识符转移到库中
+{: refdef}
 
 * 基本语言有下列新的过程和句法形式：`letrec*`, `let-values`, `let*-values`, `real-valued?`, `rational-valued?`, `integer-valued?`, `exact`, `inexact`, `finite?`, `infinite?`, `nan?`, `div`, `mod`, `div-and-mod`, `div0`, `mod0`, `div0-and-mod0`, `exact-integer-sqrt`, `boolean=?`, `symbol=?`, `string-for-each`, `vector-map`, `vector-for-each`, `error`, `assertion-violation`, `assert`, `call/cc`, `identifier-syntax`。
 * 下列的过程被移除：`char-ready?`, `transcript-on`, `transcript-off`, `load`。
