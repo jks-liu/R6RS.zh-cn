@@ -35,17 +35,56 @@
     
     <script type="text/javascript"
     src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+    <script type="text/x-mathjax-config">
+      // From https://groups.google.com/forum/#!topic/mathjax-users/kCHv2j5wWC8
+      MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
+        var TEXDEFS = MathJax.InputJax.TeX.Definitions;
+        TEXDEFS.delimiter["\\llbracket"] = "27E6";
+        TEXDEFS.delimiter["\\rrbracket"] = "27E7";
+      });
+
+      MathJax.Hub.Register.StartupHook("HTML-CSS Jax Ready",function () {
+        var HTMLCSS = MathJax.OutputJax["HTML-CSS"],
+        DELIMITERS = HTMLCSS.FONTDATA.DELIMITERS;
+
+        var GENERAL = "STIXGeneral",
+        SIZE1   = "STIXSizeOneSym",
+        SIZE2   = "STIXSizeTwoSym",
+        SIZE3   = "STIXSizeThreeSym",
+        SIZE4   = "STIXSizeFourSym";
+
+        if (HTMLCSS.fontInUse === "STIX") {
+          // left white square bracket
+          DELIMITERS[0x27E6] = {
+            dir: "V", HW: [[.93,GENERAL],[1.23,SIZE1],[1.845,SIZE2],[2.46,SIZE3],[3.075,SIZE4]],
+            stretch: {top:[0x2553,GENERAL], ext:[0x2551,GENERAL], bot:[0x2559,GENERAL]}
+          };
+          // right white square bracket
+          DELIMITERS[0x27E7] = {
+            dir: "V", HW: [[.93,GENERAL],[1.23,SIZE1],[1.845,SIZE2],[2.46,SIZE3],[3.075,SIZE4]],
+            stretch: {top:[0x2556,GENERAL], ext:[0x2551,GENERAL], bot:[0x255C,GENERAL]}
+          };
+        }
+      });
+    </script>
+
     <script>
     MathJax.Hub.Config({
-	// displayAlign: "left",
+	  // displayAlign: "left",
     	tex2jax: {
     		skipTags: ['script', 'noscript', 'style', 'textarea']
-    	}
+    	},
+
+      "HTML-CSS": {
+        preferredFont: "STIX"
+      }
     });
+
     MathJax.Hub.Queue(function() {
-    var all = MathJax.Hub.getAllJax(), i;
-    for(i=0; i < all.length; i += 1) {
-    all[i].SourceElement().parentNode.className += ' has-jax';
+      var all = MathJax.Hub.getAllJax(), i;
+      for(i=0; i < all.length; i += 1) {
+      all[i].SourceElement().parentNode.className += ' has-jax';
     }
     });
     </script>
