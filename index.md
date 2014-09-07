@@ -57,6 +57,7 @@ $$
 \newcommand{\rulename}[1]{\textsf{[#1]}}
 \newcommand{\twolineruleA}[4]{#1 #4 & #3 \\ #2 \\ \\}
 \newcommand{\twolinescruleA}[5]{#1 #5 & #3 \\ #2 ~ ~ ~ #4 \\ \\}
+\newcommand{\threelinescruleA}[5]{ {#1} {#5} & {#4} \\ {#2} \\ {#3} \\ \\ }
 $$
 
 <center><font size="4">M</font>ICHAEL <font size="4">S</font>PERBER</center>  
@@ -4760,7 +4761,99 @@ $$
 
 通常，提升和降级规则简化了其它规则的定义。比如，`if`规则不需要考虑在第一个子表达式中的多个值。同样地，`begin`规则不需要考虑单个值作为其第一个子表达式的情况。
 
-[图A.4](#Fa-4)中的其它两个规则处理`call-with-values`。（在非终结符*F*中）`call-with-values`的求值上下文允许在一个已被作为第一个参数传递给`call-with-values`的过程的内部求值，只有第二个参数被消去成一个值。一旦过程里面的求值完成，它会产生多个值（因为它属于一个`\(\Fstar{}\)`位置），且整个`call-with-values`表达式消去成其第二个参数通过规则`\(\rulename{6cwvd}\)`对那些值的一个应用。最终，在传递给`call-with-values`的第一个参数是一个值，但不是`(lambda () e`，的情况下，规则`\(\rulename{6cwvw}\)`将它封装到一个槽（thunk）中以触发求值。
+[图A.4](#Fa-4)中的其它两个规则处理`call-with-values`。（在非终结符*F*中）`call-with-values`的求值上下文允许在一个已被作为第一个参数传递给`call-with-values`的过程的内部求值，只有第二个参数被消去成一个值。一旦过程里面的求值完成，它会产生多个值（因为它属于一个`\(\Fstar{}\)`位置），且整个`call-with-values`表达式消去成其第二个参数通过规则`\(\rulename{6cwvd}\)`对那些值的一个应用。最终，在传递给`call-with-values`的第一个参数是一个值，但不是`(lambda () e)`，的情况下，规则`\(\rulename{6cwvw}\)`将它封装到一个槽（thunk）中以触发求值。
+
+## A.5. 异常 {#Aa-5}
+
+$$
+
+\begin{array}{lr}
+\twolineruleA
+  {\nt{PG}[\texttt{(}\nt{raise\mbox{\texttt{*}}}~v_1\texttt{)}]}
+  {\textbf{未捕获异常: }v_1}
+  {\rulename{6xunee}}
+  {\rightarrow}
+
+\twolineruleA
+  {\nt{P}[\texttt{(}\sy{handlers}~\nt{G}[\texttt{(}\nt{raise\mbox{\texttt{*}}}~v_1\texttt{)}]\texttt{)}]}
+  {\textbf{未捕获异常: }v_1}
+  {\rulename{6xuneh}}
+  {\rightarrow}
+
+\twolineruleA
+  {\nt{PG}_{1}[\texttt{(}\va{with\mbox{\texttt{-}}exception\mbox{\texttt{-}}handler}~\nt{proc}_{1}~\nt{proc}_{2}\texttt{)}]}
+  {\nt{PG}_{1}[\texttt{(}\sy{handlers}~\nt{proc}_{1}~\texttt{(}\nt{proc}_{2}\texttt{)}\texttt{)}]}
+  {\rulename{6xwh1}}
+  {\rightarrow}
+
+\twolineruleA
+  {\nt{P}_{1}[\texttt{(}\sy{handlers}~\nt{proc}_{1}~\cdots~\nt{G}_{1}[\texttt{(}\va{with\mbox{\texttt{-}}exception\mbox{\texttt{-}}handler}~\nt{proc}_{2}~\nt{proc}_{3}\texttt{)}]\texttt{)}]}
+  {\nt{P}_{1}[\texttt{(}\sy{handlers}~\nt{proc}_{1}~\cdots~\nt{G}_{1}[\texttt{(}\sy{handlers}~\nt{proc}_{1}~\cdots~\nt{proc}_{2}~\texttt{(}\nt{proc}_{3}\texttt{)}\texttt{)}]\texttt{)}]}
+  {\rulename{6xwhn}}
+  {\rightarrow}
+
+\twolinescruleA
+  {\nt{P}_{1}[\texttt{(}\sy{handlers}~\nt{proc}_{1}~\cdots~\nt{G}_{1}[\texttt{(}\va{with\mbox{\texttt{-}}exception\mbox{\texttt{-}}handler}~v_1~v_2\texttt{)}]\texttt{)}]}
+  {\nt{P}_{1}[\texttt{(}\sy{handlers}~\nt{proc}_{1}~\cdots~\nt{G}_{1}[\texttt{(}\va{raise}~\texttt{(}\sy{make\mbox{\texttt{-}}cond}~\textrm{``with\!-\!exception\!\!-\!\!handler ~ expects ~ procs''}\texttt{)}\texttt{)}]\texttt{)}]}
+  {\rulename{6xwhne}}
+  {& \!\!\!\!(v_1 \not\in \nt{proc}\textrm{ or }v_2 \not\in \nt{proc})}
+  {\rightarrow}
+
+\twolineruleA
+  {\nt{P}_{1}[\texttt{(}\sy{handlers}~\nt{proc}_{1}~\cdots~\nt{proc}_{2}~\nt{G}_{1}[\texttt{(}\va{raise\mbox{\texttt{-}}continuable}~v_1\texttt{)}]\texttt{)}]}
+  {\nt{P}_{1}[\texttt{(}\sy{handlers}~\nt{proc}_{1}~\cdots~\nt{proc}_{2}~\nt{G}_{1}[\texttt{(}\sy{handlers}~\nt{proc}_{1}~\cdots~\texttt{(}\nt{proc}_{2}~v_1\texttt{)}\texttt{)}]\texttt{)}]}
+  {\rulename{6xrc}}
+  {\rightarrow}
+
+\threelinescruleA
+  {\nt{P}_{1}[\texttt{(}\sy{handlers}~\nt{proc}_{1}~\cdots~\nt{proc}_{2}~\nt{G}_{1}[\texttt{(}\va{raise}~v_1\texttt{)}]\texttt{)}]}
+  {\nt{P}_{1}[\texttt{(}\sy{handlers}~\nt{proc}_{1}~\cdots~\nt{proc}_{2}}
+  {\hphantom{\nt{P}_{1}[\texttt{(}}\nt{G}_{1}[\texttt{(}\sy{handlers}~\nt{proc}_{1}~\cdots~\texttt{(}\sy{begin}~\texttt{(}\nt{proc}_{2}~v_1\texttt{)}~\texttt{(}\va{raise}~\texttt{(}\sy{make\mbox{\texttt{-}}cond}~\textrm{``handler ~ returned''}\texttt{)}\texttt{)}\texttt{)}\texttt{)}]\texttt{)}]}
+  {\rulename{6xr}}
+  {\rightarrow}
+
+\twolineruleA
+  {\nt{P}_{1}[\texttt{(}\va{condition\mbox{\texttt{?}}}~\texttt{(}\sy{make\mbox{\texttt{-}}cond}~\nt{string}\texttt{)}\texttt{)}]}
+  {\nt{P}_{1}[\semtrue{}]}
+  {\rulename{6ct}}
+  {\rightarrow}
+
+\twolinescruleA
+  {\nt{P}_{1}[\texttt{(}\va{condition\mbox{\texttt{?}}}~v_1\texttt{)}]}
+  {\nt{P}_{1}[\semfalse{}]}
+  {\rulename{6cf}}
+  {(v_1 \neq (\sy{make\mbox{\texttt{-}}cond}~\nt{string}))}
+  {\rightarrow}
+
+\twolineruleA
+  {\nt{P}_{1}[\texttt{(}\sy{handlers}~\nt{proc}_{1}~\cdots~\texttt{(}\va{values}~v_1~\cdots\texttt{)}\texttt{)}]}
+  {\nt{P}_{1}[\texttt{(}\va{values}~v_1~\cdots\texttt{)}]}
+  {\rulename{6xdone}}
+  {\rightarrow}
+
+\twolinescruleA
+  {\nt{PG}_{1}[\texttt{(}\va{with\mbox{\texttt{-}}exception\mbox{\texttt{-}}handler}~v_1~v_2\texttt{)}]}
+  {\nt{PG}_{1}[\texttt{(}\va{raise}~\texttt{(}\sy{make\mbox{\texttt{-}}cond}~\textrm{``with\!\!-\!\!exception\!-\!handler ~ expects ~ procs''}\texttt{)}\texttt{)}]}
+  {\rulename{6weherr}}
+  {(v_1 \not\in \nt{proc}\textrm{ or }v_2 \not\in \nt{proc})}
+  {\rightarrow}
+
+\end{array}
+$$  
+
+{:refdef .caption #Fa-5}
+**图A.5：** 异常
+{: refdef}
+
+异常系统的苦力是
+
+$$
+\texttt{(}\sy{handlers}~\nt{proc}~\cdots{}~\nt{e}\texttt{)}
+$$
+
+表达式以及*G*和*PG*求值上下文（在[图A.2b](#Fa-2b)中展示）。`handlers`表达式在某个上下文（*e*）中记录活动的异常处理程序（*proc* ...)。此意图是只有最内部靠近的`handlers`表达式和被抛出的异常是相关的，且*G*和*PG*求值上下文帮助达到这个目标。它们和对应的*E*和*P*是一样的，除了`handlers`表达式不能出现在孔的路径上之外，且异常系统规则利用那个上下文去发现最内部靠近的处理程序。
+
+为了查看上下文怎样和`handler`<!-- TODO: 应该是handlers -->表达式一起工作，考虑[图A.5](#Fa-5)中`\(\rulename{6xunee}\)`规则的左侧。它在*PG*求值上下文中匹配有`raise`或`raise-continuable`（非终结符`\(\nt{raise*}\)`匹配这两个抛出异常的过程）调用的表达式。因为*PG*上下文不包含任何的`handlers`表达式，所以这个异常不能被捕获，因此这个表达式消去到一个被指示为未捕获异常的最终状态。规则`\(\rulename{6xuneh}\)`同样产生一个为捕获的异常，但是它包含`handlers`表达式耗尽所有可用的处理程序的情况。这条规则在任意的求值上下文中应用到有（不包含异常处理程序的）`handlers`表达式的表达式上，在这个求值上下文中一个抛出异常的程序的调用在`handlers`表达式中被嵌套。*G*求值上下文的使用确保在这个和抛出之间没有其它的`handler`<!-- TODO -->表达式。
 
 
 
