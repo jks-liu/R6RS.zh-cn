@@ -55,9 +55,14 @@ $$
 \renewcommand{\rrbracket}{]\!\!]}
 
 \newcommand{\rulename}[1]{\textsf{[#1]}}
+\newcommand{\onelineruleA}[4]{ {#1} & {#4} ~ & {#2} & {#3} \extraspterm}
+\newcommand{\onelinescruleA}[5]{ {#1} & {#5} ~ & {#2} & {#3} \\ & & {#4} \extraspterm}
 \newcommand{\twolineruleA}[4]{#1 #4 & #3 \\ #2 \\ \\}
 \newcommand{\twolinescruleA}[5]{#1 #5 & #3 \\ #2 ~ ~ ~ #4 \\ \\}
 \newcommand{\threelinescruleA}[5]{ {#1} {#5} & {#4} \\ {#2} \\ {#3} \\ \\ }
+
+\newcommand{\gopen}{ {^{\scriptscriptstyle\lceil}\!\!}}
+\newcommand{\gclose}{\!\!{}^{\scriptscriptstyle\rceil}}
 $$
 
 <center><font size="4">M</font>ICHAEL <font size="4">S</font>PERBER</center>  
@@ -4861,8 +4866,308 @@ $$
 
 特殊形式`make-cond`是报告条件的一个替身。它不计算它的参数（注意[图A.2b](#Fa-2b)语法*E*中是没有它的）。那个参数仅仅是描述抛出异常的上下文的字符串字面量。条件上唯一的操作是`condition?`，`\(\rulename{6ct}\)`和`\(\rulename{6cf}\)`这两个规则给出了其语义。
 
+最后，规则`\(\rulename{6xdone}\)`在它的内部被完全计算的时候终止`handlers`表达式，同时规则`\(\rulename{6weherr}\)`当`with-exception-handler`<!-- TODO -->被提供错误的参数的时候抛出一个异常。
 
+## A.6. 算术和基本形式 {#Aa-6}
 
+$$
+\begin{array}{l@{}l@{}lr}
+\onelineruleA
+  {\nt{P}_{1}[\texttt{(}\va{\mbox{\texttt{+}}}\texttt{)}]}
+  {\nt{P}_{1}[0]}
+  {\rulename{6+0}}
+  {\rightarrow}
+
+\onelineruleA
+  {\nt{P}_{1}[\texttt{(}\va{\mbox{\texttt{+}}}~\nt{n}_{1}~\nt{n}_{2}~\cdots\texttt{)}]}
+  {\nt{P}_{1}[ \gopen~\Sigma \{\nt{n}_{1}, \nt{n}_{2}\cdots \}~\gclose ]}
+  {\rulename{6+}}
+  {\rightarrow}
+
+\onelineruleA
+  {\nt{P}_{1}[\texttt{(}\va{\mbox{\texttt{-}}}~\nt{n}_{1}\texttt{)}]}
+  {\nt{P}_{1}[ \gopen~- \nt{n}_{1}~\gclose ]}
+  {\rulename{6u-}}
+  {\rightarrow}
+
+\onelineruleA
+  {\nt{P}_{1}[\texttt{(}\va{\mbox{\texttt{-}}}~\nt{n}_{1}~\nt{n}_{2}~\nt{n}_{3}~\cdots\texttt{)}]}
+  {\nt{P}_{1}[ \gopen~n_1 - \Sigma \{\nt{n}_{2}, \nt{n}_{3}\cdots \}~\gclose ]}
+  {\rulename{6-}}
+  {\rightarrow}
+
+\onelineruleA
+  {\nt{P}_{1}[\texttt{(}\va{\mbox{\texttt{-}}}\texttt{)}]}
+  {\nt{P}_{1}[\texttt{(}\va{raise}~\texttt{(}\sy{make\mbox{\texttt{-}}cond}~\textrm{``arity ~ mismatch''}\texttt{)}\texttt{)}]}
+  {\rulename{6-arity}}
+  {\rightarrow}
+
+\onelineruleA
+  {\nt{P}_{1}[\texttt{(}\va{\mbox{\texttt{*}}}\texttt{)}]}
+  {\nt{P}_{1}[1]}
+  {\rulename{6*1}}
+  {\rightarrow}
+
+\onelineruleA
+  {\nt{P}_{1}[\texttt{(}\va{\mbox{\texttt{*}}}~\nt{n}_{1}~\nt{n}_{2}~\cdots\texttt{)}]}
+  {\nt{P}_{1}[ \gopen~\Pi \{\nt{n}_{1}, \nt{n}_{2}\cdots \}~\gclose ]}
+  {\rulename{6*}}
+  {\rightarrow}
+
+\onelineruleA
+  {\nt{P}_{1}[\texttt{(}\va{\mbox{\texttt{/}}}~\nt{n}_{1}\texttt{)}]}
+  {\nt{P}_{1}[\texttt{(}\va{\mbox{\texttt{/}}}~1~\nt{n}_{1}\texttt{)}]}
+  {\rulename{6u/}}
+  {\rightarrow}
+
+\onelinescruleA
+  {\nt{P}_{1}[\texttt{(}\va{\mbox{\texttt{/}}}~\nt{n}_{1}~\nt{n}_{2}~\nt{n}_{3}~\cdots\texttt{)}]}
+  {\nt{P}_{1}[ \gopen~n_1 / \Pi \{\nt{n}_{2}, \nt{n}_{3}\cdots \}~\gclose ]}
+  {\rulename{6/}}
+  {(0\not\in \{ \nt{n}_{2}, \nt{n}_{3}, \ldots \})}
+  {\rightarrow}
+
+\onelineruleA
+  {\nt{P}_{1}[\texttt{(}\va{\mbox{\texttt{/}}}~\nt{n}~\nt{n}~\cdots~0~\nt{n}~\cdots\texttt{)}]}
+  {\nt{P}_{1}[\texttt{(}\va{raise}~\texttt{(}\sy{make\mbox{\texttt{-}}cond}~\textrm{``divison ~ by ~ zero''}\texttt{)}\texttt{)}]}
+  {\rulename{6/0}}
+  {\rightarrow}
+
+\onelineruleA
+  {\nt{P}_{1}[\texttt{(}\va{\mbox{\texttt{/}}}\texttt{)}]}
+  {\nt{P}_{1}[\texttt{(}\va{raise}~\texttt{(}\sy{make\mbox{\texttt{-}}cond}~\textrm{``arity ~ mismatch''}\texttt{)}\texttt{)}]}
+  {\rulename{6/arity}}
+  {\rightarrow}
+
+\onelinescruleA
+  {\nt{P}_{1}[\texttt{(}\nt{aproc}~v_1~\cdots\texttt{)}]}
+  {\nt{P}_{1}[\texttt{(}\va{raise}~\texttt{(}\sy{make\mbox{\texttt{-}}cond}~\textrm{``arith\!\!-\!\!op ~ applied ~ to ~ non\!\!-\!\!number''}\texttt{)}\texttt{)}]}
+  {\rulename{6ae}}
+  {(\exists v \in v_1 \cdots  \textrm{ ~ s.t.~  } v \textrm{不是一个数字})}
+  {\rightarrow}
+
+\end{array}
+$$
+
+$$
+\begin{array}{l@{}l@{}lr}
+\onelinescruleA
+  {\nt{P}_{1}[\texttt{(}\sy{if}~v_1~\nt{e}_{1}~\nt{e}_{2}\texttt{)}]}
+  {\nt{P}_{1}[\nt{e}_{1}]}
+  {\rulename{6if3t}}
+  {(v_1 \neq \semfalse{})}
+  {\rightarrow}
+
+\onelineruleA
+  {\nt{P}_{1}[\texttt{(}\sy{if}~\semfalse{}~\nt{e}_{1}~\nt{e}_{2}\texttt{)}]}
+  {\nt{P}_{1}[\nt{e}_{2}]}
+  {\rulename{6if3f}}
+  {\rightarrow}
+
+\onelineruleA
+  {\nt{P}_{1}[\texttt{(}\sy{begin}~\texttt{(}\va{values}~\nt{v}~\cdots\texttt{)}~\nt{e}_{1}~\nt{e}_{2}~\cdots\texttt{)}]}
+  {\nt{P}_{1}[\texttt{(}\sy{begin}~\nt{e}_{1}~\nt{e}_{2}~\cdots\texttt{)}]}
+  {\rulename{6beginc}}
+  {\rightarrow}
+
+\onelineruleA
+  {\nt{P}_{1}[\texttt{(}\sy{begin}~\nt{e}_{1}\texttt{)}]}
+  {\nt{P}_{1}[\nt{e}_{1}]}
+  {\rulename{6begind}}
+  {\rightarrow}
+
+\onelineruleA
+  {\nt{P}_{1}[\texttt{(}\sy{begin0}~\texttt{(}\va{values}~v_1~\cdots\texttt{)}~\texttt{(}\va{values}~v_2~\cdots\texttt{)}~\nt{e}_{2}~\cdots\texttt{)}]}
+  {\nt{P}_{1}[\texttt{(}\sy{begin0}~\texttt{(}\va{values}~v_1~\cdots\texttt{)}~\nt{e}_{2}~\cdots\texttt{)}]}
+  {\rulename{6begin0n}}
+  {\rightarrow}
+
+\onelineruleA
+  {\nt{P}_{1}[\texttt{(}\sy{begin0}~\nt{e}_{1}\texttt{)}]}
+  {\nt{P}_{1}[\nt{e}_{1}]}
+  {\rulename{6begin01}}
+  {\rightarrow}
+
+\end{array}
+$$
+
+{:refdef .caption #Fa-6}
+**图A.6：**算术和基本形式
+{: refdef}
+
+本模型不包括报告的算术，但为了和其它特性做实验和为本模型写测试套件更加简单，包括理想化的形式。[图A.6](#Fa-6)展示了实现加减乘除基本过程的消去规则。它们尊重它们的数学类似物。此外，当减法和除法没有参数，或除非收到一个零作为除数，或非数传递给任意的算术过程的时候，一个异常被抛出。
+
+[图A.6](#Fa-6)的下半部展示了`if`, `begin`, 以及`begin0`的规则。相关的求值上下文通过非终结符*F*被给出。
+
+`if`的求值上下文只允许在它的测试表达式中求值。一旦求出一个值，如果测试不是`#f`，那么`if`表达式被规则消去成它的后项（consequent），如果测试是`#f`的话，则被消去成替代项（alternative）。
+
+`begin`求值上下文允许在begin的第一个子表达式中求值，但只有在有两个或更多子表达式的时候才可以。在那种情况下，一旦第一个表达式被完全简化，消去规则就会丢弃它的值。如果只有一个子表达式的话，`begin`它自己被丢弃。
+
+和`begin`求值上下文类似，当有两个或更多的子表达式的时候，`begin0`求值上下文允许字第一个子表达式中求值。`begin0`求值上下文同时允许在`begin0`表达式的第二个子表达式中求值，只要第一个子表达式被完全简化。`begin0`的`\(\rulename{6begin0n}\)`规则然后丢弃被完全简化的第二个子表达式。最终，在`begin0`中只有一个单独的表达式，在这时规则`\(\rulename{begin01}\)`开火，且删除`begin0`表达式。
+
+## A.7. 表 {#Aa-7}
+
+$$
+\begin{array}{lr}
+\twolineruleA
+  {\nt{P}_{1}[\texttt{(}\va{list}~v_1~v_2~\cdots\texttt{)}]}
+  {\nt{P}_{1}[\texttt{(}\va{cons}~v_1~\texttt{(}\va{list}~v_2~\cdots\texttt{)}\texttt{)}]}
+  {\rulename{6listc}}
+  {\rightarrow}
+
+\twolineruleA
+  {\nt{P}_{1}[\texttt{(}\va{list}\texttt{)}]}
+  {\nt{P}_{1}[\va{null}]}
+  {\rulename{6listn}}
+  {\rightarrow}
+
+\twolinescruleA
+  {\texttt{(}\sy{store}~\texttt{(}\nt{sf}_{1}~\cdots\texttt{)}~\nt{E}_{1}[\texttt{(}\va{cons}~v_1~v_2\texttt{)}]\texttt{)}}
+  {\texttt{(}\sy{store}~\texttt{(}\nt{sf}_{1}~\cdots~\texttt{(}\nt{mp}~\texttt{(}\va{cons}~v_1~v_2\texttt{)}\texttt{)}\texttt{)}~\nt{E}_{1}[\nt{mp}]\texttt{)}}
+  {\rulename{6cons}}
+  {(\nt{mp} \textrm{新生})}
+  {\rightarrow}
+
+\twolinescruleA
+  {\texttt{(}\sy{store}~\texttt{(}\nt{sf}_{1}~\cdots\texttt{)}~\nt{E}_{1}[\texttt{(}\sy{consi}~v_1~v_2\texttt{)}]\texttt{)}}
+  {\texttt{(}\sy{store}~\texttt{(}\nt{sf}_{1}~\cdots~\texttt{(}\nt{ip}~\texttt{(}\va{cons}~v_1~v_2\texttt{)}\texttt{)}\texttt{)}~\nt{E}_{1}[\nt{ip}]\texttt{)}}
+  {\rulename{6consi}}
+  {(\nt{ip} \textrm{新生})}
+  {\rightarrow}
+
+\twolineruleA
+  {\texttt{(}\sy{store}~\texttt{(}\nt{sf}_{1}~\cdots~\texttt{(}\nt{pp}_i~\texttt{(}\va{cons}~v_1~v_2\texttt{)}\texttt{)}~\nt{sf}_{2}~\cdots\texttt{)}~\nt{E}_{1}[\texttt{(}\va{car}~\nt{pp}_i\texttt{)}]\texttt{)}}
+  {\texttt{(}\sy{store}~\texttt{(}\nt{sf}_{1}~\cdots~\texttt{(}\nt{pp}_i~\texttt{(}\va{cons}~v_1~v_2\texttt{)}\texttt{)}~\nt{sf}_{2}~\cdots\texttt{)}~\nt{E}_{1}[v_1]\texttt{)}}
+  {\rulename{6car}}
+  {\rightarrow}
+
+\twolineruleA
+  {\texttt{(}\sy{store}~\texttt{(}\nt{sf}_{1}~\cdots~\texttt{(}\nt{pp}_i~\texttt{(}\va{cons}~v_1~v_2\texttt{)}\texttt{)}~\nt{sf}_{2}~\cdots\texttt{)}~\nt{E}_{1}[\texttt{(}\va{cdr}~\nt{pp}_i\texttt{)}]\texttt{)}}
+  {\texttt{(}\sy{store}~\texttt{(}\nt{sf}_{1}~\cdots~\texttt{(}\nt{pp}_i~\texttt{(}\va{cons}~v_1~v_2\texttt{)}\texttt{)}~\nt{sf}_{2}~\cdots\texttt{)}~\nt{E}_{1}[v_2]\texttt{)}}
+  {\rulename{6cdr}}
+  {\rightarrow}
+
+\twolineruleA
+  {\texttt{(}\sy{store}~\texttt{(}\nt{sf}_{1}~\cdots~\texttt{(}\nt{mp}_{1}~\texttt{(}\va{cons}~v_1~v_2\texttt{)}\texttt{)}~\nt{sf}_{2}~\cdots\texttt{)}~\nt{E}_{1}[\texttt{(}\va{set\mbox{\texttt{-}}car\mbox{\texttt{!}}}~\nt{mp}_{1}~\nt{v}_{3}\texttt{)}]\texttt{)}}
+  {\texttt{(}\sy{store}~\texttt{(}\nt{sf}_{1}~\cdots~\texttt{(}\nt{mp}_{1}~\texttt{(}\va{cons}~\nt{v}_{3}~v_2\texttt{)}\texttt{)}~\nt{sf}_{2}~\cdots\texttt{)}~\nt{E}_{1}[\va{unspecified}]\texttt{)}}
+  {\rulename{6setcar}}
+  {\rightarrow}
+
+\twolineruleA
+  {\texttt{(}\sy{store}~\texttt{(}\nt{sf}_{1}~\cdots~\texttt{(}\nt{mp}_{1}~\texttt{(}\va{cons}~v_1~v_2\texttt{)}\texttt{)}~\nt{sf}_{2}~\cdots\texttt{)}~\nt{E}_{1}[\texttt{(}\va{set\mbox{\texttt{-}}cdr\mbox{\texttt{!}}}~\nt{mp}_{1}~\nt{v}_{3}\texttt{)}]\texttt{)}}
+  {\texttt{(}\sy{store}~\texttt{(}\nt{sf}_{1}~\cdots~\texttt{(}\nt{mp}_{1}~\texttt{(}\va{cons}~v_1~\nt{v}_{3}\texttt{)}\texttt{)}~\nt{sf}_{2}~\cdots\texttt{)}~\nt{E}_{1}[\va{unspecified}]\texttt{)}}
+  {\rulename{6setcdr}}
+  {\rightarrow}
+
+\twolineruleA
+  {\nt{P}_{1}[\texttt{(}\va{null\mbox{\texttt{?}}}~\va{null}\texttt{)}]}
+  {\nt{P}_{1}[\semtrue{}]}
+  {\rulename{6null?t}}
+  {\rightarrow}
+
+\twolinescruleA
+  {\nt{P}_{1}[\texttt{(}\va{null\mbox{\texttt{?}}}~v_1\texttt{)}]}
+  {\nt{P}_{1}[\semfalse{}]}
+  {\rulename{6null?f}}
+  {(v_1 \neq \va{null})}
+  {\rightarrow}
+
+\twolineruleA
+  {\nt{P}_{1}[\texttt{(}\va{pair\mbox{\texttt{?}}}~\nt{pp}\texttt{)}]}
+  {\nt{P}_{1}[\semtrue{}]}
+  {\rulename{6pair?t}}
+  {\rightarrow}
+
+\twolinescruleA
+  {\nt{P}_{1}[\texttt{(}\va{pair\mbox{\texttt{?}}}~v_1\texttt{)}]}
+  {\nt{P}_{1}[\semfalse{}]}
+  {\rulename{6pair?f}}
+  {(v_1 \not\in \nt{pp})}
+  {\rightarrow}
+
+\twolinescruleA
+  {\nt{P}_{1}[\texttt{(}\va{car}~\nt{v}_{i}\texttt{)}]}
+  {\nt{P}_{1}[\texttt{(}\va{raise}~\texttt{(}\sy{make\mbox{\texttt{-}}cond}~\textrm{``can't ~ take ~ car ~ of ~ non\!\!-\!\!pair''}\texttt{)}\texttt{)}]}
+  {\rulename{6care}}
+  {(\nt{v}_{i} \not\in \nt{pp})}
+  {\rightarrow}
+
+\twolinescruleA
+  {\nt{P}_{1}[\texttt{(}\va{cdr}~\nt{v}_{i}\texttt{)}]}
+  {\nt{P}_{1}[\texttt{(}\va{raise}~\texttt{(}\sy{make\mbox{\texttt{-}}cond}~\textrm{``can't ~ take ~ cdr ~ of ~ non\!\!-\!\!pair''}\texttt{)}\texttt{)}]}
+  {\rulename{6cdre}}
+  {(\nt{v}_{i} \not\in \nt{pp})}
+  {\rightarrow}
+
+\twolinescruleA
+  {\nt{P}_{1}[\texttt{(}\va{set\mbox{\texttt{-}}car\mbox{\texttt{!}}}~v_1~v_2\texttt{)}]}
+  {\nt{P}_{1}[\texttt{(}\va{raise}~\texttt{(}\sy{make\mbox{\texttt{-}}cond}~\textrm{``can't ~ set\!\!-\!\!car! ~ on ~ a ~ non\!\!-\!\!pair ~ or ~ an ~ immutable ~ pair''}\texttt{)}\texttt{)}]}
+  {\rulename{6scare}}
+  {& \!\!\!\!(v_1 \not\in \nt{mp})}
+  {\rightarrow}
+
+\twolinescruleA
+  {\nt{P}_{1}[\texttt{(}\va{set\mbox{\texttt{-}}cdr\mbox{\texttt{!}}}~v_1~v_2\texttt{)}]}
+  {\nt{P}_{1}[\texttt{(}\va{raise}~\texttt{(}\sy{make\mbox{\texttt{-}}cond}~\textrm{``can't ~ set\!\!-\!\!cdr! ~ on ~ a ~ non\!\!-\!\!pair ~ or ~ an ~ immutable ~ pair''}\texttt{)}\texttt{)}]}
+  {\rulename{6scdre}}
+  {& \!\!\!\!(v_1 \not\in \nt{mp})}
+  {\rightarrow}
+
+\end{array}
+$$
+
+{:refdef .caption #Fa-7}
+**图A.7：**表
+{: refdef}
+
+[图A.7](#Fa-7)中的规则处理表。前两个规则通过将它们消去成一系列跟着`null`的`cons`调用来处理表。
+
+下面两个规则`\(\rulename{6cons}\)`和`\(\rulename{6consi}\)`分配新的`cons`单元。它们都将`\(\texttt{(}\va{cons}~v_1~v_2\texttt{)}\)`移到存储中，被绑定到一个新鲜的点对指针上（同时参加[第A.3小节](#Aa-3)“新生（fresh）”的描述）。`\(\rulename{6cons}\)`使用一个*mp*变量去指示点对是可变的，`\(\rulename{6consi}\)`使用一个*ip*变量去指示点对是不可变的。
+
+当提供一个点对指针（如[图A.2a](#Fa-2a)所示，*pp*可以是*mp*也可以是*ip*）的时候，规则`\(\rulename{6car}\)`和`\(\rulename{6cdr}\)`从存储中提取一个点对的元素。
+
+规则`\(\rulename{6setcar}\)`和`\(\rulename{6setcdr}\)`处理可变点对的赋值。它们以新的值在存储中替换适当位置的内容，且消去成`unspecified`。[第A.12小节](#Aa-12)解释了怎样减少成`unspecified`。
+
+下面四个规则处理`null?`谓词和`pair?`谓词，且当`car`, `cdr`, `set-car!` 或`set-cdr!`接收到不是点对的参数的时候，最后的四个规则会抛出异常。
+
+## A.8. Eqv等价 {#Aa-8}
+
+$$
+\begin{array}{lr}
+\twolinescruleA
+  {\nt{P}_{1}[\texttt{(}\va{eqv\mbox{\texttt{?}}}~v_1~v_1\texttt{)}]}
+  {\nt{P}_{1}[\semtrue{}]}
+  {\rulename{6eqt}}
+  {(v_1 \not\in \nt{proc}, v_1 \neq (\sy{make\mbox{\texttt{-}}cond}~\nt{string}))}
+  {\rightarrow}
+
+\twolinescruleA
+  {\nt{P}_{1}[\texttt{(}\va{eqv\mbox{\texttt{?}}}~v_1~v_2\texttt{)}]}
+  {\nt{P}_{1}[\semfalse{}]}
+  {\rulename{6eqf}}
+  {(v_1 \neq v_2, v_1 \not\in \nt{proc}\textrm{ ~ or ~ }v_2 \not\in \nt{proc}, v_1 \neq (\sy{make\mbox{\texttt{-}}cond}~\nt{string})\textrm{ ~ or } & \!\!\!\! v_2 \neq (\sy{make\mbox{\texttt{-}}cond}~\nt{string}))}
+  {\rightarrow}
+
+\twolineruleA
+  {\nt{P}_{1}[\texttt{(}\va{eqv\mbox{\texttt{?}}}~\texttt{(}\sy{make\mbox{\texttt{-}}cond}~\nt{string}\texttt{)}~\texttt{(}\sy{make\mbox{\texttt{-}}cond}~\nt{string}\texttt{)}\texttt{)}]}
+  {\nt{P}_{1}[\semtrue{}]}
+  {\rulename{6eqct}}
+  {\rightarrow}
+
+\twolineruleA
+  {\nt{P}_{1}[\texttt{(}\va{eqv\mbox{\texttt{?}}}~\texttt{(}\sy{make\mbox{\texttt{-}}cond}~\nt{string}\texttt{)}~\texttt{(}\sy{make\mbox{\texttt{-}}cond}~\nt{string}\texttt{)}\texttt{)}]}
+  {\nt{P}_{1}[\semfalse{}]}
+  {\rulename{6eqcf}}
+  {\rightarrow}
+
+\end{array}
+$$
+
+{:refdef .caption #Fa-8}
+**图A.8：**Eqv等价
+{: refdef}
+
+`eqv?`规则在[图A.8](#Fa-8)中展示。前两个规则覆盖了`eqv?`的大部分行为。第一个说当`eqv?`的两个参数是句法上完全相同的时候，那么`eqv?`产生`#t`，第二个说，当参数不是句法上完全相同的时候，`eqv?`产生`#f`。*v*的结构被仔细地设计使得简单的术语相等紧密地对应于`eqv?`的行为。比如，点对被表示成存储位置的指针，且`eqv?`只是简单地比较那些指针。
 
 
 <!--
