@@ -59,6 +59,7 @@ $$
 \newcommand{\onelinescruleA}[5]{ {#1} & {#5} ~ & {#2} & {#3} \\ & & {#4} \extraspterm}
 \newcommand{\twolineruleA}[4]{#1 #4 & #3 \\ #2 \\ \\}
 \newcommand{\twolinescruleA}[5]{#1 #5 & #3 \\ #2 ~ ~ ~ #4 \\ \\}
+\newcommand{\twolinescruleB}[5]{ {#1} {#5} & {#3} \\ {#2} \\ {~ ~ ~ #4} \extraspterm}
 \newcommand{\threelinescruleA}[5]{ {#1} {#5} & {#4} \\ {#2} \\ {#3} \\ \\ }
 
 \newcommand{\gopen}{ {^{\scriptscriptstyle\lceil}\!\!}}
@@ -5169,6 +5170,229 @@ $$
 
 `eqv?`规则在[图A.8](#Fa-8)中展示。前两个规则覆盖了`eqv?`的大部分行为。第一个说当`eqv?`的两个参数是句法上完全相同的时候，那么`eqv?`产生`#t`，第二个说，当参数不是句法上完全相同的时候，`eqv?`产生`#f`。*v*的结构被仔细地设计使得简单的术语相等紧密地对应于`eqv?`的行为。比如，点对被表示成存储位置的指针，且`eqv?`只是简单地比较那些指针。
 
+前两条规则的附加条件确保当简单的术语相等不匹配`eqv?`的行为的时候，它们不会被应用。有两种不匹配的情况：比较两个条件和比较两个过程。对于第一个，本报告没有指定`eqv?`的行为，除了指明它必须返回一个布尔之外，所以剩下的两个规则（`\(\rulename{6eqct}\)`和`\(\rulename{6eqcf}\)`）允许这样的比较返回`#t`或`#f`。比较两个过程在[第A.12小节](#Aa-12)有讲述。
+
+## A.9. 过程和应用（application） {#Aa-9}
+
+$$
+\begin{array}{lr}
+\twolinescruleA
+  {\nt{P}_{1}[\texttt{(}\nt{e}_{1}~\cdots~\nt{e}_{i}~\nt{e}_{i\mbox{\texttt{+}}1}~\cdots\texttt{)}]}
+  {\nt{P}_{1}[\texttt{(}\texttt{(}\sy{lambda}~\texttt{(}\nt{x}\texttt{)}~\texttt{(}\nt{e}_{1}~\cdots~\nt{x}~\nt{e}_{i\mbox{\texttt{+}}1}~\cdots\texttt{)}\texttt{)}~\nt{e}_{i}\texttt{)}]}
+  {\rulename{6mark}}
+  {(\nt{x} \textrm{新生}, \nt{e}_{i} \not\in \nt{v}, \exists e \in \nt{e}_{1} \cdots \nt{e}_{i\mbox{\texttt{+}}1} \cdots  \textrm{ ~ s.t. ~ } e \not\in \nt{v})}
+  {\rightarrow}
+
+\twolinescruleB
+  {\texttt{(}\sy{store}~\texttt{(}\nt{sf}_{1}~\cdots\texttt{)}~\nt{E}_{1}[\texttt{(}\texttt{(}\sy{lambda}~\texttt{(}x_1~x_2~\cdots\texttt{)}~\nt{e}_{1}~\nt{e}_{2}~\cdots\texttt{)}~v_1~v_2~\cdots\texttt{)}]\texttt{)}}
+  {\texttt{(}\sy{store}~\texttt{(}\nt{sf}_{1}~\cdots~\texttt{(}\nt{bp}~v_1\texttt{)}\texttt{)}~\nt{E}_{1}[\texttt{(}\{x_1\mapsto \nt{bp}\}\texttt{(}\sy{lambda}~\texttt{(}x_2~\cdots\texttt{)}~\nt{e}_{1}~\nt{e}_{2}~\cdots\texttt{)}~v_2~\cdots\texttt{)}]\texttt{)}}
+  {\rulename{6appN!}}
+  {(\nt{bp} \textrm{新生}, \# x_2 = \# v_2, \mathscr{V} \llbracket x_1, \texttt{(}\sy{lambda}~\texttt{(}x_2~\cdots\texttt{)}~\nt{e}_{1}~\nt{e}_{2}~\cdots\texttt{)} \rrbracket)}
+  {\rightarrow}
+
+\end{array}
+$$
+
+$$
+\begin{array}{lr}
+\twolinescruleA
+  {\nt{P}_{1}[\texttt{(}\texttt{(}\sy{lambda}~\texttt{(}x_1~x_2~\cdots\texttt{)}~\nt{e}_{1}~\nt{e}_{2}~\cdots\texttt{)}~v_1~v_2~\cdots\texttt{)}]}
+  {\nt{P}_{1}[\texttt{(}\{x_1\mapsto v_1\}\texttt{(}\sy{lambda}~\texttt{(}x_2~\cdots\texttt{)}~\nt{e}_{1}~\nt{e}_{2}~\cdots\texttt{)}~v_2~\cdots\texttt{)}]}
+  {\rulename{6appN}}
+  {(\# x_2 = \# v_2, \ensuremath{\neg} \mathscr{V} \llbracket x_1, \texttt{(}\sy{lambda} & \!\! \texttt{(}x_2~\cdots\texttt{)}~\nt{e}_{1}~\nt{e}_{2}~\cdots\texttt{)} \rrbracket)}
+  {\rightarrow}
+
+\twolineruleA
+  {\nt{P}_{1}[\texttt{(}\texttt{(}\sy{lambda}~\texttt{()}~\nt{e}_{1}~\nt{e}_{2}~\cdots\texttt{)}\texttt{)}]}
+  {\nt{P}_{1}[\texttt{(}\sy{begin}~\nt{e}_{1}~\nt{e}_{2}~\cdots\texttt{)}]}
+  {\rulename{6app0}}
+  {\rightarrow}
+
+\twolinescruleA
+  {\nt{P}_{1}[\texttt{(}\texttt{(}\sy{lambda}~\texttt{(}x_1~x_2~\cdots~\sy{dot}~\nt{x}_{r}\texttt{)}~\nt{e}_{1}~\nt{e}_{2}~\cdots\texttt{)}~v_1~v_2~\cdots~\nt{v}_{3}~\cdots\texttt{)}]}
+  {\nt{P}_{1}[\texttt{(}\texttt{(}\sy{lambda}~\texttt{(}x_1~x_2~\cdots~\nt{x}_{r}\texttt{)}~\nt{e}_{1}~\nt{e}_{2}~\cdots\texttt{)}~v_1~v_2~\cdots~\texttt{(}\va{list}~\nt{v}_{3}~\cdots\texttt{)}\texttt{)}]}
+  {\rulename{6$\ensuremath{\mu}$app}}
+  {(\# x_2 = \# v_2)}
+  {\rightarrow}
+
+\twolineruleA
+  {\nt{P}_{1}[\texttt{(}\texttt{(}\sy{lambda}~x_1~\nt{e}_{1}~\nt{e}_{2}~\cdots\texttt{)}~v_1~\cdots\texttt{)}]}
+  {\nt{P}_{1}[\texttt{(}\texttt{(}\sy{lambda}~\texttt{(}x_1\texttt{)}~\nt{e}_{1}~\nt{e}_{2}~\cdots\texttt{)}~\texttt{(}\va{list}~v_1~\cdots\texttt{)}\texttt{)}]}
+  {\rulename{6$\ensuremath{\mu}$app1}}
+  {\rightarrow}
+
+\twolineruleA
+  {\texttt{(}\sy{store}~\texttt{(}\nt{sf}_{1}~\cdots~\texttt{(}x_1~v_1\texttt{)}~\nt{sf}_{2}~\cdots\texttt{)}~\nt{E}_{1}[x_1]\texttt{)}}
+  {\texttt{(}\sy{store}~\texttt{(}\nt{sf}_{1}~\cdots~\texttt{(}x_1~v_1\texttt{)}~\nt{sf}_{2}~\cdots\texttt{)}~\nt{E}_{1}[v_1]\texttt{)}}
+  {\rulename{6var}}
+  {\rightarrow}
+
+\twolineruleA
+  {\texttt{(}\sy{store}~\texttt{(}\nt{sf}_{1}~\cdots~\texttt{(}x_1~v_1\texttt{)}~\nt{sf}_{2}~\cdots\texttt{)}~\nt{E}_{1}[\texttt{(}\sy{set\mbox{\texttt{!}}}~x_1~v_2\texttt{)}]\texttt{)}}
+  {\texttt{(}\sy{store}~\texttt{(}\nt{sf}_{1}~\cdots~\texttt{(}x_1~v_2\texttt{)}~\nt{sf}_{2}~\cdots\texttt{)}~\nt{E}_{1}[\va{unspecified}]\texttt{)}}
+  {\rulename{6set}}
+  {\rightarrow}
+
+\twolineruleA
+  {\nt{P}_{1}[\texttt{(}\va{procedure\mbox{\texttt{?}}}~\nt{proc}\texttt{)}]}
+  {\nt{P}_{1}[\semtrue{}]}
+  {\rulename{6proct}}
+  {\rightarrow}
+
+\twolineruleA
+  {\nt{P}_{1}[\texttt{(}\va{procedure\mbox{\texttt{?}}}~\nt{nonproc}\texttt{)}]}
+  {\nt{P}_{1}[\semfalse{}]}
+  {\rulename{6procf}}
+  {\rightarrow}
+
+\twolinescruleA
+  {\nt{P}_{1}[\texttt{(}\texttt{(}\sy{lambda}~\texttt{(}x_1~\cdots\texttt{)}~\nt{e}~\nt{e}~\cdots\texttt{)}~v_1~\cdots\texttt{)}]}
+  {\nt{P}_{1}[\texttt{(}\va{raise}~\texttt{(}\sy{make\mbox{\texttt{-}}cond}~\textrm{``arity ~ mismatch''}\texttt{)}\texttt{)}]}
+  {\rulename{6arity}}
+  {(\# x_1 \neq \# v_1)}
+  {\rightarrow}
+
+\twolinescruleA
+  {\nt{P}_{1}[\texttt{(}\texttt{(}\sy{lambda}~\texttt{(}x_1~x_2~\cdots~\sy{dot}~\nt{x}\texttt{)}~\nt{e}~\nt{e}~\cdots\texttt{)}~v_1~\cdots\texttt{)}]}
+  {\nt{P}_{1}[\texttt{(}\va{raise}~\texttt{(}\sy{make\mbox{\texttt{-}}cond}~\textrm{``arity ~ mismatch''}\texttt{)}\texttt{)}]}
+  {\rulename{6$\ensuremath{\mu}$arity}}
+  {(\# v_1 < \# x_2 + 1)}
+  {\rightarrow}
+
+\twolineruleA
+  {\nt{P}_{1}[\texttt{(}\nt{nonproc}~\nt{v}~\cdots\texttt{)}]}
+  {\nt{P}_{1}[\texttt{(}\va{raise}~\texttt{(}\sy{make\mbox{\texttt{-}}cond}~\textrm{``can't ~ call ~ non\!\!-\!\!procedure''}\texttt{)}\texttt{)}]}
+  {\rulename{6appe}}
+  {\rightarrow}
+
+\twolinescruleA
+  {\nt{P}_{1}[\texttt{(}\nt{proc1}~v_1~\cdots\texttt{)}]}
+  {\nt{P}_{1}[\texttt{(}\va{raise}~\texttt{(}\sy{make\mbox{\texttt{-}}cond}~\textrm{``arity ~ mismatch''}\texttt{)}\texttt{)}]}
+  {\rulename{61arity}}
+  {(\#v_1 \neq 1)}
+  {\rightarrow}
+
+\twolinescruleA
+  {\nt{P}_{1}[\texttt{(}\nt{proc2}~v_1~\cdots\texttt{)}]}
+  {\nt{P}_{1}[\texttt{(}\va{raise}~\texttt{(}\sy{make\mbox{\texttt{-}}cond}~\textrm{``arity ~ mismatch''}\texttt{)}\texttt{)}]}
+  {\rulename{62arity}}
+  {(\#v_1 \neq 2)}
+  {\rightarrow}
+
+\end{array}
+$$
+
+{:refdef .caption #Fa-9a}
+**图A.9a：**过程&应用
+{: refdef}
+
+$$
+\begin{array}{lc@{~}l}
+\mathscr{V} \in 2^{\nt{x} \times \nt{e}}\\
+\mathscr{V} \llbracket x_1, \texttt{(}\sy{set\mbox{\texttt{!}}}~x_2~\nt{e}_{1}\texttt{)} \rrbracket & \textrm{if} &
+x_1 = x_2\\
+\mathscr{V} \llbracket x_1, \texttt{(}\sy{set\mbox{\texttt{!}}}~x_2~\nt{e}_{1}\texttt{)} \rrbracket & \textrm{if} &
+\mathscr{V} \llbracket{}x_1, \nt{e}_{1} \rrbracket  \textrm{~and~} x_1 \neq x_2\\
+\mathscr{V} \llbracket x_1, \texttt{(}\sy{begin}~\nt{e}_{1}~\nt{e}_{2}~\nt{e}_{3}~\cdots\texttt{)} \rrbracket & \textrm{if} &
+\mathscr{V} \llbracket{}x_1, \nt{e}_{1} \rrbracket \textrm{~or~}\mathscr{V} \llbracket{}x_1, \texttt{(}\sy{begin}~\nt{e}_{2}~\nt{e}_{3}~\cdots\texttt{)} \rrbracket \\
+\mathscr{V} \llbracket x_1, \texttt{(}\sy{begin}~\nt{e}_{1}\texttt{)} \rrbracket & \textrm{if} &
+\mathscr{V} \llbracket{}x_1, \nt{e}_{1} \rrbracket \\
+\mathscr{V} \llbracket x_1, \texttt{(}\nt{e}_{1}~\nt{e}_{2}~\cdots\texttt{)} \rrbracket & \textrm{if} &
+\mathscr{V} \llbracket{}x_1, \texttt{(}\sy{begin}~\nt{e}_{1}~\nt{e}_{2}~\cdots\texttt{)} \rrbracket \\
+\mathscr{V} \llbracket x_1, \texttt{(}\sy{if}~\nt{e}_{1}~\nt{e}_{2}~\nt{e}_{3}\texttt{)} \rrbracket & \textrm{if} &
+\mathscr{V} \llbracket{}x_1, \nt{e}_{1} \rrbracket \textrm{~or~}\mathscr{V} \llbracket{}x_1, \nt{e}_{2} \rrbracket \textrm{~or~}\mathscr{V} \llbracket{}x_1, \nt{e}_{3} \rrbracket \\
+\mathscr{V} \llbracket x_1, \texttt{(}\sy{begin0}~\nt{e}_{1}~\nt{e}_{2}~\cdots\texttt{)} \rrbracket & \textrm{if} &
+\mathscr{V} \llbracket{}x_1, \texttt{(}\sy{begin}~\nt{e}_{1}~\nt{e}_{2}~\cdots\texttt{)} \rrbracket \\
+\mathscr{V} \llbracket x_1, \texttt{(}\sy{lambda}~\texttt{(}x_2~\cdots\texttt{)}~\nt{e}_{1}~\nt{e}_{2}~\cdots\texttt{)} \rrbracket & \textrm{if} &
+\mathscr{V} \llbracket{}x_1, \texttt{(}\sy{begin}~\nt{e}_{1}~\nt{e}_{2}~\cdots\texttt{)} \rrbracket  \textrm{~and~} x_1 \not\in \{ x_2 \cdots \}\\
+\mathscr{V} \llbracket x_1, \texttt{(}\sy{lambda}~\texttt{(}x_2~\cdots~\sy{dot}~\nt{x}_{3}\texttt{)}~\nt{e}_{1}~\nt{e}_{2}~\cdots\texttt{)} \rrbracket & \textrm{if} &
+\mathscr{V} \llbracket{}x_1, \texttt{(}\sy{begin}~\nt{e}_{1}~\nt{e}_{2}~\cdots\texttt{)} \rrbracket  \textrm{~and~} x_1 \not\in \{ x_2 \cdots \nt{x}_{3} \}\\
+\mathscr{V} \llbracket x_1, \texttt{(}\sy{lambda}~x_2~\nt{e}_{1}~\nt{e}_{2}~\cdots\texttt{)} \rrbracket & \textrm{if} &
+\mathscr{V} \llbracket{}x_1, \texttt{(}\sy{begin}~\nt{e}_{1}~\nt{e}_{2}~\cdots\texttt{)} \rrbracket  \textrm{~and~} x_1 \neq x_2\\
+\mathscr{V} \llbracket x_1, \texttt{(}\sy{letrec}~\texttt{(}\texttt{(}x_2~\nt{e}_{1}\texttt{)}~\cdots\texttt{)}~\nt{e}_{2}~\nt{e}_{3}~\cdots\texttt{)} \rrbracket & \textrm{if} &
+\mathscr{V} \llbracket{}x_1, \texttt{(}\sy{begin}~\nt{e}_{1}~\cdots~\nt{e}_{2}~\nt{e}_{3}~\cdots\texttt{)} \rrbracket  \textrm{~and~} x_1 \not\in \{ x_2 \cdots \}\\
+\mathscr{V} \llbracket x_1, \texttt{(}\sy{letrec\mbox{\texttt{*}}}~\texttt{(}\texttt{(}x_2~\nt{e}_{1}\texttt{)}~\cdots\texttt{)}~\nt{e}_{2}~\nt{e}_{3}~\cdots\texttt{)} \rrbracket & \textrm{if} &
+\mathscr{V} \llbracket{}x_1, \texttt{(}\sy{begin}~\nt{e}_{1}~\cdots~\nt{e}_{2}~\nt{e}_{3}~\cdots\texttt{)} \rrbracket  \textrm{~and~} x_1 \not\in \{ x_2 \cdots \}\\
+\mathscr{V} \llbracket x_1, \texttt{(}\sy{l\mbox{\texttt{!}}}~x_2~\nt{e}_{1}\texttt{)} \rrbracket & \textrm{if} &
+\mathscr{V} \llbracket{}x_1, \texttt{(}\sy{set\mbox{\texttt{!}}}~x_2~\nt{e}_{1}\texttt{)} \rrbracket \\
+\mathscr{V} \llbracket x_1, \texttt{(}\sy{reinit}~x_2~\nt{e}_{1}\texttt{)} \rrbracket & \textrm{if} &
+\mathscr{V} \llbracket{}x_1, \texttt{(}\sy{set\mbox{\texttt{!}}}~x_2~\nt{e}_{1}\texttt{)} \rrbracket \\
+\mathscr{V} \llbracket x_1, \texttt{(}\sy{dw}~x_2~\nt{e}_{1}~\nt{e}_{2}~\nt{e}_{3}\texttt{)} \rrbracket & \textrm{if} &
+\mathscr{V} \llbracket{}x_1, \nt{e}_{1} \rrbracket \textrm{~or~}\mathscr{V} \llbracket{}x_1, \nt{e}_{2} \rrbracket \textrm{~or~}\mathscr{V} \llbracket{}x_1, \nt{e}_{3} \rrbracket \\
+\end{array}
+$$
+
+{:refdef .caption #Fa-9b}
+**图A.9b：**变量赋值关系
+{: refdef}
+
+$$
+\begin{array}{lr}
+\twolineruleA
+  {\nt{P}_{1}[\texttt{(}\va{apply}~\nt{proc}_{1}~v_1~\cdots~\va{null}\texttt{)}]}
+  {\nt{P}_{1}[\texttt{(}\nt{proc}_{1}~v_1~\cdots\texttt{)}]}
+  {\rulename{6applyf}}
+  {\rightarrow}
+
+\twolinescruleB
+  {\texttt{(}\sy{store}~\texttt{(}\nt{sf}_{1}~\cdots~\texttt{(}\nt{pp}_{1}~\texttt{(}\va{cons}~v_2~\nt{v}_{3}\texttt{)}\texttt{)}~\nt{sf}_{2}~\cdots\texttt{)}~\nt{E}_{1}[\texttt{(}\va{apply}~\nt{proc}_{1}~v_1~\cdots~\nt{pp}_{1}\texttt{)}]\texttt{)}}
+  {\texttt{(}\sy{store}~\texttt{(}\nt{sf}_{1}~\cdots~\texttt{(}\nt{pp}_{1}~\texttt{(}\va{cons}~v_2~\nt{v}_{3}\texttt{)}\texttt{)}~\nt{sf}_{2}~\cdots\texttt{)}~\nt{E}_{1}[\texttt{(}\va{apply}~\nt{proc}_{1}~v_1~\cdots~v_2~\nt{v}_{3}\texttt{)}]\texttt{)}}
+  {\rulename{6applyc}}
+  {(\ensuremath{\neg} \mathscr{C} \llbracket \nt{pp}_{1}, \nt{v}_{3}, \texttt{(}\nt{sf}_{1}~\cdots~\texttt{(}\nt{pp}_{1}~\texttt{(}\va{cons}~v_2~\nt{v}_{3}\texttt{)}\texttt{)}~\nt{sf}_{2}~\cdots\texttt{)} \rrbracket)}
+  {\rightarrow}
+
+\twolinescruleB
+  {\texttt{(}\sy{store}~\texttt{(}\nt{sf}_{1}~\cdots~\texttt{(}\nt{pp}_{1}~\texttt{(}\va{cons}~v_2~\nt{v}_{3}\texttt{)}\texttt{)}~\nt{sf}_{2}~\cdots\texttt{)}~\nt{E}_{1}[\texttt{(}\va{apply}~\nt{proc}_{1}~v_1~\cdots~\nt{pp}_{1}\texttt{)}]\texttt{)}}
+  {\texttt{(}\sy{store}~\texttt{(}\nt{sf}_{1}~\cdots~\texttt{(}\nt{pp}_{1}~\texttt{(}\va{cons}~v_2~\nt{v}_{3}\texttt{)}\texttt{)}~\nt{sf}_{2}~\cdots\texttt{)}~\nt{E}_{1}[\texttt{(}\va{raise}~\texttt{(}\sy{make\mbox{\texttt{-}}cond}~\textrm{``apply ~ called ~ on ~ circular ~ list''}\texttt{)}\texttt{)}]\texttt{)}}
+  {\rulename{6applyce}}
+  {(\mathscr{C} \llbracket \nt{pp}_{1}, \nt{v}_{3}, \texttt{(}\nt{sf}_{1}~\cdots~\texttt{(}\nt{pp}_{1}~\texttt{(}\va{cons}~v_2~\nt{v}_{3}\texttt{)}\texttt{)}~\nt{sf}_{2}~\cdots\texttt{)} \rrbracket)}
+  {\rightarrow}
+
+\twolineruleA
+  {\nt{P}_{1}[\texttt{(}\va{apply}~\nt{nonproc}~\nt{v}~\cdots\texttt{)}]}
+  {\nt{P}_{1}[\texttt{(}\va{raise}~\texttt{(}\sy{make\mbox{\texttt{-}}cond}~\textrm{``can't ~ apply ~ non\!\!-\!\!procedure''}\texttt{)}\texttt{)}]}
+  {\rulename{6applynf}}
+  {\rightarrow}
+
+\twolinescruleA
+  {\nt{P}_{1}[\texttt{(}\va{apply}~\nt{proc}~v_1~\cdots~v_2\texttt{)}]}
+  {\nt{P}_{1}[\texttt{(}\va{raise}~\texttt{(}\sy{make\mbox{\texttt{-}}cond}~\textrm{``apply's ~ last ~ argument ~ non\!\!-\!\!list''}\texttt{)}\texttt{)}]}
+  {\rulename{6applye}}
+  {(v_2 \not\in \nt{list-v})}
+  {\rightarrow}
+
+\twolineruleA
+  {\nt{P}_{1}[\texttt{(}\va{apply}\texttt{)}]}
+  {\nt{P}_{1}[\texttt{(}\va{raise}~\texttt{(}\sy{make\mbox{\texttt{-}}cond}~\textrm{``arity ~ mismatch''}\texttt{)}\texttt{)}]}
+  {\rulename{6apparity0}}
+  {\rightarrow}
+
+\twolineruleA
+  {\nt{P}_{1}[\texttt{(}\va{apply}~\nt{v}\texttt{)}]}
+  {\nt{P}_{1}[\texttt{(}\va{raise}~\texttt{(}\sy{make\mbox{\texttt{-}}cond}~\textrm{``arity ~ mismatch''}\texttt{)}\texttt{)}]}
+  {\rulename{6apparity1}}
+  {\rightarrow}
+
+\end{array}
+$$
+
+$$
+\begin{array}{lc@{~}l}
+\mathscr{C} \in 2^{\nt{pp} \times \nt{val} \times \texttt{(}\nt{sf}~\cdots\texttt{)}}\\
+\mathscr{C} \llbracket \nt{pp}_{1}, \nt{pp}_{2}, \texttt{(}\nt{sf}_{1}~\cdots~\texttt{(}\nt{pp}_{2}~\texttt{(}\va{cons}~v_1~v_2\texttt{)}\texttt{)}~\nt{sf}_{2}~\cdots\texttt{)} \rrbracket & \textrm{if} &
+\nt{pp}_{1} = v_2\\
+\mathscr{C} \llbracket \nt{pp}_{1}, \nt{pp}_{2}, \texttt{(}\nt{sf}_{1}~\cdots~\texttt{(}\nt{pp}_{2}~\texttt{(}\va{cons}~v_1~v_2\texttt{)}\texttt{)}~\nt{sf}_{2}~\cdots\texttt{)} \rrbracket & \textrm{if} &
+\mathscr{C} \llbracket{}\nt{pp}_{1}, v_2, \texttt{(}\nt{sf}_{1}~\cdots~\texttt{(}\nt{pp}_{2}~\texttt{(}\va{cons}~v_1~v_2\texttt{)}\texttt{)}~\nt{sf}_{2}~\cdots\texttt{)} \rrbracket  \textrm{~and~} \nt{pp}_{1} \neq v_2\\
+\end{array}
+$$
+
+{:refdef .caption #Fa-9c}
+**图A.9c：**应用
+{: refdef}
+
+在对一个过程调用进行求值的时候，本报告故意让参数的求值顺序是未定义的。所以，我们的消去系统允许发生多个不同的消去，每个对应一个可能的求值顺序。
+
+虽然没有指定求值顺序，但程序子表达式的求值结果应该就像以某种顺序求值一样，只有在我们还没有承诺消去其它子表达式的时候，我们才使用未确定的选择来挑选第一个被消去的子表达式。为了获得那个效果，我们将应用表达式的求值限制到只有那些有一个单独的没有完全消去的表达式，如[图A.2b](#Fa-2b)中非终结符*F*所示。求值有超过两个参数需要的求值的的应用表达式，规则`\(\rulename{6mark}\)`挑选没有完全简化的应用中的一个子表达式，且将它提升到它自己的应用中，以允许其被求值。一旦被提升的表达式中的一个被求值，那么`\(\rulename{6appN}\)`将它的值替换回原来的应用中。
 
 <!--
   勘误：D
@@ -5191,7 +5415,7 @@ $$
 
 -->
 
-# 附录E 语言的变化 {#Ae}
+# 附录E. 语言的变化 {#Ae}
 
 本章描述了自“修订<sup>5</sup>报告”[^14]出版以来Scheme发生的大部分变化：
 
