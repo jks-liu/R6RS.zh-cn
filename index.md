@@ -4802,7 +4802,7 @@ $$
   {\nt{P}_{1}[\texttt{(}\sy{handlers}~\nt{proc}_{1}~\cdots~\nt{G}_{1}[\texttt{(}\va{with\mbox{\texttt{-}}exception\mbox{\texttt{-}}handler}~v_1~v_2\texttt{)}]\texttt{)}]}
   {\nt{P}_{1}[\texttt{(}\sy{handlers}~\nt{proc}_{1}~\cdots~\nt{G}_{1}[\texttt{(}\va{raise}~\texttt{(}\sy{make\mbox{\texttt{-}}cond}~\textrm{``with\!-\!exception\!\!-\!\!handler ~ expects ~ procs''}\texttt{)}\texttt{)}]\texttt{)}]}
   {\rulename{6xwhne}}
-  {& \!\!\!\!(v_1 \not\in \nt{proc}\textrm{ or }v_2 \not\in \nt{proc})}
+  {& \!\!\!\!(v_1 \not\in \nt{proc}\textrm{或}v_2 \not\in \nt{proc})}
   {\rightarrow}
 
 \twolineruleA
@@ -4841,7 +4841,7 @@ $$
   {\nt{PG}_{1}[\texttt{(}\va{with\mbox{\texttt{-}}exception\mbox{\texttt{-}}handler}~v_1~v_2\texttt{)}]}
   {\nt{PG}_{1}[\texttt{(}\va{raise}~\texttt{(}\sy{make\mbox{\texttt{-}}cond}~\textrm{``with\!\!-\!\!exception\!-\!handler ~ expects ~ procs''}\texttt{)}\texttt{)}]}
   {\rulename{6weherr}}
-  {(v_1 \not\in \nt{proc}\textrm{ or }v_2 \not\in \nt{proc})}
+  {(v_1 \not\in \nt{proc}\textrm{或}v_2 \not\in \nt{proc})}
   {\rightarrow}
 
 \end{array}
@@ -5294,13 +5294,13 @@ x_1 = x_2\\
 \mathscr{V} \llbracket x_1, \texttt{(}\sy{set\mbox{\texttt{!}}}~x_2~\nt{e}_{1}\texttt{)} \rrbracket & \textrm{if} &
 \mathscr{V} \llbracket{}x_1, \nt{e}_{1} \rrbracket  \textrm{~and~} x_1 \neq x_2\\
 \mathscr{V} \llbracket x_1, \texttt{(}\sy{begin}~\nt{e}_{1}~\nt{e}_{2}~\nt{e}_{3}~\cdots\texttt{)} \rrbracket & \textrm{if} &
-\mathscr{V} \llbracket{}x_1, \nt{e}_{1} \rrbracket \textrm{~or~}\mathscr{V} \llbracket{}x_1, \texttt{(}\sy{begin}~\nt{e}_{2}~\nt{e}_{3}~\cdots\texttt{)} \rrbracket \\
+\mathscr{V} \llbracket{}x_1, \nt{e}_{1} \rrbracket \textrm{或}\mathscr{V} \llbracket{}x_1, \texttt{(}\sy{begin}~\nt{e}_{2}~\nt{e}_{3}~\cdots\texttt{)} \rrbracket \\
 \mathscr{V} \llbracket x_1, \texttt{(}\sy{begin}~\nt{e}_{1}\texttt{)} \rrbracket & \textrm{if} &
 \mathscr{V} \llbracket{}x_1, \nt{e}_{1} \rrbracket \\
 \mathscr{V} \llbracket x_1, \texttt{(}\nt{e}_{1}~\nt{e}_{2}~\cdots\texttt{)} \rrbracket & \textrm{if} &
 \mathscr{V} \llbracket{}x_1, \texttt{(}\sy{begin}~\nt{e}_{1}~\nt{e}_{2}~\cdots\texttt{)} \rrbracket \\
 \mathscr{V} \llbracket x_1, \texttt{(}\sy{if}~\nt{e}_{1}~\nt{e}_{2}~\nt{e}_{3}\texttt{)} \rrbracket & \textrm{if} &
-\mathscr{V} \llbracket{}x_1, \nt{e}_{1} \rrbracket \textrm{~or~}\mathscr{V} \llbracket{}x_1, \nt{e}_{2} \rrbracket \textrm{~or~}\mathscr{V} \llbracket{}x_1, \nt{e}_{3} \rrbracket \\
+\mathscr{V} \llbracket{}x_1, \nt{e}_{1} \rrbracket \textrm{或}\mathscr{V} \llbracket{}x_1, \nt{e}_{2} \rrbracket \textrm{或}\mathscr{V} \llbracket{}x_1, \nt{e}_{3} \rrbracket \\
 \mathscr{V} \llbracket x_1, \texttt{(}\sy{begin0}~\nt{e}_{1}~\nt{e}_{2}~\cdots\texttt{)} \rrbracket & \textrm{if} &
 \mathscr{V} \llbracket{}x_1, \texttt{(}\sy{begin}~\nt{e}_{1}~\nt{e}_{2}~\cdots\texttt{)} \rrbracket \\
 \mathscr{V} \llbracket x_1, \texttt{(}\sy{lambda}~\texttt{(}x_2~\cdots\texttt{)}~\nt{e}_{1}~\nt{e}_{2}~\cdots\texttt{)} \rrbracket & \textrm{if} &
@@ -5318,7 +5318,7 @@ x_1 = x_2\\
 \mathscr{V} \llbracket x_1, \texttt{(}\sy{reinit}~x_2~\nt{e}_{1}\texttt{)} \rrbracket & \textrm{if} &
 \mathscr{V} \llbracket{}x_1, \texttt{(}\sy{set\mbox{\texttt{!}}}~x_2~\nt{e}_{1}\texttt{)} \rrbracket \\
 \mathscr{V} \llbracket x_1, \texttt{(}\sy{dw}~x_2~\nt{e}_{1}~\nt{e}_{2}~\nt{e}_{3}\texttt{)} \rrbracket & \textrm{if} &
-\mathscr{V} \llbracket{}x_1, \nt{e}_{1} \rrbracket \textrm{~or~}\mathscr{V} \llbracket{}x_1, \nt{e}_{2} \rrbracket \textrm{~or~}\mathscr{V} \llbracket{}x_1, \nt{e}_{3} \rrbracket \\
+\mathscr{V} \llbracket{}x_1, \nt{e}_{1} \rrbracket \textrm{或}\mathscr{V} \llbracket{}x_1, \nt{e}_{2} \rrbracket \textrm{或}\mathscr{V} \llbracket{}x_1, \nt{e}_{3} \rrbracket \\
 \end{array}
 $$
 
@@ -5407,6 +5407,77 @@ $$
 [图A.9c](#Fa-9c)中的规则覆盖了`apply`。第一个规则`\(\rulename{6applyf}\)`，覆盖了`apply`的最后一个参数是空表的情况，并通过消去删去空表和`apply`来进行简单的消去。第二个规则，`\(\rulename{6applyc}\)`覆盖一个形式良好的`apply`应用，其中，apply的最后一个参数是一个点对。它通过从存储中萃取点对的组件以及将它们放到`apply`的应用中来进行消去。这样重复本规则的应用可以萃取存储外的传递给`apply`的表的所有元素<!--TODO-->。
 
 剩余的五条规则覆盖在使用`apply`的过程中可能出现的各种各样的错误。第一个覆盖`apply`应用到循环表的情况。后四个覆盖应用到非过程，传递非表作为最后一个参数，以及传递给`apply`过少的参数。
+
+## A.10 Call/cc和动态缠绕（dynamic wind）
+
+$$
+\begin{array}{lr}
+\twolinescruleA
+  {\nt{P}_{1}[\texttt{(}\va{dynamic\mbox{\texttt{-}}wind}~\nt{proc}_{1}~\nt{proc}_{2}~\nt{proc}_{3}\texttt{)}]}
+  {\nt{P}_{1}[\texttt{(}\sy{begin}~\texttt{(}\nt{proc}_{1}\texttt{)}~\texttt{(}\sy{begin0}~\texttt{(}\sy{dw}~\nt{x}~\texttt{(}\nt{proc}_{1}\texttt{)}~\texttt{(}\nt{proc}_{2}\texttt{)}~\texttt{(}\nt{proc}_{3}\texttt{)}\texttt{)}~\texttt{(}\nt{proc}_{3}\texttt{)}\texttt{)}\texttt{)}]}
+  {\rulename{6wind}}
+  {(\nt{x} \textrm{新生})}
+  {\rightarrow}
+
+\twolinescruleA
+  {\nt{P}_{1}[\texttt{(}\va{dynamic\mbox{\texttt{-}}wind}~v_1~v_2~\nt{v}_{3}\texttt{)}]}
+  {\nt{P}_{1}[\texttt{(}\va{raise}~\texttt{(}\sy{make\mbox{\texttt{-}}cond}~\textrm{``dynamic\!\!-\!\!wind ~ expects ~ procs''}\texttt{)}\texttt{)}]}
+  {\rulename{6winde}}
+  {(v_1 \not\in \nt{proc}\textrm{或}v_2 \not\in \nt{proc} & \!\! \textrm{或}\nt{v}_{3} \not\in \nt{proc})}
+  {\rightarrow}
+
+\twolinescruleA
+  {\nt{P}_{1}[\texttt{(}\va{dynamic\mbox{\texttt{-}}wind}~v_1~\cdots\texttt{)}]}
+  {\nt{P}_{1}[\texttt{(}\va{raise}~\texttt{(}\sy{make\mbox{\texttt{-}}cond}~\textrm{``arity ~ mismatch''}\texttt{)}\texttt{)}]}
+  {\rulename{6dwarity}}
+  {(\#v_1 \neq 3)}
+  {\rightarrow}
+
+\twolineruleA
+  {\nt{P}_{1}[\texttt{(}\sy{dw}~\nt{x}~\nt{e}~\texttt{(}\va{values}~v_1~\cdots\texttt{)}~\nt{e}\texttt{)}]}
+  {\nt{P}_{1}[\texttt{(}\va{values}~v_1~\cdots\texttt{)}]}
+  {\rulename{6dwdone}}
+  {\rightarrow}
+
+\twolinescruleA
+  {\texttt{(}\sy{store}~\texttt{(}\nt{sf}_{1}~\cdots\texttt{)}~\nt{E}_{1}[\texttt{(}\va{call\mbox{\texttt{/}}cc}~v_1\texttt{)}]\texttt{)}}
+  {\texttt{(}\sy{store}~\texttt{(}\nt{sf}_{1}~\cdots\texttt{)}~\nt{E}_{1}[\texttt{(}v_1~\texttt{(}\sy{throw}~\nt{x}~\nt{E}_{1}[\nt{x}]\texttt{)}\texttt{)}]\texttt{)}}
+  {\rulename{6call/cc}}
+  {(\nt{x} \textrm{新生})}
+  {\rightarrow}
+
+\twolineruleA
+  {\texttt{(}\sy{store}~\texttt{(}\nt{sf}_{1}~\cdots\texttt{)}~\nt{E}_{1}[\texttt{(}\texttt{(}\sy{throw}~x_1~\nt{E}_{2}[x_1]\texttt{)}~v_1~\cdots\texttt{)}]\texttt{)}}
+  {\texttt{(}\sy{store}~\texttt{(}\nt{sf}_{1}~\cdots\texttt{)}~\mathscr{T}\llbracket{}\nt{E}_{1}, \nt{E}_{2}\rrbracket[\texttt{(}\va{values}~v_1~\cdots\texttt{)}]\texttt{)}}
+  {\rulename{6throw}}
+  {\rightarrow}
+
+\end{array}
+$$
+
+$$
+\begin{array}{lcl}
+\mathscr{T} : \nt{E} \times \nt{E} \rightarrow \nt{E}\\\mathscr{T} \llbracket \nt{H}_{1}[\texttt{(}\sy{dw}~x_1~\nt{e}_{1}~\nt{E}_{1}~\nt{e}_{2}\texttt{)}], \nt{H}_{2}[\texttt{(}\sy{dw}~x_1~\nt{e}_{3}~\nt{E}_{2}~\nt{e}_{4}\texttt{)}] \rrbracket & = &
+\nt{H}_{2}[\texttt{(}\sy{dw}~x_1~\nt{e}_{3}~\mathscr{T}\llbracket{}\nt{E}_{1}, \nt{E}_{2}\rrbracket~\nt{e}_{4}\texttt{)}] \\
+\mathscr{T} \llbracket \nt{E}_{1}, \nt{E}_{2} \rrbracket & = &
+\texttt{(}\sy{begin}~\mathscr{S}\llbracket{}\nt{E}_{1}\rrbracket[1]~\mathscr{R}\llbracket{}\nt{E}_{2}\rrbracket\texttt{)} ~ ~ ~ ~ ~ ~ ~ \mbox{\textrm{(否则)}}\\
+\\\mathscr{R} : \nt{E} \rightarrow \nt{E}\\\mathscr{R} \llbracket \nt{H}_{1}[\texttt{(}\sy{dw}~x_1~\nt{e}_{1}~\nt{E}_{1}~\nt{e}_{2}\texttt{)}] \rrbracket & = &
+\nt{H}_{1}[\texttt{(}\sy{begin}~\nt{e}_{1}~\texttt{(}\sy{dw}~x_1~\nt{e}_{1}~\mathscr{R}\llbracket{}\nt{E}_{1}\rrbracket~\nt{e}_{2}\texttt{)}\texttt{)}] \\
+\mathscr{R} \llbracket \nt{H}_{1} \rrbracket & = &
+\nt{H}_{1} ~ ~ ~ ~ ~ ~ ~ \mbox{\textrm{(否则)}}\\
+\\\mathscr{S} : \nt{E} \rightarrow \nt{E}\\\mathscr{S} \llbracket \nt{E}_{1}[\texttt{(}\sy{dw}~x_1~\nt{e}_{1}~\nt{H}_{2}~\nt{e}_{2}\texttt{)}] \rrbracket & = &
+\mathscr{S} \llbracket{}\nt{E}_{1} \rrbracket [\texttt{(}\sy{begin0}~\texttt{(}\sy{dw}~x_1~\nt{e}_{1}~\hole~\nt{e}_{2}\texttt{)}~\nt{e}_{2}\texttt{)}] \\
+\mathscr{S} \llbracket \nt{H}_{1} \rrbracket & = &
+\hole ~ ~ ~ ~ ~ ~ ~ \mbox{\textrm{(否则)}}\\
+\end{array}
+$$
+
+{:refdef .caption #Fa-10}
+**图A.10：**Call/cc和动态缠绕
+{: refdef}
+
+`dynamic-wind`的规范使用表达式`(dw x e e e)`来记录在计算的每个点哪些dynamic-wind*槽*是活动的。它的第一个参数是一个全局唯一的标识符，且可以用作指示`dynamic-wind`的调用，其作用是为了避免在一个继续的切换中推出并重新进入相同的动态上下文中。第二三四个参数是来自`dynamic-wind`调用的一些before，thunk和after
+
 
 <!--
   勘误：D
