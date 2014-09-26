@@ -61,6 +61,7 @@ $$
 \newcommand{\twolinescruleA}[5]{#1 #5 & #3 \\ #2 ~ ~ ~ #4 \\ \\}
 \newcommand{\twolinescruleB}[5]{ {#1} {#5} & {#3} \\ {#2} \\ {~ ~ ~ #4} \extraspterm}
 \newcommand{\threelinescruleA}[5]{ {#1} {#5} & {#4} \\ {#2} \\ {#3} \\ \\ }
+\newcommand{\fourlinescruleB}[7]{ {#1} {#7} & {#5}\\ {#2} \\{#3} \\{#4} \\{~ ~ ~ #6} \extraspterm}
 
 \newcommand{\gopen}{ {^{\scriptscriptstyle\lceil}\!\!}}
 \newcommand{\gclose}{\!\!{}^{\scriptscriptstyle\rceil}}
@@ -5408,7 +5409,7 @@ $$
 
 剩余的五条规则覆盖在使用`apply`的过程中可能出现的各种各样的错误。第一个覆盖`apply`应用到循环表的情况。后四个覆盖应用到非过程，传递非表作为最后一个参数，以及传递给`apply`过少的参数。
 
-## A.10 Call/cc和动态缠绕（dynamic wind）
+## A.10. Call/cc和动态缠绕（dynamic wind） {#Aa-10}
 
 $$
 \begin{array}{lr}
@@ -5476,7 +5477,88 @@ $$
 **图A.10：**Call/cc和动态缠绕
 {: refdef}
 
-`dynamic-wind`的规范使用表达式`(dw x e e e)`来记录在计算的每个点哪些dynamic-wind*槽*是活动的。它的第一个参数是一个全局唯一的标识符，且可以用作指示`dynamic-wind`的调用，其作用是为了避免在一个继续的切换中推出并重新进入相同的动态上下文中。第二三四个参数是来自`dynamic-wind`调用的一些before，thunk和after
+`dynamic-wind`的规范使用表达式`(dw x e e e)`来记录在计算的每个点哪些dynamic-wind*槽*是活动的。它的第一个参数是一个全局唯一的标识符，且可以用作指示`dynamic-wind`的调用，其作用是为了避免在一个继续的切换中推出并重新进入相同的动态上下文中。第二三四个参数是来自`dynamic-wind`调用的一些*before*，*thunk*和*after*过程调用。求值只发生在中间的表达式中；`dw`表达式只用作记录哪个*before*和*after*过程需要在继续切换期间被运行。相应地，`dynamic-wind`应用的消去规则消去到*before*过程的调用，`dw`表达式和`after`过程的调用，如[图A.10](#Fa-10)中规则`\(\rulename{6wind}\)`所示。下面两条规则覆盖`dynamic-wind`过程的滥用：传递非过程调用，以错误数量的参数调用。规则`\(\rulename{6dwdone}\)`在它的第二个参数已经完成计算的时候消除`dw`表达式。
+
+下面两条规则覆盖`call/cc`。规则`\(\rulename{6call/cc}\)`创建一个新的继续。这个继续拥有`call/cc`的上下文，且将其打包到表示这个继续的`throw`表达式中。`throw`表达式使用新生的*x*来记录`call/cc`应用在上下文中发生的地方，这时为了在继续被应用的时候在规则`\(\rulename{6throw}\)`中使用。那个规则取得继续的参数，使用`values`调用将其打包，并将其放回到原始`call/cc`调用出现的地方，以元函数`\(\mathscr{T}\)`返回的上下文替换当前的上下文。
+
+元函数`\(\mathscr{T}\)`（为了“修正”）接受两个D上下文，且绑定一个匹配其第二个参数的上下文，即目的上下文，这在已经被加入的上下文中排除了来自`dw`表达式的*before*和*after*过程的多余的调用。
+
+元函数`\(\mathscr{T}\)`的第一个子句利用H上下文，这是一个包含除了`dynamic-wind`上下文之外任何东西的上下文。它确保`dynamic-wind`上下文的公共部分被忽略，更深地返回到两个表达式的上下文中，只要每个里面的第一个`dw`表达式有匹配的标识符`\((x_1)\)`。最后的规则是一个大杂烩；它只有在其它规则失败的时候才应用，且因此或者在没有`dw`的时候应用，或者在`dw`表达式不匹配的时候应用。它调用定义在[图A.10](#Fa-10)中的两个其它的元函数，且将它们的结果一起放进`begin`表达式中。
+
+元函数`\(\mathscr{R}\)`从其参数中提前所有的*before*过程，元函数`\(\mathscr{S}\)`从其参数中提前所有的*after*过程。它们都构造新的上下文，且利用H处理完它们的参数，每次一个`dw`。在任何情况下，元函数小心地保持正确的在每个过程周围的上下文，以防万一一个继续跳转发生在它们的求值中。由于`\(\mathscr{R}\)`接收目的上下文，所以它在其结果中保持上下文的中间部分。这和`\(\mathscr{S}\)`抛弃所有除了`dw`之外的上下文形成对比，因为那是继续发生的上下文。
+
+## A.11. Letrec {#Aa-11}
+
+$$
+\begin{array}{lr}
+\twolineruleA
+  {\texttt{(}\sy{store}~\texttt{(}\nt{sf}_{1}~\cdots~\texttt{(}x_1~\sy{bh}\texttt{)}~\nt{sf}_{2}~\cdots\texttt{)}~\nt{E}_{1}[\texttt{(}\sy{l\mbox{\texttt{!}}}~x_1~v_2\texttt{)}]\texttt{)}}
+  {\texttt{(}\sy{store}~\texttt{(}\nt{sf}_{1}~\cdots~\texttt{(}x_1~v_2\texttt{)}~\nt{sf}_{2}~\cdots\texttt{)}~\nt{E}_{1}[\va{unspecified}]\texttt{)}}
+  {\rulename{6initdt}}
+  {\rightarrow}
+
+\twolineruleA
+  {\texttt{(}\sy{store}~\texttt{(}\nt{sf}_{1}~\cdots~\texttt{(}x_1~v_1\texttt{)}~\nt{sf}_{2}~\cdots\texttt{)}~\nt{E}_{1}[\texttt{(}\sy{l\mbox{\texttt{!}}}~x_1~v_2\texttt{)}]\texttt{)}}
+  {\texttt{(}\sy{store}~\texttt{(}\nt{sf}_{1}~\cdots~\texttt{(}x_1~v_2\texttt{)}~\nt{sf}_{2}~\cdots\texttt{)}~\nt{E}_{1}[\va{unspecified}]\texttt{)}}
+  {\rulename{6initv}}
+  {\rightarrow}
+
+\twolineruleA
+  {\texttt{(}\sy{store}~\texttt{(}\nt{sf}_{1}~\cdots~\texttt{(}x_1~\sy{bh}\texttt{)}~\nt{sf}_{2}~\cdots\texttt{)}~\nt{E}_{1}[\texttt{(}\sy{set\mbox{\texttt{!}}}~x_1~v_1\texttt{)}]\texttt{)}}
+  {\texttt{(}\sy{store}~\texttt{(}\nt{sf}_{1}~\cdots~\texttt{(}x_1~v_1\texttt{)}~\nt{sf}_{2}~\cdots\texttt{)}~\nt{E}_{1}[\va{unspecified}]\texttt{)}}
+  {\rulename{6setdt}}
+  {\rightarrow}
+
+\twolineruleA
+  {\texttt{(}\sy{store}~\texttt{(}\nt{sf}_{1}~\cdots~\texttt{(}x_1~\sy{bh}\texttt{)}~\nt{sf}_{2}~\cdots\texttt{)}~\nt{E}_{1}[\texttt{(}\sy{set\mbox{\texttt{!}}}~x_1~v_1\texttt{)}]\texttt{)}}
+  {\texttt{(}\sy{store}~\texttt{(}\nt{sf}_{1}~\cdots~\texttt{(}x_1~\sy{bh}\texttt{)}~\nt{sf}_{2}~\cdots\texttt{)}~\nt{E}_{1}[\texttt{(}\va{raise}~\texttt{(}\sy{make\mbox{\texttt{-}}cond}~\textrm{``letrec ~ variable ~ touched''}\texttt{)}\texttt{)}]\texttt{)}}
+  {\rulename{6setdte}}
+  {\rightarrow}
+
+\twolineruleA
+  {\texttt{(}\sy{store}~\texttt{(}\nt{sf}_{1}~\cdots~\texttt{(}x_1~\sy{bh}\texttt{)}~\nt{sf}_{2}~\cdots\texttt{)}~\nt{E}_{1}[x_1]\texttt{)}}
+  {\texttt{(}\sy{store}~\texttt{(}\nt{sf}_{1}~\cdots~\texttt{(}x_1~\sy{bh}\texttt{)}~\nt{sf}_{2}~\cdots\texttt{)}~\nt{E}_{1}[\texttt{(}\va{raise}~\texttt{(}\sy{make\mbox{\texttt{-}}cond}~\textrm{``letrec ~ variable ~ touched''}\texttt{)}\texttt{)}]\texttt{)}}
+  {\rulename{6dt}}
+  {\rightarrow}
+
+\twolineruleA
+  {\texttt{(}\sy{store}~\texttt{(}\nt{sf}_{1}~\cdots~\texttt{(}x_1~\semfalse{}\texttt{)}~\nt{sf}_{2}~\cdots\texttt{)}~\nt{E}_{1}[\texttt{(}\sy{reinit}~x_1\texttt{)}]\texttt{)}}
+  {\texttt{(}\sy{store}~\texttt{(}\nt{sf}_{1}~\cdots~\texttt{(}x_1~\semtrue{}\texttt{)}~\nt{sf}_{2}~\cdots\texttt{)}~\nt{E}_{1}['\nt{ignore}]\texttt{)}}
+  {\rulename{6init}}
+  {\rightarrow}
+
+\twolineruleA
+  {\texttt{(}\sy{store}~\texttt{(}\nt{sf}_{1}~\cdots~\texttt{(}x_1~\semtrue{}\texttt{)}~\nt{sf}_{2}~\cdots\texttt{)}~\nt{E}_{1}[\texttt{(}\sy{reinit}~x_1\texttt{)}]\texttt{)}}
+  {\texttt{(}\sy{store}~\texttt{(}\nt{sf}_{1}~\cdots~\texttt{(}x_1~\semtrue{}\texttt{)}~\nt{sf}_{2}~\cdots\texttt{)}~\nt{E}_{1}['\nt{ignore}]\texttt{)}}
+  {\rulename{6reinit}}
+  {\rightarrow}
+
+\twolineruleA
+  {\texttt{(}\sy{store}~\texttt{(}\nt{sf}_{1}~\cdots~\texttt{(}x_1~\semtrue{}\texttt{)}~\nt{sf}_{2}~\cdots\texttt{)}~\nt{E}_{1}[\texttt{(}\sy{reinit}~x_1\texttt{)}]\texttt{)}}
+  {\texttt{(}\sy{store}~\texttt{(}\nt{sf}_{1}~\cdots~\texttt{(}x_1~\semtrue{}\texttt{)}~\nt{sf}_{2}~\cdots\texttt{)}~\nt{E}_{1}[\texttt{(}\va{raise}~\texttt{(}\sy{make\mbox{\texttt{-}}cond}~\textrm{``reinvoked ~ continuation ~ of ~ letrec ~ init''}\texttt{)}\texttt{)}]\texttt{)}}
+  {\rulename{6reinite}}
+  {\rightarrow}
+
+\fourlinescruleB
+  {\texttt{(}\sy{store}~\texttt{(}\nt{sf}_{1}~\cdots\texttt{)}~\nt{E}_{1}[\texttt{(}\sy{letrec}~\texttt{(}\texttt{(}x_1~\nt{e}_{1}\texttt{)}~\cdots\texttt{)}~\nt{e}_{2}~\nt{e}_{3}~\cdots\texttt{)}]\texttt{)}}
+  {\texttt{(}\sy{store}~\texttt{(}\nt{sf}_{1}~\cdots~\texttt{(}\nt{lx}~\sy{bh}\texttt{)}~\cdots~\texttt{(}\nt{ri}~\semfalse{}\texttt{)}~\cdots\texttt{)}}
+  {~~~\nt{E}_{1}[\texttt{(}\texttt{(}\sy{lambda}~\texttt{(}x_1~\cdots\texttt{)}~\texttt{(}\sy{l\mbox{\texttt{!}}}~\nt{lx}~x_1\texttt{)}~\cdots~\{x_1 \mapsto \nt{lx}\cdots \}\nt{e}_{2}~\{x_1 \mapsto \nt{lx}\cdots \}\nt{e}_{3}~\cdots\texttt{)}}
+  {~~~\hphantom{\nt{E}_{1}[\texttt{(}}\texttt{(}\sy{begin0}~\{x_1 \mapsto \nt{lx}\cdots \}\nt{e}_{1}~\texttt{(}\sy{reinit}~\nt{ri}\texttt{)}\texttt{)} \cdots\texttt{)])}}
+  {\rulename{6letrec}}
+  {(\nt{lx} \cdots \textrm{新生}, \nt{ri} \cdots \textrm{新生})}
+  {\rightarrow}
+
+\fourlinescruleB
+  {\texttt{(}\sy{store}~\texttt{(}\nt{sf}_{1}~\cdots\texttt{)}~\nt{E}_{1}[\texttt{(}\sy{letrec\mbox{\texttt{*}}}~\texttt{(}\texttt{(}x_1~\nt{e}_{1}\texttt{)}~\cdots\texttt{)}~\nt{e}_{2}~\nt{e}_{3}~\cdots\texttt{)}]\texttt{)}}
+  {\texttt{(}\sy{store}~\texttt{(}\nt{sf}_{1}~\cdots~\texttt{(}\nt{lx}~\sy{bh}\texttt{)}~\cdots~\texttt{(}\nt{ri}~\semfalse{}\texttt{)}~\cdots\texttt{)}~ }
+  {~~~ \nt{E}_{1}[\{x_1 \mapsto \nt{lx}\cdots \} }
+  {~~~ \hphantom{\nt{E}_{1}[} \texttt{(}\sy{begin}~\texttt{(}\sy{begin}~\texttt{(}\sy{l\mbox{\texttt{!}}}~\nt{lx}~\nt{e}_{1}\texttt{)}~\texttt{(}\sy{reinit}~\nt{ri}\texttt{)}\texttt{)}~\cdots~\nt{e}_{2}~\nt{e}_{3}~\cdots\texttt{)}]\texttt{)}}
+  {\rulename{6letrec*}}
+  {(\nt{lx} \cdots \textrm{新生}, \nt{ri} \cdots \textrm{新生})}
+  {\rightarrow}
+
+\end{array}
+$$
 
 
 <!--
