@@ -77,7 +77,7 @@ $$
 **<center>2007年09月26日</center>**
 
 [<center>在GitHub联系译者</center>](https://github.com/jks-liu/R6RS.zh-cn)
-<center>已完成80%，最后修改于2014年09月05日</center>
+<center>最后修改于2014年09月29日</center>
 
 # 摘要 <!-- SUMMARY -->
 
@@ -5584,26 +5584,26 @@ $$
 \begin{array}{l@{}l@{}lr}
 \onelineruleA
   {\nt{P}[\texttt{(}\va{eqv\mbox{\texttt{?}}}~\nt{proc}~\nt{proc}\texttt{)}]}
-  {\mbox{\textbf{unknown:} equivalence of procedures}}
+  {\mbox{\textbf{unknown:}过程的等价}}
   {\rulename{6ueqv}}
   {\rightarrow}
 
 \onelinescruleA
   {\nt{P}[\texttt{(}\va{values}~v_1~\cdots\texttt{)}]_{\circ}}
-  {\mbox{\textbf{unknown: }context expected one value, received \#}v_1}
+  {\mbox{\textbf{unknown: }上下文期待一个值，接受到\#}v_1}
   {\rulename{6uval}}
   {(\#v_1 \neq 1)}
   {\rightarrow}
 
 \onelineruleA
   {\nt{P}[\nt{U}[\va{unspecified}]]}
-  {\mbox{\textbf{unknown:} unspecified result}}
+  {\mbox{\textbf{unknown:}未定义的结果}}
   {\rulename{6udemand}}
   {\rightarrow}
 
 \onelineruleA
   {\texttt{(}\sy{store}~\texttt{(}\nt{sf}~\cdots\texttt{)}~\va{unspecified}\texttt{)}}
-  {\mbox{\textbf{unknown:} unspecified result}}
+  {\mbox{\textbf{unknown:}未定义的结果}}
   {\rulename{6udemandtl}}
   {\rightarrow}
 
@@ -5942,7 +5942,7 @@ $$y_k^\prime = f_k(y_1, y_2, \ldots, y_n), \; k = 1, \ldots, n$$
 因为`(runge-kutta)`库利用了`(rnrs base (6))`库，所以其骨架如下所示：
 
 ~~~ scheme
-\#!r6rs
+#!r6rs
 (library (runge-kutta)
   (export integrate-system
           head tail)
@@ -5952,7 +5952,7 @@ $$y_k^\prime = f_k(y_1, y_2, \ldots, y_n), \; k = 1, \ldots, n$$
 
 下面描述的过程定义放入<library body>那里。
 
-参数`system-derivative`是一个函数，其接受一个系统状态（一个代表状态变量`\(y_1, \ldots, y_n\)`的向量值）且产生系统的导函数（值`\(y_1^\prime, \ldots, y_n^\prime$\)`。参数`initial-state`提供一个初始的系统状态，以及`h`是综合系统步长的一个初始猜测。
+参数`system-derivative`是一个函数，其接受一个系统状态（一个代表状态变量`\(y_1, \ldots, y_n\)`的向量值）且产生系统的导函数（值`\(y_1^\prime, \ldots, y_n^\prime\)`）。参数`initial-state`提供一个初始的系统状态，以及`h`是综合系统步长的一个初始猜测。
 
 `integrate-system`的返回值是一个无限的系统状态流。
 
@@ -6042,7 +6042,7 @@ $$ L {di_L \over dt} = v_C$$
 进行积分时使用`integrate-system`，此系统模拟了一个阻尼振荡器。
 
 ~~~ scheme
-\#!r6rs
+#!r6rs
 (import (rnrs base)
         (rnrs io simple)
         (runge-kutta))
@@ -6058,7 +6058,7 @@ $$ L {di_L \over dt} = v_C$$
 (define the-states
   (integrate-system
      (damped-oscillator 10000 1000 .001)
-     '\#(1 0)
+     '#(1 0)
      .01))
 
 (letrec ((loop (lambda (s)
@@ -6067,22 +6067,23 @@ $$ L {di_L \over dt} = v_C$$
                  (loop (tail s)))))
   (loop the-states))
 
+; （根据勘误表添加。）
 (close-output-port (current-output-port))
 ~~~
 
 其会像下面一样打印输出：
 
 ~~~ scheme
-\#(1 0)
-\#(0.99895054 9.994835e-6)
-\#(0.99780226 1.9978681e-5)
-\#(0.9965554 2.9950552e-5)
-\#(0.9952102 3.990946e-5)
-\#(0.99376684 4.985443e-5)
-\#(0.99222565 5.9784474e-5)
-\#(0.9905868 6.969862e-5)
-\#(0.9888506 7.9595884e-5)
-\#(0.9870173 8.94753e-5)
+#(1 0)
+#(0.99895054 9.994835e-6)
+#(0.99780226 1.9978681e-5)
+#(0.9965554 2.9950552e-5)
+#(0.9952102 3.990946e-5)
+#(0.99376684 4.985443e-5)
+#(0.99222565 5.9784474e-5)
+#(0.9905868 6.969862e-5)
+#(0.9888506 7.9595884e-5)
+#(0.9870173 8.94753e-5)
 ~~~
 
 <!--
