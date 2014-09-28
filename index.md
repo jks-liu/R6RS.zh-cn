@@ -5876,6 +5876,43 @@ $$
            body1 body2 ...))))))
 ~~~
 
+`let*-values`
+
+下列的宏根据`let`和`let-values`通过`syntax-rules`定义了`let*-values`：
+
+~~~ scheme
+(define-syntax let*-values
+  (syntax-rules ()
+    ((let*-values () body1 body2 ...)
+     (let () body1 body2 ...))
+    ((let*-values (binding1 binding2 ...)
+       body1 body2 ...)
+     (let-values (binding1)
+       (let*-values (binding2 ...)
+         body1 body2 ...)))))
+~~~
+
+`let`
+
+`let`关键词可以根据`lambda`和`letrec`通过`syntax-rules`被定义如下：
+
+~~~ scheme
+(define-syntax \ide{let}
+  (syntax-rules ()
+    ((let ((name val) ...) body1 body2 ...)
+     ((lambda (name ...) body1 body2 ...)
+      val ...))
+    ((let tag ((name val) ...) body1 body2 ...)
+     ((letrec ((tag (lambda (name ...)
+                      body1 body2 ...)))
+        tag)
+      val ...))))
+~~~
+
+# 附录C. 附加材料 {#Ac}
+
+本报告
+
 
 <!--
   勘误：D
