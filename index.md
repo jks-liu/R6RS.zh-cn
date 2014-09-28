@@ -5911,7 +5911,28 @@ $$
 
 # 附录C. 附加材料 {#Ac}
 
-本报告
+本报告本身，以及更多的关于本报告的材料，比如Scheme一些部分的参考实现，以及讨论本报告的邮件列表的集合在
+
+{:refdef .center}
+<http://www.r6rs.org/>
+{: refdef}
+
+位于
+
+{:refdef .center}
+<http://www.schemers.org/>
+{: refdef}
+
+Scheme的网站，以及位于
+
+{:refdef .center}
+<http://library.readscheme.org/>
+{: refdef}
+
+的Readscheme网站包含广泛的Scheme参考文献，以及论文，程序，实现，以及其它关于Scheme的材料。
+
+
+
 
 
 <!--
