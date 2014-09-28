@@ -5656,6 +5656,68 @@ $$
 
 所以，剩余的规则只是指定了我们知道的一个值或多个值必须有的最小的行为，否则消去到`unknown:`状态。规则`\(\rulename{6udemand}\)`使`unspecified`掉落到上下文`U`中。`U`的精确定义见[图A.2b](#Fa-2b)，但是直观地，他是一个只有一个单独的表达式层深度的上下文，其包含值取决于子表达式的表达式，就像`if`的第一个子表达式。以下是在表达式中忽略`unspecified`的规则，这些表达式忽略它们的一些子表达式的值。`\(\rulename{6ubegin}\)`展示了`begin`怎样在有多个表达式要求值的时候忽略其第一个表达式。接下来的两个规则，`\(\rulename{6uhandlers}\)`和`\(\rulename{6udew}\)`将`unspecified`传播到它们的上下文中，这是因为它们也返回任意数量的值到它们的上下文中。最后，两个`begin0`规则保留`unspecified`直到规则`\(\rulename{6begin01}\)`可以将其返回到它的上下文中。
 
+# 附录B. 衍生形式的定义示例 {#Ab}
+
+本附录包含本报告描述的一些关键词根据比较简单的形式的定义示例。
+
+`cond`
+
+`cond`关键词（[第11.4.5小节](#s11-4-5)）可以根据`if`，`let`和`begin`通过`syntax-rules`定义如下：
+
+~~~ scheme
+(define-syntax cond
+  (syntax-rules (else =>)
+    ((cond (else result1 result2 ...))
+     (begin result1 result2 ...))
+    ((cond (test => result))
+     (let ((temp test))
+       (if temp (result temp))))
+    ((cond (test => result) clause1 clause2 ...)
+     (let ((temp test))
+       (if temp
+           (result temp)
+           (cond clause1 clause2 ...))))
+    ((cond (test)) test)
+    ((cond (test) clause1 clause2 ...)
+     (let ((temp test))
+       (if temp
+           temp
+           (cond clause1 clause2 ...))))
+    ((cond (test result1 result2 ...))
+     (if test (begin result1 result2 ...)))
+    ((cond (test result1 result2 ...)
+           clause1 clause2 ...)
+     (if test
+         (begin result1 result2 ...)
+         (cond clause1 clause2 ...)))))
+~~~
+
+`case`
+
+`case`关键词（[第11.4.5小节](#s11-4-5)）可以根据`let`，`cond`和`memv`（见库的第3章）通过`syntax-rules`定义如下：
+
+~~~ scheme
+(define-syntax case
+  (syntax-rules (else)
+    ((case expr0
+       ((key ...) res1 res2 ...)
+       ...
+       (else else-res1 else-res2 ...))
+     (let ((tmp expr0))
+       (cond
+         ((memv tmp '(key ...)) res1 res2 ...)
+         ...
+         (else else-res1 else-res2 ...))))
+    ((case expr0
+       ((keya ...) res1a res2a ...)
+       ((keyb ...) res1b res2b ...)
+       ...)
+     (let ((tmp expr0))
+       (cond
+         ((memv tmp '(keya ...)) res1a res2a ...)
+         ((memv tmp '(keyb ...)) res1b res2b ...)
+         ...)))))
+~~~
 
 
 <!--
