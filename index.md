@@ -5564,11 +5564,94 @@ $$
 **图A.11：**Letrec和letrec*
 {: refdef}
 
-图A.11显示了处理`letrec`，`letrec*`,及它们产生的补充表达式，`l!`和`reinit`。作为第一个近似，`letrec`和`letrec*`两者都通过在新的位置分配空间来保持初始表达式的值的方式来消去，并将这些位置初始化为`bh`（是“black hole（黑洞）”的简写），计算初始表达式，并使用`l!`更新存储有初始表达式的值的位置。我们同时使用`reinit`去检测一个letrec中的初始表达式是通过继续重新进入的情况。
+[图A.11](#Fa-11)显示了处理`letrec`，`letrec*`,及它们产生的补充表达式，`l!`和`reinit`。作为第一个近似，`letrec`和`letrec*`两者都通过在新的位置分配空间来保持初始表达式的值的方式来消去，并将这些位置初始化为`bh`（是“black hole（黑洞）”的简写），计算初始表达式，并使用`l!`更新存储有初始表达式的值的位置。我们同时使用`reinit`去检测一个letrec中的初始表达式是通过继续重新进入的情况。
 
-在考虑`letrec`和`letrec*`怎样使用`l!`和`reinit`之前，首先考虑`l!`和`reinit`怎样工作。图A.11中的前两个规则覆盖了`l!`。它和`set!`的行为非常像，但它同时初始化普通的变量和当前绑定到黑洞（`bh`）的变量。
+在考虑`letrec`和`letrec*`怎样使用`l!`和`reinit`之前，首先考虑`l!`和`reinit`怎样工作。[图A.11](#Fa-11)中的前两个规则覆盖了`l!`。它和`set!`的行为非常像，但它同时初始化普通的变量和当前绑定到黑洞（`bh`）的变量。
 
 下面两个规则覆盖当普通的`set!`应用到当前被绑定到黑洞的情况。这种情况在程序在letrec初始化变量之前赋值给它的时候会发生，比如，`(letrec ((x (set! x 5))) x)`。本报告指定一个实现应当或者执行一个赋值，如规则`\(\rulename{6setdt}\)`所示，或是抛出一个异常，如规则`\(\rulename{6setdte}\)`所示。
+
+规则`\(\rulename{6dt}\)`覆盖变量在初始化之前被引用的情况，在这种情况下必须总是抛出一个异常。
+
+`reinit`表达式用作检测在一个初始化表达式中捕获了一个继续的程序，并重新进入其中，这在`\(\rulename{6init}\)`，`\(\rulename{6reinit}\)`和`\(\rulename{6reinite}\)`这三个规则中被展示。`reinit`形式接受一个标识符，其被作为参数绑定到一个布尔的存储位置。它们被初始化为`#f`。当`reinit`被计算，它就会检查这个变量的值，如果其还是`#f`，就将其改为`#t`。如果其已经是`#t`，`reinit`或者什么都不做，或者抛出一个异常，并与`letrec`和`letrec*`两个的合法行为相一致。
+
+[图A.11](#Fa-11)中的最后两个规则将`l!`和`reinit`放在一起。为了获得初始表达式未定义的求值顺序，规则`\(\rulename{6letrec}\)`将一个`letrec`表达式消去为一个应用表达式。每个初始表达式被包裹进一个记录初始值的`begin0`中，然后使用`reinit`去检测返回到初始表达式中的继续。一旦所有的初始表达式被求值，规则右手边的过程被调用，其导致初始表达式的值被填充到存储位置，且求值以原始的`letrec`表达式的内部继续。
+
+规则`\(\rulename{6letrec*}\)`的行为类似，但使用`begin`表达式而不是一个应用，这是因为初始表达式被从左到右进行求值。此外，每个初始表达式在其被求值的时候被填充到存储位置，以便接下来的初始表达式可以引用它的值。
+
+## A.12. 规范不足（Underspecification） {#Aa-12}
+
+$$
+\begin{array}{l@{}l@{}lr}
+\onelineruleA
+  {\nt{P}[\texttt{(}\va{eqv\mbox{\texttt{?}}}~\nt{proc}~\nt{proc}\texttt{)}]}
+  {\mbox{\textbf{unknown:} equivalence of procedures}}
+  {\rulename{6ueqv}}
+  {\rightarrow}
+
+\onelinescruleA
+  {\nt{P}[\texttt{(}\va{values}~v_1~\cdots\texttt{)}]_{\circ}}
+  {\mbox{\textbf{unknown: }context expected one value, received \#}v_1}
+  {\rulename{6uval}}
+  {(\#v_1 \neq 1)}
+  {\rightarrow}
+
+\onelineruleA
+  {\nt{P}[\nt{U}[\va{unspecified}]]}
+  {\mbox{\textbf{unknown:} unspecified result}}
+  {\rulename{6udemand}}
+  {\rightarrow}
+
+\onelineruleA
+  {\texttt{(}\sy{store}~\texttt{(}\nt{sf}~\cdots\texttt{)}~\va{unspecified}\texttt{)}}
+  {\mbox{\textbf{unknown:} unspecified result}}
+  {\rulename{6udemandtl}}
+  {\rightarrow}
+
+\onelineruleA
+  {\nt{P}_{1}[\texttt{(}\sy{begin}~\va{unspecified}~\nt{e}_{1}~\nt{e}_{2}~\cdots\texttt{)}]}
+  {\nt{P}_{1}[\texttt{(}\sy{begin}~\nt{e}_{1}~\nt{e}_{2}~\cdots\texttt{)}]}
+  {\rulename{6ubegin}}
+  {\rightarrow}
+
+\onelineruleA
+  {\nt{P}_{1}[\texttt{(}\sy{handlers}~\nt{v}~\cdots~\va{unspecified}\texttt{)}]}
+  {\nt{P}_{1}[\va{unspecified}]}
+  {\rulename{6uhandlers}}
+  {\rightarrow}
+
+\onelineruleA
+  {\nt{P}_{1}[\texttt{(}\sy{dw}~\nt{x}~\nt{e}~\va{unspecified}~\nt{e}\texttt{)}]}
+  {\nt{P}_{1}[\va{unspecified}]}
+  {\rulename{6udw}}
+  {\rightarrow}
+
+\onelineruleA
+  {\nt{P}_{1}[\texttt{(}\sy{begin0}~\texttt{(}\va{values}~v_1~\cdots\texttt{)}~\va{unspecified}~\nt{e}_{1}~\cdots\texttt{)}]}
+  {\nt{P}_{1}[\texttt{(}\sy{begin0}~\texttt{(}\va{values}~v_1~\cdots\texttt{)}~\nt{e}_{1}~\cdots\texttt{)}]}
+  {\rulename{6ubegin0}}
+  {\rightarrow}
+
+\onelineruleA
+  {\nt{P}_{1}[\texttt{(}\sy{begin0}~\va{unspecified}~\texttt{(}\va{values}~v_2~\cdots\texttt{)}~\nt{e}_{2}~\cdots\texttt{)}]}
+  {\nt{P}_{1}[\texttt{(}\sy{begin0}~\va{unspecified}~\nt{e}_{2}~\cdots\texttt{)}]}
+  {\rulename{6ubegin0u}}
+  {\rightarrow}
+
+\onelineruleA
+  {\nt{P}_{1}[\texttt{(}\sy{begin0}~\va{unspecified}~\va{unspecified}~\nt{e}_{2}~\cdots\texttt{)}]}
+  {\nt{P}_{1}[\texttt{(}\sy{begin0}~\va{unspecified}~\nt{e}_{2}~\cdots\texttt{)}]}
+  {\rulename{6ubegin0uu}}
+  {\rightarrow}
+
+\end{array}
+$$
+
+{:refdef .caption #Fa-12}
+**图A.12：**显式未定义的行为
+{: refdef}
+
+[图A.12](#Fa-12)中的规则覆盖未显式定义的语义部分。实现可以用不同的覆盖左边的规则替换规则`\(\rulename{6ueqv}\)`和`\(\rulename{6uval}\)`，只要它们遵守非正式的规范，任何的替换都是合法的。那三种情况对应于`eqv?`应用到两个过程和多值被用在单值的上下文中的情况。
+
 
 <!--
   勘误：D
