@@ -6066,6 +6066,8 @@ $$ L {di_L \over dt} = v_C$$
                  (write (head s))
                  (loop (tail s)))))
   (loop the-states))
+
+(close-output-port (current-output-port))
 ~~~
 
 其会像下面一样打印输出：
