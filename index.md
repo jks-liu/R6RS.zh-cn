@@ -5931,9 +5931,26 @@ Scheme的网站，以及位于
 
 的Readscheme网站包含广泛的Scheme参考文献，以及论文，程序，实现，以及其它关于Scheme的材料。
 
+# 附录D. 示例 {#Ad}
 
+本节包含一个组成`(runge-kutta)`库的示例，这个库提供一个`integrate-system`过程，其以Runge-Kutta的方法对微分方程系统
 
+$$y_k^\prime = f_k(y_1, y_2, \ldots, y_n), \; k = 1, \ldots, n$$
 
+求积分。
+
+因为`(runge-kutta)`库利用了`(rnrs base (6))`库，所以其骨架如下所示：
+
+~~~ scheme
+\#!r6rs
+(library (runge-kutta)
+  (export integrate-system
+          head tail)
+  (import (rnrs base))
+  <library body>)
+~~~
+
+下面描述的过程定义放入<library body>那里。
 
 <!--
   勘误：D
