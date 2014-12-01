@@ -1,0 +1,23 @@
+\chapter{Composite library}
+\label{complibchapter}
+
+The \defthersixlibrary{} library is a composite of most of the libraries
+described in this report.  The only exceptions are:
+%
+\begin{itemize}
+\item \rsixlibrary{eval} (chapter~\ref{eval})
+\item \rsixlibrary{mutable-pairs} (chapter~\ref{pairmutationchapter})
+\item \rsixlibrary{mutable-strings} (chapter~\ref{stringmutationchapter})
+\item \rsixlibrary{r5rs} (chapter~\ref{r5rscompatchapter})
+\end{itemize}
+%
+The library exports all procedures and syntactic forms provided by the
+component libraries.
+
+All of the bindings exported by \thersixlibrary{} are exported for both {\cf run}
+and {\cf expand}; see report section~\extref{report:phasessection}{Import and export levels}.
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "r6rs-lib"
+%%% End: 

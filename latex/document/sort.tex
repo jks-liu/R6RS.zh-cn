@@ -1,0 +1,73 @@
+\chapter{Sorting}
+\label{sortingchapter}
+
+This chapter describes the \defrsixlibrary{sorting} library for
+sorting lists and vectors.
+
+\begin{entry}{%
+\proto{list-sort}{ proc list}{procedure}
+\proto{vector-sort}{ proc vector}{procedure}}
+
+\domain{\var{Proc} should accept any two elements
+  of \var{list} or \var{vector}, and should not have any side
+  effects.}  \var{Proc} should return a true value when its first argument
+is strictly less than its second, and \schfalse{} otherwise.
+
+The {\cf list-sort} and {\cf vector-sort} procedures perform a stable
+sort of \var{list} or \var{vector} in ascending order according to
+\var{proc}, without changing \var{list} or
+\var{vector} in any way.  The {\cf list-sort} procedure returns a
+list, and {\cf vector-sort} returns a vector.  The results may be {\cf
+  eq?} to the argument when the argument is already sorted, and the
+result of {\cf list-sort} may share structure with a tail of the
+original list.  The sorting algorithm performs $O(n \lg n)$ calls to
+\var{proc} where $n$ is the length of \var{list} or \var{vector},
+and all arguments passed to \var{proc} are elements of the list or
+vector being sorted, but the pairing of arguments and the sequencing
+of calls to \var{proc} are not specified.
+If multiple returns occur from {\cf list-sort} or {\cf vector-sort}, the return
+values returned by earlier returns are not mutated.
+
+\begin{scheme}
+(list-sort < '(3 5 2 1)) \ev (1 2 3 5)
+(vector-sort < '\sharpsign(3 5 2 1)) \ev \sharpsign(1 2 3 5)%
+\end{scheme}
+
+\implresp The implementation must check the restrictions
+on \var{proc} to the extent performed by applying it as described.
+An
+implementation may check whether \var{proc} is an appropriate argument
+before applying it.
+\end{entry}
+
+\begin{entry}{%
+\proto{vector-sort!}{ proc vector}{procedure}}
+
+\domain{\var{Proc} should accept any two elements
+  of the vector, and should not have any side
+  effects.  \var{Proc} should return a true value when its first
+argument is strictly less than its second, and \schfalse{} otherwise.}
+The {\cf vector-sort!} procedure destructively sorts \var{vector} in
+ascending order according to \var{proc}.  The sorting algorithm
+performs $O(n^2)$ calls to \var{proc} where $n$ is the length of
+\var{vector}, and all arguments passed to \var{proc} are elements
+of the vector being sorted, but the pairing of arguments and the
+sequencing of calls to \var{proc} are not specified.  The sorting
+algorithm may be unstable.  The procedure returns \unspecifiedreturn.
+
+\begin{scheme}
+(define v (vector 3 5 2 1))
+(vector-sort! v) \ev \theunspecified
+v \ev \sharpsign(1 2 3 5)
+\end{scheme}
+\implresp The implementation must check the restrictions
+on \var{proc} to the extent performed by applying it as described.
+An
+implementation may check whether \var{proc} is an appropriate argument
+before applying it.
+\end{entry}
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "r6rs-lib"
+%%% End: 

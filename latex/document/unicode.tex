@@ -1,0 +1,285 @@
+\chapter{Unicode}
+\label{unicodechapter}
+
+\newcommand{\latingreek}[1]{\texonly\mathit{#1}\endtexonly\htmlonly\textit{#1}\endhtmlonly}
+
+The procedures exported by the \defrsixlibrary{unicode}
+library provide access to some aspects
+of the Unicode semantics for characters and strings:
+category information, case-independent comparisons,
+case mappings, and normalization~\cite{Unicode}.
+
+Some of the procedures that operate on characters or strings ignore the
+difference between upper case and lower case.  These procedures
+have \hbox{``{\tt -ci}''} (for ``case
+insensitive'') embedded in their names.
+
+\section{Characters}
+
+\begin{entry}{%
+\proto{char-upcase}{ char}{procedure}
+\proto{char-downcase}{ char}{procedure}
+\proto{char-titlecase}{ char}{procedure}
+\proto{char-foldcase}{ char}{procedure}}
+
+These procedures take a character argument and return a character
+result. If the argument is an upper-case or title-case character, and if
+there is a single character that is its lower-case form, then
+{\cf char-downcase} returns that character. If the argument is a lower-case
+or title-case character, and there is a single character that is
+its upper-case form, then {\cf char-upcase} returns that character.
+If the argument is a lower-case
+or upper-case character, and there is a single character that is
+its title-case form, then {\cf char-titlecase} returns that character.
+If the argument is not a title-case character and there is no single
+character that is its title-case form, then {\cf char-titlecase}
+returns the upper-case form of the argument.
+Finally, if the character has a case-folded character,
+then {\cf char-foldcase} returns that character.
+Otherwise the character returned is the same
+as the argument.
+For Turkic characters \.I ({\tt \#\backwhack{}x130})
+and \i{} ({\tt \#\backwhack{}x131}),
+{\cf char-foldcase} behaves as the identity function; otherwise 
+{\cf char-foldcase} is the
+same as {\cf char-downcase} composed with {\cf char-upcase}.
+
+\begin{scheme}
+(char-upcase \sharpsign\backwhack{}i) \ev \sharpsign\backwhack{}I
+(char-downcase \sharpsign\backwhack{}i) \ev \sharpsign\backwhack{}i
+(char-titlecase \sharpsign\backwhack{}i) \ev \sharpsign\backwhack{}I
+(char-foldcase \sharpsign\backwhack{}i) \ev \sharpsign\backwhack{}i
+
+(char-upcase \sharpsign\backwhack{}\ss) \ev \sharpsign\backwhack{}\ss
+(char-downcase \sharpsign\backwhack{}\ss) \ev \sharpsign\backwhack{}\ss
+(char-titlecase \sharpsign\backwhack{}\ss) \ev \sharpsign\backwhack{}\ss
+(char-foldcase \sharpsign\backwhack{}\ss) \ev \sharpsign\backwhack{}\ss
+
+(char-upcase \sharpsign\backwhack{}$\Sigma$) \ev \sharpsign\backwhack{}$\Sigma$
+(char-downcase \sharpsign\backwhack{}$\Sigma$) \ev \sharpsign\backwhack{}$\sigma$
+(char-titlecase \sharpsign\backwhack{}$\Sigma$) \ev \sharpsign\backwhack{}$\Sigma$
+(char-foldcase \sharpsign\backwhack{}$\Sigma$) \ev \sharpsign\backwhack{}$\sigma$
+
+(char-upcase \sharpsign\backwhack{}$\varsigma$) \ev \sharpsign\backwhack{}$\Sigma$
+(char-downcase \sharpsign\backwhack{}$\varsigma$) \ev \sharpsign\backwhack{}$\varsigma$
+(char-titlecase \sharpsign\backwhack{}$\varsigma$) \ev \sharpsign\backwhack{}$\Sigma$
+(char-foldcase \sharpsign\backwhack{}$\varsigma$) \ev \sharpsign\backwhack{}$\sigma$
+\end{scheme}
+
+\begin{note}
+  Note that {\cf char-titlecase} does not always return a title-case
+  character.
+\end{note}
+
+\begin{note}
+  These procedures are consistent with
+  Unicode's locale-independent mappings from scalar values to
+  scalar values for upcase, downcase, titlecase, and case-folding
+  operations.  These mappings can be extracted from {\cf
+    UnicodeData.txt} and {\cf CaseFolding.txt} from the Unicode
+  Consortium, ignoring Turkic mappings in the latter.
+
+  Note that these character-based procedures are an incomplete
+  approximation to case conversion, even ignoring the user's locale.
+  In general, case mappings require the context of a string, both in
+  arguments and in result. The {\cf string-upcase}, {\cf
+    string-downcase}, {\cf string-titlecase}, and {\cf
+    string-foldcase} procedures (section~\ref{string-upcase})
+  perform more general case conversion.
+\end{note}
+\end{entry}
+
+
+\begin{entry}{%
+\proto{char-ci=?}{ \vari{char} \varii{char} \variii{char} \dotsfoo}{procedure}
+\proto{char-ci<?}{ \vari{char} \varii{char} \variii{char} \dotsfoo}{procedure}
+\proto{char-ci>?}{ \vari{char} \varii{char} \variii{char} \dotsfoo}{procedure}
+\proto{char-ci<=?}{ \vari{char} \varii{char} \variii{char} \dotsfoo}{procedure}
+\proto{char-ci>=?}{ \vari{char} \varii{char} \variii{char} \dotsfoo}{procedure}}
+
+These procedures are similar to {\cf char=?}, etc., but operate
+on the case-folded versions of the characters.
+
+\begin{scheme}
+(char-ci<? \sharpsign\backwhack{}z \sharpsign\backwhack{}Z) \ev \schfalse
+(char-ci=? \sharpsign\backwhack{}z \sharpsign\backwhack{}Z) \ev \schtrue
+(char-ci=? \sharpsign\backwhack{}$\varsigma$ \sharpsign\backwhack{}$\sigma$) \ev \schtrue%
+\end{scheme}
+\end{entry}
+
+
+\begin{entry}{%
+\proto{char-alphabetic?}{ char}{procedure}
+\proto{char-numeric?}{ char}{procedure}
+\proto{char-whitespace?}{ char}{procedure}
+\proto{char-upper-case?}{ char}{procedure}
+\proto{char-lower-case?}{ char}{procedure}
+\proto{char-title-case?}{ char}{procedure}}
+
+These procedures return \schtrue{} if their arguments are alphabetic,
+numeric, whitespace, upper-case, lower-case, or title-case characters,
+respectively; otherwise they return \schfalse.
+
+A character is alphabetic if it has the Unicode ``Alphabetic''
+property.  A character is numeric if it has the Unicode ``Numeric''
+property.  A character is whitespace if has the Unicode
+``White\_Space'' property.
+A character is upper case if it has the Unicode
+``Uppercase'' property, lower case if it has the ``Lowercase''
+property, and title case if it is in the Lt general category.
+
+\begin{scheme}
+(char-alphabetic? \sharpsign\backwhack{}a) \ev \schtrue{}
+(char-numeric? \sharpsign\backwhack{}1) \ev \schtrue{}
+(char-whitespace? \sharpsign\backwhack{}space) \ev \schtrue{}
+(char-whitespace? \sharpsign\backwhack{}x00A0) \ev \schtrue{}
+(char-upper-case? \sharpsign\backwhack{}$\Sigma$) \ev \schtrue{}
+(char-lower-case? \sharpsign\backwhack{}$\sigma$) \ev \schtrue{}
+(char-lower-case? \sharpsign\backwhack{}x00AA) \ev \schtrue{}
+(char-title-case? \sharpsign\backwhack{}I) \ev \schfalse{}
+(char-title-case? \sharpsign\backwhack{}x01C5) \ev \schtrue{}%
+\end{scheme}
+\end{entry}
+
+\begin{entry}{%
+\proto{char-general-category}{ char}{procedure}}
+
+Returns a symbol representing the
+Unicode general category of \var{char}, one of {\cf Lu}, {\cf Ll}, {\cf Lt},
+{\cf Lm}, {\cf Lo}, {\cf Mn}, {\cf Mc}, {\cf Me}, {\cf Nd}, {\cf Nl},
+{\cf No}, {\cf Ps}, {\cf Pe}, {\cf Pi}, {\cf Pf}, {\cf Pd}, {\cf Pc},
+{\cf Po}, {\cf Sc}, {\cf Sm}, {\cf Sk}, {\cf So}, {\cf Zs}, {\cf Zp},
+{\cf Zl}, {\cf Cc}, {\cf Cf}, {\cf Cs}, {\cf Co}, or {\cf Cn}.
+
+\begin{scheme}
+(char-general-category \#\backwhack{}a) \ev Ll
+(char-general-category \#\backwhack{}space) \lev Zs
+(char-general-category \#\backwhack{}x10FFFF) \lev Cn  
+\end{scheme}
+\end{entry}
+
+\section{Strings}
+
+\begin{entry}{%
+\proto{string-upcase}{ \var{string}}{procedure}
+\proto{string-downcase}{ \var{string}}{procedure}
+\proto{string-titlecase}{ \var{string}}{procedure}
+\proto{string-foldcase}{ \var{string}}{procedure}}
+
+These procedures take a string argument and return a string
+result.  They are defined in terms of Unicode's locale-independent
+case mappings from Unicode scalar-value sequences to scalar-value sequences.
+In particular, the length of the result string can be different from
+the length of the input string.
+When the specified result is equal in the sense of {\cf string=?} to the
+argument, these procedures may return the argument instead of a newly
+allocated string.
+
+The {\cf string-upcase} procedure converts a string to upper case;
+{\cf string-downcase} converts a string to lower case. The {\cf
+  string-foldcase} procedure converts the string to its case-folded
+counterpart, using the full case-folding mapping, but without the
+special mappings for Turkic languages.  The {\cf string-titlecase}
+procedure converts the first cased character of each word via {\cf
+  char-titlecase}, and downcases all other cased characters.
+
+\begin{scheme}
+(string-upcase "Hi") \ev "HI"
+(string-downcase "Hi") \ev "hi"
+(string-foldcase "Hi") \ev "hi"
+
+(string-upcase "Stra\ss{}e") \ev "STRASSE"
+(string-downcase "Stra\ss{}e") \ev "stra\ss{}e"
+(string-foldcase "Stra\ss{}e") \ev "strasse"
+(string-downcase "STRASSE")  \ev "strasse"
+
+(string-downcase "$\Sigma$") \ev "$\sigma$"
+
+; \textrm{Chi Alpha Omicron Sigma}:
+(string-upcase "$\latingreek{XAO}\Sigma$") \ev "$\latingreek{XAO}\Sigma$" 
+(string-downcase "$\latingreek{XAO}\Sigma$") \ev "$\chi\alpha{}o\varsigma$"
+(string-downcase "$\latingreek{XAO}\Sigma\Sigma$") \ev "$\chi\alpha{}o\sigma\varsigma$"
+(string-downcase "$\latingreek{XAO}\Sigma~\Sigma$") \ev "$\chi\alpha{}o\varsigma~\sigma$"
+(string-foldcase "$\latingreek{XAO}\Sigma\Sigma$") \ev "$\chi\alpha{}o\sigma\sigma$"
+(string-upcase "$\chi\alpha{}o\varsigma$") \ev "$\latingreek{XAO}\Sigma$"
+(string-upcase "$\chi\alpha{}o\sigma$") \ev "$\latingreek{XAO}\Sigma$"
+
+(string-titlecase "kNock KNoCK")
+\ev "Knock Knock"
+(string-titlecase "who's there?")
+\ev "Who's There?"
+(string-titlecase "r6rs") \ev "R6Rs"
+(string-titlecase "R6RS") \ev "R6Rs"%
+\end{scheme}
+
+\begin{note}
+  The case mappings needed for implementing these procedures
+  can be extracted from {\cf UnicodeData.txt}, {\cf
+    SpecialCasing.txt}, {\cf WordBreakProperty.txt} 
+  (the ``MidLetter'' property partly defines case-ignorable characters), 
+  and {\cf CaseFolding.txt} from the Unicode Consortium.
+
+  Since these procedures are locale-independent, they may not
+  be appropriate for some locales.
+\end{note}
+
+\begin{note}
+  Word breaking, as needed for the correct casing of $\Sigma$ and for
+  {\cf string-titlecase}, is specified in Unicode Standard Annex
+  \#29~\cite{UnicodeUAX29}.
+\end{note}
+
+\end{entry}
+
+\begin{entry}{%
+\proto{string-ci=?}{ \vari{string} \varii{string} \variii{string} \dotsfoo}{procedure}
+\proto{string-ci<?}{ \vari{string} \varii{string} \variii{string} \dotsfoo}{procedure}
+\proto{string-ci>?}{ \vari{string} \varii{string} \variii{string} \dotsfoo}{procedure}
+\proto{string-ci<=?}{ \vari{string} \varii{string} \variii{string} \dotsfoo}{procedure}
+\proto{string-ci>=?}{ \vari{string} \varii{string} \variii{string} \dotsfoo}{procedure}}
+
+These procedures are similar to {\cf string=?}, etc., but 
+operate on the case-folded versions of the strings.
+
+\begin{scheme}
+(string-ci<? "z" "Z") \ev \schfalse
+(string-ci=? "z" "Z") \ev \schtrue
+(string-ci=? "Stra\ss{}e" "Strasse") 
+\ev \schtrue
+(string-ci=? "Stra\ss{}e" "STRASSE")
+\ev \schtrue
+(string-ci=? "$\latingreek{XAO}\Sigma$" "$\chi\alpha{}o\sigma$")
+\ev \schtrue%
+\end{scheme}
+
+\end{entry}
+
+\begin{entry}{
+\proto{string-normalize-nfd}{ \var{string}}{procedure}
+\proto{string-normalize-nfkd}{ \var{string}}{procedure}
+\proto{string-normalize-nfc}{ \var{string}}{procedure}
+\proto{string-normalize-nfkc}{ \var{string}}{procedure}}
+  
+These procedures take a string argument and return a string
+result, which is the input string normalized
+to Unicode normalization form D, KD, C, or KC, respectively.
+When the specified result is equal in the sense of {\cf string=?} to the
+argument, these procedures may return the argument instead of a newly
+allocated string.
+
+\begin{scheme}
+(string-normalize-nfd "\backwhack{}xE9;")
+\ev "\backwhack{}x65;\backwhack{}x301;"
+(string-normalize-nfc "\backwhack{}xE9;")
+\ev "\backwhack{}xE9;"
+(string-normalize-nfd "\backwhack{}x65;\backwhack{}x301;")
+\ev "\backwhack{}x65;\backwhack{}x301;"
+(string-normalize-nfc "\backwhack{}x65;\backwhack{}x301;")
+\ev "\backwhack{}xE9;"%
+\end{scheme}
+\end{entry}
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "r6rs-lib"
+%%% End: 

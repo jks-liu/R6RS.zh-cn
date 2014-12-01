@@ -1,0 +1,236 @@
+\chapter{Control structures}
+\label{controllib}
+
+This chapter describes the \defrsixlibrary{control} library, which
+provides useful control structures.
+
+\begin{entry}{%
+\proto{when}{ \hyper{test} \hyperi{expression} \hyperii{expression} \dotsfoo}{\exprtype}
+\proto{unless}{ \hyper{test} \hyperi{expression} \hyperii{expression} \dotsfoo}{\exprtype}}
+
+\syntax \hyper{Test} must be an expression.
+
+\semantics A {\cf when} expression is evaluated by evaluating the
+\hyper{test} expression.  If \hyper{test} evaluates to a true value,
+the remaining \hyper{expression}s are evaluated in order, and the
+results of the last \hyper{expression} are returned as the
+results of the entire {\cf when} expression.  Otherwise, the {\cf
+	  when} expression returns \unspecifiedreturn.  An {\cf unless}
+expression is evaluated by evaluating the \hyper{test} expression.
+If \hyper{test} evaluates to \schfalse, the remaining
+\hyper{expression}s are evaluated in order, and the results of the
+last \hyper{expression} are returned as the results of the
+entire {\cf unless} expression.  Otherwise, the {\cf unless} expression
+returns \unspecifiedreturn.
+
+The final \hyper{expression} is in tail context if the {\cf when} or
+{\cf unless} form is itself in tail context.
+
+\begin{scheme}
+(when (> 3 2) 'greater) \ev greater
+(when (< 3 2) 'greater) \ev \theunspecified
+(unless (> 3 2) 'less) \ev \theunspecified
+(unless (< 3 2) 'less) \ev less
+\end{scheme}
+
+The {\cf when} and {\cf unless} expressions are derived forms.  They
+could be defined by the following macros:
+
+\begin{scheme}
+(define-syntax \ide{when}
+  (syntax-rules ()
+    ((when test result1 result2 ...)
+     (if test
+         (begin result1 result2 ...)))))
+
+(define-syntax \ide{unless}
+  (syntax-rules ()
+    ((unless test result1 result2 ...)
+     (if (not test)
+         (begin result1 result2 ...)))))
+\end{scheme}
+
+\end{entry}
+
+\noindent%
+\pproto{(do ((\hyperi{variable} \hyperi{init} \hyperi{step})}{\exprtype}
+\mainschindex{do}{\tt\obeyspaces%
+     \dotsfoo)\\
+    (\hyper{test} \hyper{expression} \dotsfoo)\\
+  \hyper{command} \dotsfoo)}
+
+\syntax
+The \hyper{init}s, \hyper{step}s, \hyper{test}s, and \hyper{command}s must be
+expressions.  The \hyper{variable}s must be pairwise distinct variables.
+
+\semantics
+The {\cf do} expression is an iteration construct.  It specifies a set of variables to
+be bound, how they are to be initialized at the start, and how they are
+to be updated on each iteration.
+
+A {\cf do} expression is evaluated as follows:
+The \hyper{init} expressions are evaluated (in some unspecified order),
+the \hyper{variable}s are bound to fresh locations, the results of the
+\hyper{init} expressions are stored in the bindings of the
+\hyper{variable}s, and then the iteration phase begins.
+
+\vest Each iteration begins by evaluating \hyper{test}; if the result is
+\schfalse, then the \hyper{command}s
+are evaluated in order for effect, the \hyper{step}
+expressions are evaluated in some unspecified order, the
+\hyper{variable}s are bound to fresh locations holding the results,
+and the next iteration begins.
+
+\vest If \hyper{test} evaluates to a true value, the
+\hyper{expression}s are evaluated from left to right and the values of
+the last \hyper{expression} are returned.  If no \hyper{expression}s
+are present, then the {\cf do} expression returns \unspecifiedreturn.
+
+\vest The region\index{region} of the binding of a \hyper{variable}
+consists of the entire {\cf do} expression except for the \hyper{init}s.
+
+\vest A \hyper{step} may be omitted, in which case the effect is the
+same as if {\cf(\hyper{variable} \hyper{init} \hyper{variable})} had
+been written instead of {\cf(\hyper{variable} \hyper{init})}.
+
+If a {\cf do} expression appears in a tail context, the
+\hyper{expression}s are a \hyper{tail sequence} in the sense of report
+section~\extref{report:basetailcontextsection}{Tail calls and tail contexts},
+i.e., the last \hyper{expression} is also in a tail context.
+
+\begin{scheme}
+(do ((vec (make-vector 5))
+     (i 0 (+ i 1)))
+    ((= i 5) vec)
+  (vector-set! vec i i))          \ev  \#(0 1 2 3 4)
+
+(let ((x '(1 3 5 7 9)))
+  (do ((x x (cdr x))
+       (sum 0 (+ sum (car x))))
+      ((null? x) sum)))             \ev  25%
+\end{scheme}
+
+The following definition
+of {\cf do} uses a trick to expand the variable clauses.
+
+\begin{scheme}
+(define-syntax \ide{do}
+  (syntax-rules ()
+    ((do ((var init step ...) ...)
+         (test expr ...)
+         command ...)
+     (letrec
+       ((loop
+         (lambda (var ...)
+           (if test
+               (begin
+                 \schfalse ; avoid empty begin
+                 expr ...)
+               (begin
+                 command
+                 ...
+                 (loop (do "step" var step ...)
+                       ...))))))
+       (loop init ...)))
+    ((do "step" x)
+     x)
+    ((do "step" x y)
+     y)))%
+\end{scheme}
+
+%\end{entry}
+
+\begin{entry}{%
+\proto{case-lambda}{ \hyper{case-lambda clause} \dotsfoo}{\exprtype}}
+    
+\syntax
+Each \hyper{case-lambda clause} must be of the form
+%
+\begin{scheme}
+(\hyper{formals} \hyper{body})%
+\end{scheme}
+
+\hyper{Formals} must be as in a {\cf lambda} form
+(report section~\extref{report:lambda}{Procedures}), and \hyper{body} is as described in
+report section~\extref{report:bodiessection}{Bodies and sequences}.
+
+\semantics A {\cf case-lambda} expression evaluates to a procedure.
+This procedure, when applied, tries to match its arguments to the
+\hyper{case-lambda clause}s in order.  The arguments match a clause if one of the
+following conditions is fulfilled:
+%
+\begin{itemize}
+\item \hyper{Formals} has the form {\tt (\hyper{variable} \dotsfoo)}
+and the number of arguments is the same as the number of formal
+parameters in \hyper{formals}.
+\item \hyper{Formals} has the form\\ {\tt
+(\hyperi{variable} \dotsfoo \hypern{variable} . \hyper{variable$_{n+1}$)}
+}\\
+and the number of arguments is at least $n$.
+\item \hyper{Formals} has the form {\tt \hyper{variable}}.
+\end{itemize}
+%
+For the first clause matched by the arguments, the variables of the
+\hyper{formals} are bound to fresh locations containing the
+argument values in the same arrangement as with {\cf lambda}.
+
+The last expression of a \hyper{body} in a {\cf case-lambda
+  expression} is in tail context.
+
+If the arguments match none of the clauses, an exception with condition 
+type {\cf\&assertion} is raised.
+
+\begin{scheme}
+(define foo
+  (case-lambda 
+   (() 'zero)
+   ((x) (list 'one x))
+   ((x y) (list 'two x y))
+   ((a b c d . e) (list 'four a b c d e))
+   (rest (list 'rest rest))))
+
+(foo) \ev zero
+(foo 1) \ev (one 1)
+(foo 1 2) \ev (two 1 2)
+(foo 1 2 3) \ev (rest (1 2 3))
+(foo 1 2 3 4) \ev (four 1 2 3 4 ())
+\end{scheme}
+
+The {\cf case-lambda} keyword
+can be defined in terms of {\cf lambda} by the following macros:
+%
+\begin{scheme}
+(define-syntax \ide{case-lambda}
+  (syntax-rules ()
+    ((\_ (fmls b1 b2 ...))
+     (lambda fmls b1 b2 ...))
+    ((\_ (fmls b1 b2 ...) ...)
+     (lambda args
+       (let ((n (length args)))
+         (case-lambda-help args n
+           (fmls b1 b2 ...) ...))))))
+
+(define-syntax case-lambda-help
+  (syntax-rules ()
+    ((\_ args n)
+     (assertion-violation \schfalse{}
+       "unexpected number of arguments"))
+    ((\_ args n ((x ...) b1 b2 ...) more ...)
+     (if (= n (length '(x ...)))
+         (apply (lambda (x ...) b1 b2 ...) args)
+         (case-lambda-help args n more ...)))
+    ((\_ args n ((x1 x2 ... . r) b1 b2 ...) more ...)
+     (if (>= n (length '(x1 x2 ...)))
+         (apply (lambda (x1 x2 ... . r) b1 b2 ...)
+                   args)
+         (case-lambda-help args n more ...)))
+    ((\_ args n (r b1 b2 ...) more ...)
+     (apply (lambda r b1 b2 ...) args))))
+\end{scheme}
+\end{entry}
+
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "r6rs-lib"
+%%% End: 

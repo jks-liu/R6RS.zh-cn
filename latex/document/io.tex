@@ -1,0 +1,28 @@
+\chapter{I/O}
+\label{iochapter}
+
+This chapter describes Scheme's libraries for performing input and output:
+
+\begin{itemize}
+\item The \rsixlibrary{io ports} library
+  (section~\ref{portsiosection}) is an I/O layer for conventional,
+  imperative buffered input and output with text and binary
+  data.
+\item The \rsixlibrary{io simple} library
+  (section~\ref{simpleiosection}) is a convenience library atop the
+  \rsixlibrary{io ports} library for textual I/O, compatible with 
+  the traditional Scheme I/O procedures~\cite{R5RS}.
+\end{itemize}
+
+Section~\ref{iocondsection} defines a condition-type hierarchy that
+is exported by both the \rsixlibrary{io ports} and
+\rsixlibrary{io simple} libraries.
+
+\input{iocond}
+\input{portio}
+\input{convio}
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "r6rs-lib"
+%%% End: 

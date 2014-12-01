@@ -1,0 +1,181 @@
+\chapter{Numbers}
+\label{numbertypeschapter}
+\mainindex{number}
+
+This chapter describes Scheme's model for numbers.  It is important to
+distinguish between the mathematical numbers, the Scheme objects that
+attempt to model them, the machine representations used to implement
+the numbers, and notations used to write numbers.  In this report, the
+term \textit{number} refers to a mathematical number, and the term
+\textit{number object} refers to a Scheme object representing a
+number.  This report uses the types \type{complex}, \type{real},
+\type{rational}, and \type{integer} to refer to both mathematical
+numbers and number objects.  The \type{fixnum} and \type{flonum} types
+refer to special subsets of the number objects, as determined by
+common machine representations, as explained below.
+
+\section{Numerical tower}
+\label{numericaltypes}
+\index{numerical types}
+
+Numbers may be arranged into a tower of subsets in which each level
+is a subset of the level above it:
+\begin{tabbing}
+\ \ \ \ \ \ \ \ \ \=\tupe{number} \\
+\> \tupe{complex} \\
+\> \tupe{real} \\
+\> \tupe{rational} \\
+\> \tupe{integer} 
+\end{tabbing}
+
+For example, 5 is an integer.  Therefore 5 is also a rational,
+a real, and a complex.  The same is true of the number objects
+that model 5.  
+
+Number objects are organized as a corresponding tower of subtypes
+defined by the predicates {\cf number?}, {\cf complex?}, {\cf real?},
+{\cf rational?}, and {\cf integer?}; see section~\ref{number?}.
+Integer number objects are also called \textit{integer
+  objects}\mainindex{integer object}.
+
+There is no simple relationship between the subset that contains a
+number and its representation inside a computer.  For example, the
+integer 5 may have several representations.  Scheme's numerical
+operations treat number objects as abstract data, as independent of
+their representation as possible.  Although an implementation of
+Scheme may use many different representations for numbers, this should
+not be apparent to a casual programmer writing simple programs.
+
+\section{Exactness}
+\label{exactly}
+
+\mainindex{exactness}It is useful to distinguish between number objects
+that are known to correspond to a number exactly, and those number
+objects whose computation involved rounding or other errors.  For
+example, index operations into data structures may need to know the index
+exactly, as may some operations on polynomial coefficients in a symbolic algebra
+system.  On the other hand, the results of measurements are inherently
+inexact, and irrational numbers may be approximated by rational and
+therefore inexact approximations.  In order to catch uses of numbers
+known only inexactly where exact numbers are required, Scheme
+explicitly distinguishes \defining{exact} from \defining{inexact} number objects.  This
+distinction is orthogonal to the dimension of type.
+
+A
+number object is exact if it is the value of an exact numerical
+literal or was derived from exact number objects using only exact
+operations.  Exact number objects correspond to mathematical numbers
+in the obvious way.
+
+Conversely, a number object is inexact if it is the value of an
+inexact numerical literal, or was derived from inexact number objects,
+or was derived using inexact operations.  Thus inexactness is
+contagious.
+
+Exact arithmetic is reliable in the following sense: If exact number
+objects are passed to any of the arithmetic procedures described in
+section~\ref{propagationsection}, and an exact number object is
+returned, then the result is mathematically correct.  This is
+generally not true of computations involving inexact number objects
+because approximate methods such as floating-point arithmetic may be
+used, but it is the duty of each implementation to make the result as
+close as practical to the mathematically ideal result.
+
+\section{Fixnums and flonums}
+
+A \defining{fixnum} is an exact integer object that lies
+within a certain implementation-dependent subrange of the
+exact integer objects. (Library section \extref{lib:fixnumssection}{Fixnums} describes a
+library for computing with fixnums.)
+Likewise, every implementation must
+designate a subset of its inexact real number objects as \defining{flonum}s, and
+to convert certain external representations into flonums.  
+(Library section \extref{lib:flonumssection}{Flonums} describes a library for
+computing with flonums.)  Note that
+this does not imply that an implementation must use
+floating-point representations.
+
+\section{Implementation requirements}
+
+\index{implementation restriction}\label{restrictions}
+
+Implementations of Scheme must support number objects for
+the entire tower of subtypes given in section~\ref{numericaltypes}.
+Moreover, implementations must support exact integer 
+objects and exact rational number objects of practically unlimited
+size and precision, and to implement certain procedures (listed in
+\ref{propagationsection}) so they always return exact results when
+given exact arguments.  (``Practically unlimited'' means that the size
+and precision of these numbers should only be limited by the size of
+the available memory.)
+
+Implementations may support only a limited range of inexact number
+objects of any type, subject to the requirements of this section.  For
+example, an implementation may limit the range of the inexact real
+number objects (and therefore the range of inexact integer and
+rational number objects) to the dynamic range of the flonum format.
+Furthermore the gaps between the inexact integer objects and
+rationals are likely to be very large in such an implementation as the
+limits of this range are approached.
+
+An implementation may use floating point and other approximate 
+representation strategies for \tupe{inexact} numbers.
+This report recommends, but does not require, that the IEEE 
+floating-point standards be followed by implementations that use
+floating-point representations, and that implementations using
+other representations should match or exceed the precision achievable
+using these floating-point standards~\cite{IEEE}.
+
+In particular, implementations that use floating-point representations
+must follow these rules: A floating-point result must be represented
+with at least as much precision as is used to express any of the
+inexact arguments to that operation.
+Potentially inexact operations such as {\cf sqrt}, when
+applied to exact arguments, should produce exact answers whenever possible
+(for example the square root of an exact 4 ought to be an exact 2).
+However, this is not required.
+If, on the other hand, an exact number object is operated upon so as to produce an
+inexact result (as by {\cf sqrt}), and if the result is represented in
+floating point, then the most precise floating-point format available
+must be used; but if the result is represented in some other way then
+the representation must have at least as much precision as the most
+precise floating-point format available.
+
+It is the programmer's responsibility to avoid using inexact number
+objects with magnitude or significand too large to be represented in
+the implementation.
+
+\section{Infinities and NaNs}
+
+Some Scheme implementations, specifically those that follow the IEEE
+floating-point standards, distinguish special number objects called
+\mainindex{infinity}\defining{positive infinity}, \defining{negative
+  infinity}, and \defining{NaN}.
+
+Positive infinity is regarded as an inexact real (but not rational) number
+object that represents an indeterminate number greater than the
+numbers represented by all rational number objects.  Negative infinity
+is regarded as an inexact real (but not rational) number object that represents
+an indeterminate number less than the numbers represented by all
+rational numbers.
+
+A NaN is regarded as an inexact real (but not rational) number object so
+indeterminate that it might represent any real number, including
+positive or negative infinity, and might even be greater than positive
+infinity or less than negative infinity.
+
+\section{Distinguished -0.0}
+
+\index{-0.0}
+Some Scheme implementations, specifically those that follow the IEEE
+floating-point standards, distinguish between number objects for $0.0$
+and $-0.0$, i.e., positive and negative inexact zero.  This report
+will sometimes specify the behavior of certain arithmetic operations
+on these number objects.  These specifications are marked with ``if
+$-0.0$ is distinguished'' or ``implementations that distinguish
+$-0.0$''.
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "r6rs"
+%%% End: 

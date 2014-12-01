@@ -1,0 +1,580 @@
+\chapter{Libraries}
+\label{librarychapter}
+\mainindex{library}
+Libraries are parts of a program that can be distributed
+independently.
+The library system supports macro definitions within libraries,
+macro exports, and distinguishes the phases in which definitions
+and imports are needed.  This chapter defines the notation for
+libraries and a semantics for library expansion and execution.
+
+\section{Library form}
+\label{librarysyntaxsection}
+
+A library definition must have the following form:\mainschindex{library}\mainschindex{import}\mainschindex{export}
+
+\begin{scheme}
+(library \hyper{library~name}
+  (export \hyper{export~spec} \ldots)
+  (import \hyper{import~spec} \ldots)
+  \hyper{library~body})%
+\end{scheme}
+
+A library declaration contains the following elements:
+
+\begin{itemize}
+\item The \hyper{library~name} specifies the name of the library
+  (possibly with version).
+\item The {\cf export} subform specifies a list of exports, which name
+  a subset of the bindings defined within or imported into the
+  library.
+\item The {\cf import} subform specifies the imported bindings as a
+  list of import dependencies, where each dependency specifies:
+\begin{itemize}
+\item the imported library's name, and, optionally, constraints on its
+  version,
+\item the relevant levels, e.g., expand or run time (see
+  section~\ref{phasessection}, and
+\item the subset of the library's exports to make available within the
+      importing library, and the local names to use within the importing
+      library for each of the library's exports.
+\end{itemize}
+\item The \hyper{library body} is the library body, consisting of a
+  sequence of definitions followed by a sequence of expressions.  The
+  definitions may be both for local (unexported) and exported
+  bindings, and the expressions are initialization expressions to be evaluated
+  for their effects.
+\end{itemize}
+
+An identifier can be imported with the same local name from two or
+more libraries or for two levels from the same library only if the
+binding exported by each library is the same (i.e., the binding is
+defined in one library, and it arrives through the imports only by
+exporting and re-exporting).  Otherwise, no identifier can be imported
+multiple times, defined multiple times, or both defined and imported.
+No identifiers are visible within a library except for those
+explicitly imported into the library or defined within the library.
+
+A \hyper{library name} uniquely identifies a library within an
+implementation, and is globally visible in the {\cf import} clauses
+(see below) of all other libraries within an implementation.
+A \hyper{library name} has the following form:
+
+\begin{scheme}
+(\hyperi{identifier} \hyperii{identifier} \ldots \hyper{version})%
+\end{scheme}
+
+where \hyper{version} is empty or has the following form:
+%
+\begin{scheme}
+(\hyper{sub-version} \ldots)%
+\end{scheme}
+
+Each \hyper{sub-version} must represent an exact nonnegative integer object.
+An empty \hyper{version} is equivalent to {\cf ()}.
+
+An \hyper{export~spec} names a set of imported and locally defined bindings to
+be exported, possibly with different
+external names.  An \hyper{export~spec} must have one of the
+following forms:
+
+\begin{scheme}
+\hyper{identifier}
+(rename (\hyperi{identifier} \hyperii{identifier}) \ldots)%
+\end{scheme}
+
+In an \hyper{export~spec}, an \hyper{identifier} names a single binding defined
+within or imported into the library, where the external name for the export is
+the same as the name of the binding within the library. 
+A {\cf rename} spec exports the binding named by 
+\hyperi{identifier} in each {\cf (\hyperi{identifier}
+  \hyperii{identifier})} pairing, using \hyperii{identifier} as the
+external name.
+
+Each \hyper{import~spec} specifies a set of bindings to be imported into
+the library, the levels at which they are to be available, and the local
+names by which they are to be known.  An \hyper{import spec} must
+be one of the following:
+%
+\begin{scheme}
+\hyper{import set}
+(for \hyper{import~set} \hyper{import~level} \ldots)%
+\end{scheme}
+
+An \hyper{import level}  is one of the following:
+\begin{scheme}
+run
+expand
+(meta \hyper{level})%
+\end{scheme}
+
+where \hyper{level} represents an exact integer object.
+
+As an \hyper{import level}, {\cf run} is an abbreviation for {\cf
+  (meta 0)}, and {\cf expand} is an abbreviation for {\cf (meta 1)}.
+Levels and phases are discussed in section~\ref{phasessection}.
+
+An \hyper{import~set} names a set of bindings from another library and
+possibly specifies local names for the imported bindings.  It must be
+one of the following:
+
+\begin{scheme}
+\hyper{library~reference}
+(library \hyper{library~reference})
+(only \hyper{import~set} \hyper{identifier} \ldots)
+(except \hyper{import~set} \hyper{identifier} \ldots)
+(prefix \hyper{import~set} \hyper{identifier})
+(rename \hyper{import~set} (\hyperi{identifier} \hyperii{identifier}) \ldots)%
+\end{scheme}
+
+A \hyper{library~reference} identifies a library by its 
+name and optionally by its version.  It has one of the following forms:
+
+\begin{scheme}
+(\hyperi{identifier} \hyperii{identifier} \ldots)
+(\hyperi{identifier} \hyperii{identifier} \ldots \hyper{version~reference})%
+\end{scheme}
+
+A \hyper{library~reference} whose first \hyper{identifier} is
+{\cf for}, {\cf library}, {\cf only}, {\cf except}, {\cf prefix}, or {\cf rename} is
+permitted only within a {\cf library} \hyper{import~set}.
+The \hyper{import~set} {\cf (library \hyper{library~reference})} is
+otherwise equivalent to \hyper{library~reference}.
+
+A \hyper{library~reference} with no \hyper{version~reference}
+(first form above) is equivalent to a \hyper{library~reference} with a
+\hyper{version~reference} of {\cf ()}.
+
+A \hyper{version~reference} specifies a set of \hyper{version}s that
+it matches.  The \hyper{library~reference} identifies all libraries of
+the same name and whose version is matched by the
+\hyper{version~reference}.  A \hyper{version~reference} has
+the following form:
+%
+\begin{scheme}
+(\hyperi{sub-version reference} \ldots \hypern{sub-version reference})
+(and \hyper{version reference} \ldots)
+(or \hyper{version reference} \ldots)
+(not \hyper{version reference})%
+\end{scheme}
+%
+A \hyper{version reference} of the first form matches a \hyper{version}
+with at least $n$ elements, whose \hyper{sub-version reference}s match
+the corresponding \hyper{sub-version}s.  An {\cf and} \hyper{version
+  reference} matches a version if all \hyper{version references}
+following the {\cf and} match it.  Correspondingly, an {\cf
+  or} \hyper{version reference} matches a version if one of
+\hyper{version references} following the {\cf or} matches it,
+and a {\cf not} \hyper{version reference} matches a version if the
+\hyper{version reference} following it does not match it.
+
+A \hyper{sub-version reference} has one of the following forms:
+
+\begin{scheme}
+\hyper{sub-version}
+(>= \hyper{sub-version})
+(<= \hyper{sub-version})
+(and \hyper{sub-version~reference} \ldots)
+(or \hyper{sub-version~reference} \ldots)
+(not \hyper{sub-version~reference})%
+\end{scheme}
+
+A \hyper{sub-version reference} of the first form matches a
+\hyper{sub-version} if it is equal to it.  A {\cf >=}
+\hyper{sub-version reference} of the first form matches a sub-version
+if it is greater or equal to the \hyper{sub-version} following it;
+analogously for {\cf <=}.  An {\cf and} \hyper{sub-version reference}
+matches a sub-version if all of the subsequent \hyper{sub-version
+  reference}s match it.  Correspondingly, an {\cf or}
+\hyper{sub-version reference} matches a sub-version if one of the
+subsequent \hyper{sub-version reference}s matches it, and a {\cf not}
+\hyper{sub-version reference} matches a sub-version if the subsequent
+\hyper{sub-version reference} does not match it.
+
+Examples:
+
+\texonly\begin{center}\endtexonly
+  \begin{tabular}{lll}
+    version reference & version & match?
+    \\
+    {\cf ()} & {\cf (1)} & yes\\
+    {\cf (1)} & {\cf (1)} & yes\\
+    {\cf (1)} & {\cf (2)} & no\\
+    {\cf (2 3)} & {\cf (2)} & no\\
+    {\cf (2 3)} & {\cf (2 3)} & yes\\
+    {\cf (2 3)} & {\cf (2 3 5)} & yes\\
+    {\cf (or (1 (>= 1)) (2))} & {\cf (2)} & yes\\
+    {\cf (or (1 (>= 1)) (2))} & {\cf (1 1)} & yes\\
+    {\cf (or (1 (>= 1)) (2))} & {\cf (1 0)} & no\\
+    {\cf ((or 1 2 3))} & {\cf (1)} & yes\\
+    {\cf ((or 1 2 3))} & {\cf (2)} & yes\\
+    {\cf ((or 1 2 3))} & {\cf (3)} & yes\\
+    {\cf ((or 1 2 3))} & {\cf (4)} & no
+  \end{tabular}
+\texonly\end{center}\endtexonly
+
+When more than one library is identified by a library reference, the
+choice of libraries is determined in some implementation-dependent manner.
+
+To avoid problems such as incompatible types and replicated state,
+implementations should prohibit the two libraries whose library names
+consist of the same sequence of identifiers but whose versions do not
+match to co-exist in the same program.
+
+By default, all of an imported library's exported bindings are made
+visible within an importing library using the names given to the bindings
+by the imported library.
+The precise set of bindings to be imported and the names of those
+bindings can be adjusted with the {\cf only}, {\cf except},
+{\cf prefix}, and {\cf rename} forms as described below.
+
+\begin{itemize}
+\item An {\cf only} form produces a subset of the bindings from another
+\hyper{import~set}, including only the listed
+\hyper{identifier}s.
+The included \hyper{identifier}s must be in
+the original \hyper{import~set}.
+\item An {\cf except} form produces a subset of the bindings from another
+\hyper{import~set}, including all but the listed
+\hyper{identifier}s.
+All of the excluded \hyper{identifier}s must be in
+the original \hyper{import~set}.
+\item A {\cf prefix} form adds the \hyper{identifier} prefix to each
+name from another \hyper{import~set}.
+\item A {\cf rename} form, {\cf (rename (\hyperi{identifier} \hyperii{identifier}) \ldots)},
+removes the bindings for {\cf \hyperi{identifier} \ldots} to form an
+intermediate \hyper{import~set}, then adds the bindings back for the
+corresponding {\cf \hyperii{identifier} \ldots} to form the final
+\hyper{import~set}.
+Each \hyperi{identifier} must be in the original \hyper{import~set},
+each \hyperii{identifier} must not be in the intermediate \hyper{import~set},
+and the \hyperii{identifier}s must be distinct.
+\end{itemize}
+It is a syntax violation if a constraint given above is not met.
+
+\label{librarybodysection}
+The \hyper{library~body} of a {\cf library} form consists of forms
+that are classified as 
+\textit{definitions}\mainindex{definition} or
+\textit{expressions}\mainindex{expression}.  Which forms belong to
+which class depends on the imported libraries and the result of
+expansion---see chapter~\ref{expansionchapter}.  Generally, forms that
+are not 
+definitions (see section~\ref{defines} for definitions available
+through the base library) are expressions.
+
+A \hyper{library~body} is like a \hyper{body} (see section~\ref{bodiessection}) except that
+a \hyper{library~body}s need not include any expressions.  It must
+have the following form:
+
+\begin{scheme}
+\hyper{definition} \ldots \hyper{expression} \ldots%
+\end{scheme}
+
+When {\cf begin}, {\cf let-syntax}, or {\cf letrec-syntax} forms
+occur in a top-level body prior to the first
+expression, they are spliced into the body; see section~\ref{begin}.
+Some or all of the body, including portions wrapped in {\cf begin},
+{\cf let-syntax}, or {\cf letrec-syntax}
+forms, may be specified by a syntactic abstraction
+(see section~\ref{macrosection}).
+
+The transformer expressions and bindings are evaluated and created
+from left to right, as described in chapter~\ref{expansionchapter}.
+The expressions of variable definitions are evaluated
+from left to right, as if in an implicit {\cf letrec*},
+and the body expressions are also evaluated from left to right
+after the expressions of the variable definitions.
+A fresh location is created for each exported variable and initialized
+to the value of its local counterpart.
+The effect of returning twice to the continuation of the last body
+expression is unspecified.
+
+\begin{note}
+The names {\cf library}, {\cf export}, {\cf import},
+{\cf for}, {\cf run}, {\cf expand}, {\cf meta},
+{\cf import}, {\cf export}, {\cf only}, {\cf except}, {\cf
+  prefix}, {\cf rename}, {\cf and}, {\cf or}, {\cf not}, {\cf >=}, and {\cf <=}
+appearing in the library syntax are part of the
+syntax and are not reserved, i.e., the same names can be used for other
+purposes within the library or even exported from or imported 
+into a library with different meanings, without affecting their
+use in the {\cf library} form.
+\end{note}
+
+Bindings defined with a library are not visible in code
+outside of the library, unless the bindings are explicitly exported from the
+library. 
+An exported macro may, however, \emph{implicitly export} an otherwise
+unexported identifier defined within or imported into the library.
+That is, it may insert a reference to that identifier into the output code
+it produces.
+
+\label{importsareimmutablesection} 
+All explicitly exported variables are immutable in both the
+exporting and importing libraries. 
+It is thus a syntax violation if an
+explicitly exported variable appears on the left-hand side of a {\cf set!}
+expression, either in the exporting or importing libraries.
+
+All implicitly exported variables are also immutable in both the
+exporting and importing libraries.
+It is thus a syntax violation if a
+variable appears on the left-hand side of a {\cf set!}
+expression in any code produced by an exported macro outside of the
+library in which the variable is defined.
+It is also a syntax violation if a
+reference to an assigned variable appears in any code produced by
+an exported macro outside of the library in which the variable is defined,
+where an assigned variable is one that appears on the left-hand
+side of a {\cf set!} expression in the exporting library.
+
+All other variables defined within a library are mutable.
+
+\section{Import and export levels}
+\label{phasessection}
+
+Expanding a library may require run-time information from another
+library.  For example, if a macro transformer calls a
+procedure from library $A$, then the library $A$ must be
+instantiated before expanding any use of the macro in library $B$.  Library $A$ may
+not be
+needed when library $B$ is eventually run as part of a program, or it
+may be needed for run time of library $B$, too.  The library
+mechanism distinguishes these times by phases, which are explained in
+this section.
+
+Every library can be characterized by expand-time information (minimally,
+its imported libraries, a list of the exported keywords, a list of the
+exported variables, and code to evaluate the transformer expressions) and
+run-time information (minimally, code to evaluate the variable definition
+right-hand-side expressions, and code to evaluate the body expressions).
+The expand-time information must be available to expand references to
+any exported binding, and the run-time information must be available to
+evaluate references to any exported variable binding.
+
+\mainindex{phase}
+%
+A \emph{phase} is a time at which the expressions within a library are
+evaluated.
+Within a library body, top-level expressions and
+the right-hand sides of {\cf define} forms are evaluated at run time,
+i.e., phase $0$, and the right-hand
+sides of {\cf define-syntax} forms are evaluated at expand time, i.e.,
+phase $1$.
+When {\cf define-syntax},
+{\cf let-syntax}, or {\cf letrec-syntax}
+forms appear within code evaluated at phase $n$, the right-hand sides
+are evaluated at phase $n+1$.
+
+These phases are relative to the phase in which the library itself is
+used.
+An \defining{instance} of a library corresponds to an evaluation of its
+variable definitions and expressions in a particular phase relative to another
+library---a process called \defining{instantiation}.
+For example, if a top-level expression in a library $B$ refers to
+a variable export from another library $A$, then it refers to the export from an
+instance of $A$ at phase $0$ (relative to the phase of $B$).
+But if a phase $1$ expression within $B$ refers to the same binding from
+$A$, then it refers to the export from an instance of $A$ at phase $1$
+(relative to the phase of $B$).
+
+A \defining{visit} of a library corresponds to the evaluation of its syntax
+definitions in a particular phase relative to another
+library---a process called \defining{visiting}. 
+For example, if a top-level expression in a library $B$ refers to
+a macro export from another library $A$, then it refers to the export from a
+visit of $A$ at phase $0$ (relative to the phase of $B$), which corresponds
+to the evaluation of the macro's transformer expression at phase $1$.
+
+
+\mainindex{level}\mainindex{import level} 
+%
+A \emph{level} is a lexical property of an identifier that determines
+in which phases it can be referenced. The level for each identifier
+bound by a definition within a library is $0$; that is, the identifier
+can be referenced only at phase $0$ within the library.
+The level for each imported binding is determined by the enclosing {\cf
+  for} form of the {\cf import} in the importing library, in
+addition to the levels of the identifier in the exporting
+library. Import and export levels are combined by pairwise addition of
+all level combinations.  For example, references to an imported
+identifier exported for levels $p_a$ and $p_b$ and imported for levels
+$q_a$, $q_b$, and $q_c$ are valid at levels $p_a+q_a$, $p_a+q_b$,
+$p_a+q_c$, $p_b+q_a$, $p_b+q_b$, and $p_b+q_c$. An \hyper{import~set}
+without an enclosing {\cf for} is equivalent to {\cf (for
+  \hyper{import~set} run)}, which is the same as {\cf (for
+  \hyper{import~set} (meta 0))}.
+
+The export level of an exported binding is $0$ for all bindings
+that are defined within the exporting library. The export levels of a
+reexported binding, i.e., an export imported from another library, are the
+same as the effective import levels of that binding within the reexporting
+library.
+
+For the libraries defined in the library report, the export level is
+$0$ for nearly all bindings. The exceptions are {\cf syntax-rules},
+{\cf identifier-syntax}, {\cf ...}, and {\cf \_} from the
+\rsixlibrary{base} library, which are exported with level $1$, {\cf
+  set!} from the \rsixlibrary{base} library, which is exported with
+levels $0$ and $1$, and all bindings from the composite
+\thersixlibrary{} library (see library
+chapter~\extref{lib:complibchapter}{Composite library}), which are
+exported with levels $0$ and $1$.
+
+Macro expansion within a library can introduce a reference to an
+identifier that is not explicitly imported into the library. In that
+case, the phase of the reference must match the identifier's level as
+shifted by the difference between the phase of the source library
+(i.e., the library that supplied the identifier's lexical context) and
+the library that encloses the reference. For example, suppose that
+expanding a library invokes a macro transformer, and the evaluation of
+the macro transformer refers to an identifier that is exported from
+another library (so the phase-$1$ instance of the library is used);
+suppose further that the value of the binding is a syntax object
+representing an identifier with only a level-$n$ binding; then, the
+identifier must be used only at phase $n+1$ in the
+library being expanded. This combination of levels and phases is why
+negative levels on identifiers can be useful, even though libraries
+exist only at non-negative phases.
+
+If any of a library's definitions are referenced at phase $0$ in the
+expanded form of a program, then an instance of the referenced library
+is created for phase $0$ before the program's definitions and
+expressions are evaluated. This rule applies transitively: if the
+expanded form of one library references at phase $0$ an identifier
+from another library, then before the referencing library is
+instantiated at phase $n$, the referenced library must be instantiated
+at phase $n$. When an identifier is referenced at any phase $n$
+greater than $0$, in contrast, then the defining library is
+instantiated at phase $n$ at some unspecified time before the
+reference is evaluated. Similarly, when a macro keyword is referenced at
+phase $n$ during the expansion of a library, then the
+defining library is visited at phase $n$ at some unspecified time
+before the reference is evaluated.
+
+An implementation may distinguish instances/visits of a library for
+different phases or to use an instance/visit at any phase as an instance/visit at
+any other phase. An implementation may further
+expand each {\cf library} form with distinct
+visits of libraries in any phase and/or instances of
+libraries in phases above $0$. An implementation may
+create instances/visits of more libraries at more phases than required to
+satisfy references. When an identifier appears as an expression in a
+phase that is inconsistent with the identifier's level, then an
+implementation may raise an exception either at expand time or run
+time, or it may allow the reference. Thus, a library whose meaning depends on whether the
+instances of a library are distinguished or shared across phases or
+{\cf library} expansions may be unportable.
+
+\section{Examples}
+
+Examples for various \hyper{import~spec}s and \hyper{export~spec}s:
+
+\begin{scheme}
+(library (stack)
+  (export make push! pop! empty!)
+  (import (rnrs))
+
+  (define (make) (list '()))
+  (define (push! s v) (set-car! s (cons v (car s))))
+  (define (pop! s) (let ([v (caar s)])
+                     (set-car! s (cdar s))
+                     v))
+  (define (empty! s) (set-car! s '())))
+
+(library (balloons)
+  (export make push pop)
+  (import (rnrs))
+
+  (define (make w h) (cons w h))
+  (define (push b amt)
+    (cons (- (car b) amt) (+ (cdr b) amt)))
+  (define (pop b) (display "Boom! ") 
+                  (display (* (car b) (cdr b))) 
+                  (newline)))
+
+(library (party)
+  ;; Total exports:
+  ;; make, push, push!, make-party, pop!
+  (export (rename (balloon:make make)
+                  (balloon:push push))
+          push!
+          make-party
+          (rename (party-pop! pop!)))
+  (import (rnrs)
+          (only (stack) make push! pop!) ; not empty!
+          (prefix (balloons) balloon:))
+
+  ;; Creates a party as a stack of balloons,
+  ;; starting with two balloons
+  (define (make-party)
+    (let ([s (make)]) ; from stack
+      (push! s (balloon:make 10 10))
+      (push! s (balloon:make 12 9))
+      s))
+  (define (party-pop! p)
+    (balloon:pop (pop! p))))
+
+
+(library (main)
+  (export)
+  (import (rnrs) (party))
+
+  (define p (make-party))
+  (pop! p)        ; displays "Boom! 108"
+  (push! p (push (make 5 5) 1))
+  (pop! p))       ; displays "Boom! 24"%
+\end{scheme}
+
+Examples for macros and phases:
+
+\begin{schemenoindent}
+(library (my-helpers id-stuff)
+  (export find-dup)
+  (import (rnrs))
+
+  (define (find-dup l)
+    (and (pair? l)
+         (let loop ((rest (cdr l)))
+           (cond
+            [(null? rest) (find-dup (cdr l))]
+            [(bound-identifier=? (car l) (car rest)) 
+             (car rest)]
+            [else (loop (cdr rest))])))))
+
+(library (my-helpers values-stuff)
+  (export mvlet)
+  (import (rnrs) (for (my-helpers id-stuff) expand))
+
+  (define-syntax mvlet
+    (lambda (stx)
+      (syntax-case stx ()
+        [(\_ [(id ...) expr] body0 body ...)
+         (not (find-dup (syntax (id ...))))
+         (syntax
+           (call-with-values
+               (lambda () expr) 
+             (lambda (id ...) body0 body ...)))]))))
+
+(library (let-div)
+  (export let-div)
+  (import (rnrs)
+          (my-helpers values-stuff)
+          (rnrs r5rs))
+
+  (define (quotient+remainder n d)
+    (let ([q (quotient n d)])
+      (values q (- n (* q d)))))
+  (define-syntax let-div
+    (syntax-rules ()
+     [(\_ n d (q r) body0 body ...)
+      (mvlet [(q r) (quotient+remainder n d)]
+        body0 body ...)])))%
+\end{schemenoindent}
+
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "r6rs"
+%%% End: 

@@ -1,0 +1,452 @@
+ \documentclass[twoside,twocolumn]{algol60}
+%\documentclass[twoside]{algol60}
+
+\pagestyle{headings} 
+\showboxdepth=0
+%\makeindex
+\input{commands}
+
+\texonly
+\externaldocument[report:]{r6rs}
+\externaldocument[lib:]{r6rs-lib}
+\endtexonly
+
+\def\headertitle{Revised$^{\rnrsrevision}$ Scheme Non-Normative Appendices}
+\def\TZPtitle{Revised^\rnrsrevision{} Report on the Algorithmic Language Scheme - Rationale -}
+
+\begin{document}
+
+\thispagestyle{empty}
+
+\topnewpage[{
+\begin{center}   {\huge\bf
+        Revised{\Huge$^{\mathbf{\htmlonly\tiny\endhtmlonly{}\rnrsrevision}}$} Report on the Algorithmic Language \\
+                              \vskip 3pt
+                              Scheme\\
+                                \vskip 1.5ex
+                              --- Non-Normative Appendices ---}
+
+\vskip 1ex
+$$
+\begin{tabular}{l@{\extracolsep{.5in}}lll}
+\multicolumn{4}{c}{M\authorsc{ICHAEL} S\authorsc{PERBER}}
+\\
+\multicolumn{4}{c}{R.\ K\authorsc{ENT} D\authorsc{YBVIG},
+  M\authorsc{ATTHEW} F\authorsc{LATT},
+  A\authorsc{NTON} \authorsc{VAN} S\authorsc{TRAATEN}}
+\\
+\multicolumn{4}{c}{(\textit{Editors})} \\[1ex]
+\multicolumn{4}{c}{\bf \rnrsrevisiondate}
+\end{tabular}
+$$
+
+
+
+\end{center}
+
+\chapter*{Summary}
+\medskip
+
+{\parskip 1ex
+This document contains non-normative appendices to the
+\textit{Revised\itspace{}$^6$ Report on the Algorithmic Language Scheme}.  These
+appendices contain advice for users and suggestions for implementors
+on issues not fit for standardization, in particular on platform-specific
+issues.
+
+This document frequently refers back to the \textit{Revised\itspace{}$^6$ Report
+  on the Algorithmic Language Scheme}~\cite{R6RS} and the
+\textit{Revised\itspace{}$^6$ Report on the Algorithmic Language Scheme ---
+  Libraries ---}~\cite{R6RS-libraries}; references to the report are
+identified by designations such as ``report section'' or ``report
+chapter'', and references to the library report are identified by
+designations such as ``library section'' or ``library chapter''.
+}
+
+\medskip
+
+We intend this report to belong to the entire Scheme community, and so
+we grant permission to copy it in whole or in part without fee.  In
+particular, we encourage implementors of Scheme to use this report as
+a starting point for manuals and other documentation, modifying it as
+necessary.
+\input{status}
+}]
+
+\texonly\clearpage\endtexonly
+
+\chapter*{Contents}
+\addvspace{3.5pt}                  % don't shrink this gap
+\renewcommand{\tocshrink}{-4.0pt}  % value determined experimentally
+{%\footnotesize
+\tableofcontents
+}
+
+\vfill
+
+\texonly\clearpage\endtexonly
+
+\appendix
+
+\chapter{Standard-conformant mode}
+\label{standardconformantmode}
+
+Scheme implementations compliant with the report may operate in a
+variety of modes.  In particular, in addition to one or more modes
+conformant with the requirements of the report, an implementation
+may offer non-conformant modes.  These modes are by nature
+implementation-specific, and may differ in the language and available
+libraries.  In particular, non-conformant language extensions may be
+available, including unsafe libraries or otherwise unsafe features,
+and the semantics of the language may differ from the semantics
+described in the report.  Moreover, the default mode offered by a
+Scheme implementation may be non-conformant, and such a Scheme
+implementation may require special settings or declarations to enter
+the report-conformant mode.  Implementors should clearly
+document the nature of the default mode and how to enter a
+report-conformant mode.
+
+\chapter{Optional case insensitivity}
+\label{caseinsensitivityappendix}
+
+In contrast with earlier revisions of the report~\cite{R5RS}, the
+syntax of data distinguishes upper and lower case in identifiers and in
+characters specified via their names.  For example, the identifiers
+{\cf X} and {\cf x} are different, and the character
+{\cf\sharpsign\backwhack{}space} cannot be written
+{\cf\sharpsign\backwhack{}SPACE}.
+
+Implementors may wish to support case-insensitive syntax for backward
+compatibility or other reasons.
+If they do so, they should adopt the following directives
+to control case folding.
+
+\begin{entry}{%
+{\cf{}\#!fold-case}\sharpbangindex{fold-case}\\
+{\cf{}\#!no-fold-case}\sharpbangindex{no-fold-case}}
+
+These directives may appear anywhere comments may appear and are
+treated as comments, except that they affect the reading of subsequent
+lexemes.
+The {\cf{}\#!fold-case} causes the reader to case-fold
+(see library section~\extref{lib:string-foldcase}{``Unicode''})
+each \meta{identifier} and \meta{character name}.
+The {\cf{}\#!no-fold-case} directive causes the reader to return
+to the default, non-folding behavior.
+\end{entry}
+
+\chapter{Use of square brackets}
+
+Even though matched square brackets are synonymous with parentheses in
+the syntax, many programmers use square brackets only in a few select
+places.  In particular, programmers should restrict use of
+square brackets to places in syntactic forms where two consecutive
+open parentheses would otherwise be common.  These are the applicable
+forms specified in the report and the library report:
+%
+\begin{itemize}
+\item For {\cf cond} forms (see report section~\extref{report:cond}{Derived
+    conditionals}), a \hyper{cond clause} may take one of the follow
+  forms:
+\begin{scheme}
+[\hyper{test} \hyperi{expression} \dotsfoo]
+{}[\hyper{test} => \hyper{expression}]
+{}[else \hyperi{expression} \hyperii{expression} \dotsfoo]%
+\end{scheme}
+\item For {\cf case} forms (see report section~\extref{report:case}{Derived
+    conditionals}), a \hyper{case clause} may take one of the follow
+  forms:
+\begin{scheme}
+[(\hyperi{datum} \dotsfoo) \hyperi{expression} \hyperii{expression} \dotsfoo]
+{}[else \hyperi{expression} \hyperii{expression} \dotsfoo]%
+\end{scheme}
+\item For {\cf let}, {\cf let*}, {\cf letrec}, {\cf letrec*} forms
+  (see report section~\extref{report:let}{Binding constructs}), 
+  \hyper{bindings} may take the following form:
+\begin{scheme}
+([\hyperi{variable} \hyperi{init}] \dotsfoo)%
+\end{scheme}
+\item For {\cf let-values} and {\cf let-values*} forms 
+  (see report section~\extref{report:let}{Binding constructs}),
+  \hyper{mv-bindings} may take the following form:
+\begin{scheme}
+([\hyperi{formals} \hyperi{init}] \dotsfoo)%
+\end{scheme}
+\item For {\cf syntax-rules} forms (see report
+  section~\extref{report:syntax-rules}{Macro transformers}), a
+  \hyper{syntax rule} may take the following form:
+\begin{scheme}
+[\hyper{srpattern} \hyper{template}]%
+\end{scheme}
+\item For {\cf identifier-syntax} forms (see report
+  section~\extref{report:identifier-syntax}{Macro transformers}), the two
+  clauses may take the following form:
+\begin{scheme}
+[\hyperi{id} \hyperi{template}]
+{}[(set! \hyperii{id} \hyper{pattern}) \hyperii{template}]%
+\end{scheme}
+\item For {\cf do} forms (see library
+  section~\extref{lib:do}{Control structures}), the variable bindings
+  may take the following form:
+\begin{scheme}
+([\hyperi{variable} \hyperi{init} \hyperi{step}] \dotsfoo)%
+\end{scheme}
+\item For {\cf case-lambda} forms (see library
+  section~\extref{lib:case-lambda}{Control structures}), a
+  \hyper{case-lambda clause} may take the following form:
+%
+\begin{scheme}
+[\hyper{formals} \hyper{body}]%
+\end{scheme}
+\item For {\cf guard} forms (see library section~\extref{lib:guard}{Exceptions}),
+a \hyper{cond clause} may take one of the follow forms:
+\begin{scheme}
+[\hyper{test} \hyperi{expression} \dotsfoo]
+{}[\hyper{test} => \hyper{expression}] 
+{}[else \hyperi{expression} \hyperii{expression} \dotsfoo]%
+\end{scheme}
+\item For {\cf syntax-case} forms (see library
+  chapter~\extref{lib:syntax-case}{{\tt syntax-case}}), a
+  \hyper{syntax-case rule} may take one of the following forms:
+\begin{scheme}
+[\hyper{pattern} \hyper{output expression}]
+{}[\hyper{pattern} \hyper{fender} \hyper{output expression}]%
+\end{scheme}
+\end{itemize}
+
+\chapter{Scripts}
+\label{scriptappendix}
+
+A \defining{Scheme script\mainindex{script}} is a top-level program 
+(see report chapter~\extref{report:programchapter}{Top-level
+  programs}) which is packaged such that 
+it is directly executable by conforming implementations of Scheme, on 
+one or more plaforms.
+
+\section{Script interpreter}
+
+Where applicable, implementations should provide a \defining{script interpreter} in 
+the form of an executable program named {\cf scheme-script} that is 
+capable of initiating the execution of Scheme scripts, as described 
+below.
+
+\begin{rationale}
+Distributing a Scheme program that is portable with respect to both 
+Scheme implementations and operating systems is challenging, even 
+if that program has been written in standard Scheme.  Languages with 
+a single or primary implementation can at least rely on a standard 
+name for their script interpreters.  Standardizing the name of the 
+executable used to start a Scheme script removes one barrier to the 
+distribution of Scheme scripts.
+\end{rationale}
+
+\section{Syntax}
+\label{scriptsyntaxsection}
+
+A Scheme \defining{script} is a delimited piece of text, typically a
+file, which consists of an optional script header, followed by a
+top-level program.  A script header has the following syntax:
+%
+\begin{grammar}
+\meta{script header} \: \meta{shebang} /usr/bin/env \meta{space} 
+  \> scheme-script \meta{linefeed}
+\meta{shebang} \: \#! \| \#! \meta{space}
+\end{grammar}
+
+\subsection{Script header}
+
+The \defining{script header}, if present on the first line of a script,
+is used by Unix-like operating systems to identify the interpreter to 
+execute that script.
+
+The script header syntax given above is the recommended portable 
+form that programmers should use.  However, if the first line 
+of a script begins with {\cf \#!/} or {\cf \#!\meta{space}}, 
+implementations should ignore it on all platforms, even if it does not conform to 
+the recommended syntax.  
+
+\begin{rationale}
+Requiring script interpreters to recognize and ignore the script 
+header helps ensure that Scheme scripts written for Unix-like systems 
+can also run on other kinds of systems. Furthermore, recognizing
+all {\cf \#!/} or {\cf \#!\meta{space}} combinations 
+allows local customizations to be 
+performed by altering a script header from its default form.
+\end{rationale}
+
+\subsection{Example}
+\begin{scheme}
+\#!/usr/bin/env scheme-script
+\#!r6rs
+(import (rnrs base)
+        (rnrs io ports)
+        (rnrs programs))
+(put-bytes (standard-output-port)
+           (call-with-port
+               (open-file-input-port
+                 (cadr (command-line)))
+             get-bytes-all))%
+\end{scheme}
+
+\section{Platform considerations}
+Many platforms require that scripts be marked as executable in some way. 
+The platform-specific details of this are beyond the scope of this 
+report.  Scripts that are not suitably marked as executable will fail 
+to execute on many platforms.
+Other platform-specific notes for some popular operating systems follow.
+
+\subsection{Apple Mac OS X}
+The Mac OS X operating system supports the Unix-like script header for
+shell scripts that run in the Terminal.  Depending on the intended
+usage, it may be advisable to choose a file name ending in {\cf
+  .command} for a script, as this makes the script double-clickable.
+ %TODO: other kind of Mac script?
+
+\subsection{Unix}
+Scheme scripts on Unix-like operating systems are supported by the 
+presence of the script header.  Scripts that omit the script header 
+are unlikely to be directly executable on Unix-like systems.
+
+To support installation of the Scheme script interpreter in 
+non-standard paths, scripts should use the {\cf /usr/bin/env} 
+program as specified in the recommended script header syntax.  
+(Note that on many Unix-like systems, this also allows the 
+script interpreter itself to be implemented as a shell script.)
+
+\subsection{Microsoft Windows}
+The Windows operating system allows a file extension to be associated 
+with a script interpreter such as {\cf scheme-script}.  This 
+association may be configured appropriately by Scheme implementations, 
+installation programs, or by the user.
+
+\subsection{Selecting an implementation}
+If multiple implementations of Scheme are installed on a machine, the
+user may wish to specify which implementation should be used to 
+execute Scheme scripts by default.  Most platforms support some 
+mechanism for choosing between alternative implementations of a 
+program.  For example, Debian GNU/Linux uses the {\cf /etc/alternatives} 
+mechanism to do this; Microsoft Windows uses file extension 
+associations.  Implementations are expected to configure this 
+appropriately, e.g., as part of their installation procedure.
+Failing that, users must perform any necessary configuration to 
+choose their preferred Scheme script interpreter.
+
+\chapter{Source code representation}
+\label{sourcecoderepappendix}
+
+The report does not specify how source code is represented and stored.
+The only requirement the report imposes is that the source code of a
+top-level program (see report
+section~\extref{report:programsyntaxsection}{Top-level program
+  syntax}) or a script (see section~\ref{scriptsyntaxsection}) be
+delimited.  The source code of a library is self-delimiting in the
+sense that, if the beginning of a library form can be identified, so
+can the end.
+
+Implementations may take radically different approaches to storing
+source code for libraries, among them: files in the file system where
+each file contains an arbitrary number of library forms, files in the
+file system where each file contains exactly one library form, records
+in a database, and data structures in memory.
+
+Similarly, programs and scripts may be stored in a variety of
+formats.  Platform constraints may restrict the choices available to
+an implementation, which is why the report neither mandates nor
+recommends a specific method for storage.
+
+Implementations may provide a means for importing libraries coming
+from the outside via an interface that accepts a UTF-8 text file in
+Unicode Normalization Form C where line endings are encoded as linefeed
+characters.  Such text files may contain an arbitrary number of
+library forms.  (Authors of such files should include an
+{\cf\#!r6rs} comment if the file is written purely with the lexical
+and datum syntax described in the report.  See report
+section~\extref{report:whitespaceandcomments}{Whitespace and
+  comments}.)  After importing such a file, the libraries defined in
+it should be available to other libraries and files.  An
+implementation may store the file as is, or convert it to some storage
+format to achieve this.
+
+Similarly, implementations may provide a means for executing a program
+represented as a UTF-8 text file containing its source code.  Again,
+authors of such files should include an {\cf\#!r6rs}
+comment if the file is written purely with the lexical and datum syntax
+described in the report.  This report does not describe a file format
+that allows both libraries and programs to appear in the same file.
+
+\chapter{Use of library versions}
+
+Names for libraries may include a version.  An \hyper{import spec} may
+designate a set of acceptable versions that may be imported.
+Conversely, only one version of each library should be part of a
+program.  This allows using the ``name part'' of a \hyper{library
+  name} for different purposes than the \hyper{version}. 
+
+In particular, if several different variants of a library exists where
+it is feasible that they coexist in the same program, it is
+recommended that different names be used for the variants.  In
+contrast, for compatible versions of a library where coexistence of
+several versions is unnecessary and undesirable, it is recommended
+that the same name and different versions be used.  In particular, it
+is recommended that new versions of libraries that are conservative
+extensions of old ones differ only in the version, not in the name.
+
+Correspondingly, it is recommended that \hyper{import spec}s do not
+constrain an import to a single version, but instead specify a wide
+range of acceptable versions of a library.
+
+Implementations that allow two libraries of the same name with
+different versions to coexist in the same program should
+report when processing a program that actually makes use of this
+extension.
+
+\chapter{Unique library names}
+\label{librarynamesappendix}
+
+Programmers should choose names for distributed libraries
+that do not collide with other libraries' names.
+This appendix suggests a convention for generating unique library
+names, similar to the convention for Java~\cite{JLS3}.
+
+A unique library name can be formed by associating the library with an
+Internet domain name, such as {\cf mit.edu}.  The lower-case
+components of the domain are reversed to form a prefix for the library
+name.  Adding further name components to establish a hierarchy may be
+advisable, depending on the size of the organization associated with
+the domain name, the number of libraries to be distributed from it,
+and other organizational properties or conventions associated with the
+library.
+
+Programmers should use library names that are suitable for
+use as part of file names.  Special characters in
+domain names that do not fit conventions of commonly used file systems should be replaced by
+hyphens or suitable ``escape sequences'' that, as much as possible,
+are suitable for avoiding collisions.  Here are some examples for
+possible library names according to this convention:
+%
+\begin{scheme}
+(edu mit swiss cheese)
+(de deinprogramm educational graphics turtle)
+(com pan-am booking passenger)%
+\end{scheme}
+%
+The name of a library does not necessarily indicate an Internet
+address where the package is distributed.
+
+\renewcommand{\bibname}{References}
+
+\bibliographystyle{plain}
+\bibliography{abbrevs,rrs}
+
+% \newcommand{\indexheading}{Alphabetic index of definitions of
+%   concepts, keywords, and procedures}
+% \newcommand{\indexintro}{}
+%
+% \printindex
+
+\end{document}
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "r6rs-app"
+%%% End: 

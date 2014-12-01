@@ -1,0 +1,4218 @@
+%\vfill\eject
+\chapter{Base library}
+\label{baselibrarychapter}
+
+This chapter describes Scheme's \defrsixlibrary{base} library, which exports many of
+the procedure and syntax bindings that are traditionally associated
+with Scheme.
+
+Section~\ref{basetailcontextsection} defines the rules that identify
+tail calls and tail contexts in constructs from the \rsixlibrary{base}
+library.
+
+\section{Base types}
+\label{disjointness}
+
+No object satisfies more than one of the following predicates:
+
+\begin{scheme}
+boolean?          pair?
+symbol?           number?
+char?             string?
+vector?           procedure?
+null?%
+\end{scheme}
+
+These predicates define the base types {\em boolean}, {\em pair}, {\em
+symbol}, {\em number}, {\em char} (or {\em character}), {\em string}, {\em
+vector}, and {\em procedure}.  Moreover, the empty list is a special
+object of its own type.
+\mainindex{type}\schindex{boolean?}\schindex{pair?}\schindex{symbol?}
+\schindex{number?}\schindex{char?}\schindex{string?}\schindex{vector?}
+\schindex{procedure?}\index{empty list}\schindex{null?}
+
+Note that, although there is a separate boolean type, any Scheme value
+can be used as a boolean value for the purpose of a conditional test;
+see section~\ref{booleanvaluessection}.
+
+\section{Definitions}
+\label{defines}
+
+Definitions\mainindex{definition} may appear within a
+\meta{top-level body} (section~\ref{programsyntaxsection}),
+at the top of a \meta{library body} (section~\ref{librarysyntaxsection}),
+or at the top of a \meta{body} (section~\ref{bodiessection}).
+
+A \hyper{definition} may be a variable definition
+(section~\ref{variabledefinitionsection}) or
+keyword definition
+(section~\ref{variabledefinitionsection}).
+Macro uses that expand into definitions or groups of
+definitions (packaged in a {\cf begin}, {\cf let-syntax}, or
+{\cf letrec-syntax} form; see section~\ref{begin}) may also appear
+wherever other definitions may appear.
+
+\subsection{Variable definitions}
+\label{variabledefinitionsection}
+
+The {\cf define} form described in this section is a
+\hyper{definition}\mainindex{definition} used to create variable bindings
+and may appear anywhere other definitions may appear.
+
+\begin{entry}{%
+\proto{define}{ \hyper{variable} \hyper{expression}}{\exprtype}
+\rproto{define}{ \hyper{variable}}{\exprtype}
+\pproto{(define (\hyper{variable} \hyper{formals}) \hyper{body})}{\exprtype}
+\pproto{(define (\hyper{variable} .\ \hyper{formal}) \hyper{body})}{\exprtype}}
+
+
+The first from of {\cf define} binds \hyper{variable} to a new
+location before assigning the value of \hyper{expression} to it.
+\begin{scheme}
+(define add3
+  (lambda (x) (+ x 3)))
+(add3 3)                            \ev  6
+(define first car)
+(first '(1 2))                      \ev  1%
+\end{scheme}
+%
+The continuation of \hyper{expression} should not be invoked more than
+once.
+
+\implresp Implementations should detect that the
+continuation of \hyper{expression} is invoked more than once.
+If the implementation detects this, it must raise an
+exception with condition type {\cf\&assertion}.
+
+The second form of {\cf define} is equivalent to
+\begin{scheme}
+(define \hyper{variable} \hyper{unspecified})%
+\end{scheme}
+where \hyper{unspecified} is a side-effect-free expression returning
+an unspecified value.
+
+In the third form of {\cf define}, \hyper{formals} must be either a
+sequence of zero or more variables, or a sequence of one or more
+variables followed by a dot {\cf .} and another variable (as
+in a lambda expression, see section~\ref{lambda}).  This form is equivalent to
+\begin{scheme}
+(define \hyper{variable}
+  (lambda (\hyper{formals}) \hyper{body}))\rm.%
+\end{scheme}
+
+In the fourth form of {\cf define}, 
+\hyper{formal} must be a single
+variable.  This form is equivalent to
+\begin{scheme}
+(define \hyper{variable}
+  (lambda \hyper{formal} \hyper{body}))\rm.%
+\end{scheme}
+\end{entry}
+
+\subsection{Syntax definitions}
+\label{syntaxdefinitionsection}
+
+The {\cf define-syntax} form described in this section is a
+\hyper{definition}\mainindex{definition} used to create keyword bindings
+and may appear anywhere other definitions may appear.
+
+\begin{entry}{%
+\proto{define-syntax}{ \hyper{keyword} \hyper{expression}}{\exprtype}}
+
+Binds \hyper{keyword} to the value of
+\hyper{expression}, which must evaluate, at macro-expansion
+time, to a transformer.  Macro transformers can be created using the
+{\cf syntax-rules} and {\cf identifier-syntax} forms described in
+section~\ref{syntaxrulessection}.  See library
+section~\extref{lib:transformerssection}{Transformers} for a more
+complete description of transformers.
+
+Keyword bindings established by {\cf define-syntax} are visible
+throughout the body in which they appear, except where shadowed by
+other bindings, and nowhere else, just like variable bindings established
+by {\cf define}.
+All bindings established by a set of definitions, whether
+keyword or variable definitions, are visible within the definitions
+themselves.
+
+\implresp The implementation should detect if the value of
+\hyper{expression} cannot possibly be a transformer.
+
+Example:
+
+\begin{scheme}
+(let ()
+  (define even?
+    (lambda (x)
+      (or (= x 0) (odd? (- x 1)))))
+  (define-syntax odd?
+    (syntax-rules ()
+      ((odd?  x) (not (even? x)))))
+  (even? 10))                       \ev \schtrue{}%
+\end{scheme}
+
+An implication of the left-to-right processing order
+(section~\ref{expansionchapter}) is that one definition can
+affect whether a subsequent form is also a definition.  
+
+Example:
+
+\begin{scheme}
+(let ()
+  (define-syntax bind-to-zero
+    (syntax-rules ()
+      ((bind-to-zero id) (define id 0))))
+  (bind-to-zero x)
+  x) \ev 0%
+\end{scheme}
+
+The behavior is unaffected by any binding for
+{\cf bind-to-zero} that might appear outside of the {\cf let}
+expression.
+\end{entry}
+
+\section{Bodies}
+\label{bodiessection}
+
+\index{body}The \hyper{body} of a \ide{lambda}, \ide{let}, \ide{let*},
+\ide{let-values}, \ide{let*-values}, \ide{letrec}, or \ide{letrec*}
+expression, or that of a definition with a body
+consists of zero or more definitions followed by one or more
+expressions.
+
+{\cf \hyper{definition} \ldots{} \hyperi{expression} \hyperii{expression} \ldots}
+
+Each identifier defined by a
+definition is local to the \hyper{body}.  That is, the identifier is
+bound, and the region of the binding is the
+entire \hyper{body} (see section~\ref{variablesection}).
+
+Example:
+%
+\begin{scheme}
+(let ((x 5))
+  (define foo (lambda (y) (bar x y)))
+  (define bar (lambda (a b) (+ (* a b) a)))
+  (foo (+ x 3)))                \ev  45%
+\end{scheme}
+%
+When {\cf begin}, {\cf let-syntax}, or {\cf letrec-syntax} forms
+occur in a body prior to the first
+expression, they are spliced into the body; see section~\ref{begin}.
+Some or all of the body, including portions wrapped in {\cf begin},
+{\cf let-syntax}, or {\cf letrec-syntax}
+forms, may be specified by a macro use
+(see section~\ref{macrosection}).
+
+An expanded \hyper{body} (see chapter~\ref{expansionchapter})
+containing variable definitions can
+always be converted into an equivalent {\cf letrec*}
+expression.  For example, the {\cf let} expression in the above
+example is equivalent to
+
+\begin{scheme}
+(let ((x 5))
+  (letrec* ((foo (lambda (y) (bar x y)))
+            (bar (lambda (a b) (+ (* a b) a))))
+    (foo (+ x 3))))%
+\end{scheme}
+
+\section{Expressions}
+\label{expressionsection}
+
+The entries in this section describe the expressions of the \rsixlibrary{base}
+library, which may occur in the position of the \hyper{expression}
+syntactic variable in addition to the primitive
+expression types as described in
+section~\ref{primitiveexpressionsection}.
+
+\subsection{Quotation}\unsection
+\label{quotesection}
+
+\begin{entry}{%
+\proto{quote}{ \hyper{datum}}{\exprtype}}
+
+\syntax \hyper{Datum} should be a syntactic datum.
+
+\semantics
+{\cf (quote \hyper{datum})} evaluates to the datum value
+represented by \hyper{datum}
+(see
+section~\ref{datumsyntaxsection}).  This notation is used to include
+constants.
+
+\begin{scheme}%
+(quote a)                     \ev  a
+(quote \sharpsign(a b c))     \ev  \#(a b c)
+(quote (+ 1 2))               \ev  (+ 1 2)%
+\end{scheme}
+
+As noted in section~\ref{abbreviationsection}, {\cf (quote \hyper{datum})}
+may be abbreviated as \singlequote\hyper{datum}:
+
+\begin{scheme}
+'"abc"               \ev  "abc"
+'145932              \ev  145932
+'a                   \ev  a
+'\#(a b c)           \ev  \#(a b c)
+'()                  \ev  ()
+'(+ 1 2)             \ev  (+ 1 2)
+'(quote a)           \ev  (quote a)
+''a                  \ev  (quote a)%
+\end{scheme}
+
+As noted in section~\ref{storagemodel}, constants are immutable.
+
+\begin{note}
+  Different constants that are the value of a {\cf quote} expression may
+  share the same locations.
+\end{note}
+\end{entry}
+
+\subsection{Procedures}\unsection
+\label{lamba}
+
+\begin{entry}{%
+\proto{lambda}{ \hyper{formals} \hyper{body}}{\exprtype}}
+
+\syntax
+\hyper{Formals} must be a formal parameter list as described below,
+and \hyper{body} must be as described in section~\ref{bodiessection}.
+
+\semantics
+\vest A \lambdaexp{} evaluates to a procedure.  The environment in
+effect when the \lambdaexp{} is evaluated is remembered as part of the
+procedure.  When the procedure is later called with some 
+arguments, the environment in which the \lambdaexp{} was evaluated is
+extended by binding the variables in the parameter list to
+fresh locations, and the resulting argument values are stored
+in those locations.  Then, the expressions in the body of the \lambdaexp{}
+(which may contain definitions and thus represent a {\cf
+  letrec*} form, see section~\ref{bodiessection}) are evaluated
+sequentially in the extended environment.
+The results of the last expression in the body are returned as
+the results of the procedure call.
+
+\begin{scheme}
+(lambda (x) (+ x x))      \ev  {\em{}a procedure}
+((lambda (x) (+ x x)) 4)  \ev  8
+
+((lambda (x)
+   (define (p y)
+     (+ y 1))
+   (+ (p x) x))
+ 5) \ev 11
+
+(define reverse-subtract
+  (lambda (x y) (- y x)))
+(reverse-subtract 7 10)         \ev  3
+
+(define add4
+  (let ((x 4))
+    (lambda (y) (+ x y))))
+(add4 6)                        \ev  10%
+\end{scheme}
+
+\hyper{Formals} must have one of the following forms:
+
+\begin{itemize}
+\item {\tt(\hyperi{variable} \dotsfoo)}:
+The procedure takes a fixed number of arguments; when the procedure is
+called, the arguments are stored in the bindings of the
+corresponding variables.
+
+\item \hyper{variable}:
+The procedure takes any number of arguments; when the procedure is
+called, the sequence of arguments is converted into a newly
+allocated list, and the list is stored in the binding of the
+\hyper{variable}.
+
+\item {\tt(\hyperi{variable} \dotsfoo{} \hyper{variable$_{n}$}\ {\bf.}\
+\hyper{variable$_{n+1}$})}:
+If a period {\cf .} precedes the last variable, then
+the procedure takes $n$ or more arguments, where $n$ is the
+number of parameters before the period (there must
+be at least one).
+The value stored in the binding of the last variable is a
+newly allocated
+list of the arguments left over after all the other 
+arguments have been matched up against the other parameters.
+\end{itemize}
+
+\begin{scheme}
+((lambda x x) 3 4 5 6)          \ev  (3 4 5 6)
+((lambda (x y . z) z)
+ 3 4 5 6)                       \ev  (5 6)%
+\end{scheme}
+
+Any \hyper{variable} must not appear more than once in
+\hyper{formals}.
+\end{entry}
+
+
+\subsection{Conditionals}\unsection
+
+\begin{entry}{%
+\proto{if}{ \hyper{test} \hyper{consequent} \hyper{alternate}}{\exprtype}
+\rproto{if}{ \hyper{test} \hyper{consequent}}{\exprtype}}  %\/ if hyper = italic
+
+\syntax
+\hyper{Test}, \hyper{consequent}, and \hyper{alternate} must be 
+expressions.
+
+\semantics
+An {\cf if} expression is evaluated as follows: first,
+\hyper{test} is evaluated.  If it yields a true value\index{true} (see
+section~\ref{booleanvaluessection}), then \hyper{consequent} is evaluated and
+its values are returned.  Otherwise \hyper{alternate} is evaluated and its
+values are returned.  If \hyper{test} yields \schfalse{} and no
+\hyper{alternate} is specified, then the result of the expression \isunspecified.
+
+\begin{scheme}
+(if (> 3 2) 'yes 'no)           \ev  yes
+(if (> 2 3) 'yes 'no)           \ev  no
+(if (> 3 2)
+    (- 3 2)
+    (+ 3 2))                    \ev  1
+(if \#f \#f)                    \ev \theunspecified%
+\end{scheme}
+
+The \hyper{consequent} and \hyper{alternate} expressions are in
+tail context if the {\cf if} expression itself is; see
+section~\ref{basetailcontextsection}.
+\end{entry}
+
+
+\subsection{Assignments}\unsection
+\label{assignment}
+
+\begin{entry}{%
+\proto{set!}{ \hyper{variable} \hyper{expression}}{\exprtype}}
+
+\hyper{Expression} is evaluated, and the resulting value is stored in
+the location to which \hyper{variable} is bound.  \hyper{Variable} must
+be bound either in some region\index{region} enclosing the {\cf set!}\ expression
+or at the top level.  The result of the {\cf set!}
+expression \isunspecified.
+
+\begin{scheme}
+(let ((x 2))
+  (+ x 1)
+  (set! x 4)
+  (+ x 1)) \ev  5%
+\end{scheme}
+
+It is a syntax violation if \hyper{variable} refers to an
+immutable binding.
+
+\begin{note}
+  The identifier {\cf set!} is exported with level $1$ as well.  See
+  section~\ref{identifier-syntax}.
+\end{note}
+\end{entry}
+
+\subsection{Derived conditionals}\unsection
+
+\begin{entry}{%
+\proto{cond}{ \hyperi{cond clause} \hyperii{cond clause} \dotsfoo}{\exprtype}
+\litproto{=>}
+\litproto{else}}
+
+\syntax
+Each \hyper{cond clause} must be of the form
+\begin{scheme}
+(\hyper{test} \hyperi{expression} \dotsfoo)%
+\end{scheme}
+where \hyper{test} is an expression.  Alternatively, a \hyper{cond clause} may be
+of the form
+\begin{scheme}
+(\hyper{test} => \hyper{expression})%
+\end{scheme}
+The last \hyper{cond clause} may be
+an ``{\cf else} clause'', which has the form
+\begin{scheme}
+(else \hyperi{expression} \hyperii{expression} \dotsfoo)\rm.%
+\end{scheme}
+
+\semantics
+A {\cf cond} expression is evaluated by evaluating the \hyper{test}
+expressions of successive \hyper{cond clause}s in order until one of them
+evaluates to a true value\index{true} (see
+section~\ref{booleanvaluessection}).  When a \hyper{test} evaluates to a true
+value, then the remaining \hyper{expression}s in its \hyper{cond clause} are
+evaluated in order, and the results of the last \hyper{expression} in the
+\hyper{cond clause} are returned as the results of the entire {\cf cond}
+expression.  If the selected \hyper{cond clause} contains only the
+\hyper{test} and no \hyper{expression}s, then the value of the
+\hyper{test} is returned as the result.  If the selected \hyper{cond clause} uses the
+\ide{=>} alternate form, then the \hyper{expression} is evaluated.
+Its value must be a procedure.  This procedure should accept one argument; it is
+called on the value of the \hyper{test} and the values returned by this
+procedure are returned by the {\cf cond} expression.
+If all \hyper{test}s evaluate
+to \schfalse, and there is no {\cf else} clause, then 
+the conditional expression returns \unspecifiedreturn; if there is an {\cf else}
+clause, then its \hyper{expression}s are evaluated, and the values of
+the last one are returned.
+
+\begin{scheme}
+(cond ((> 3 2) 'greater)
+      ((< 3 2) 'less))         \ev  greater%
+
+(cond ((> 3 3) 'greater)
+      ((< 3 3) 'less)
+      (else 'equal))            \ev  equal%
+
+(cond ('(1 2 3) => cadr)
+      (else \schfalse{}))         \ev  2%
+\end{scheme}
+
+For a \hyper{cond clause} of one of the following forms
+%
+\begin{scheme}
+(\hyper{test} \hyperi{expression} \dotsfoo)
+(else \hyperi{expression} \hyperii{expression} \dotsfoo)%
+\end{scheme}
+%
+the last \hyper{expression} is in tail context if the {\cf cond} form
+itself is.  For a \hyper{cond clause} of the form
+\begin{scheme}
+(\hyper{test} => \hyper{expression})%
+\end{scheme}
+the (implied) call to the procedure that results from the evaluation
+of \hyper{expression} is in a tail context if the {\cf cond} form
+itself is. See section~\ref{basetailcontextsection}.
+
+A sample definition of {\cf cond} in terms of simpler forms is in
+appendix~\ref{derivedformsappendix}.
+\end{entry}
+
+
+\begin{entry}{%
+\proto{case}{ \hyper{key} \hyperi{case clause} \hyperii{case clause} \dotsfoo}{\exprtype}}
+
+\syntax
+\hyper{Key} must be an expression.  Each \hyper{case clause} must have one of
+the following forms:
+\begin{scheme}
+((\hyperi{datum} \dotsfoo) \hyperi{expression} \hyperii{expression} \dotsfoo)
+(else \hyperi{expression} \hyperii{expression} \dotsfoo)%
+\end{scheme}
+\schindex{else}
+The second form, which specifies an ``{\cf else} clause'',
+may only appear as the last \hyper{case clause}.
+Each \hyper{datum} is an external representation of some object.
+The data represented by the \hyper{datum}s need not be distinct.
+
+\semantics
+A {\cf case} expression is evaluated as follows.  \hyper{Key} is
+evaluated and its result is compared using {\cf eqv?} (see
+section~\ref{eqv?}) against the data
+represented by the \hyper{datum}s of each \hyper{case clause} in turn, proceeding
+in order from left to right through the set of clauses.  If the
+result of evaluating \hyper{key} is equivalent to a datum of a \hyper{case clause}, the
+corresponding \hyper{expression}s are evaluated from left
+to right and the results of the last expression in the \hyper{case clause} are
+returned as the results of the {\cf case} expression.  Otherwise, the
+comparison process continues.  If the result of
+evaluating \hyper{key} is different from every datum in each set, then if
+there is an {\cf else} clause its expressions are evaluated and the
+results of the last are the results of the {\cf case} expression;
+otherwise the {\cf case} expression returns \unspecifiedreturn.
+
+\begin{scheme}
+(case (* 2 3)
+  ((2 3 5 7) 'prime)
+  ((1 4 6 8 9) 'composite))     \ev  composite
+(case (car '(c d))
+  ((a) 'a)
+  ((b) 'b))                     \ev  \theunspecified
+(case (car '(c d))
+  ((a e i o u) 'vowel)
+  ((w y) 'semivowel)
+  (else 'consonant))            \ev  consonant%
+\end{scheme}
+
+The last \hyper{expression} of a \hyper{case clause} is in tail
+context if the {\cf case} expression itself is; see
+section~\ref{basetailcontextsection}.
+
+% A sample definition of {\cf case} in terms of simpler forms is in
+% appendix~\ref{derivedformsappendix}.
+\end{entry}
+
+
+\begin{entry}{%
+\proto{and}{ \hyperi{test} \dotsfoo}{\exprtype}}
+
+\syntax The \hyper{test}s must be expressions.
+
+\semantics If there are no \hyper{test}s, \schtrue{} is returned.
+Otherwise, the \hyper{test} expressions are evaluated from left to
+right until a \hyper{test} returns \schfalse{} or the last
+\hyper{test} is reached.  In the former case, the {\cf and} expression
+returns \schfalse{} without evaluating the remaining expressions.
+In the latter case, the last expression is evaluated and its values
+are returned.
+
+\begin{scheme}
+(and (= 2 2) (> 2 1))           \ev  \schtrue
+(and (= 2 2) (< 2 1))           \ev  \schfalse
+(and 1 2 'c '(f g))             \ev  (f g)
+(and)                           \ev  \schtrue%
+\end{scheme}
+
+The {\cf and} keyword could be defined in terms of {\cf if} using {\cf
+  syntax-rules} (see section~\ref{syntaxrulessection}) as follows:
+
+\begin{scheme}
+(define-syntax \ide{and}
+  (syntax-rules ()
+    ((and) \sharpfoo{t})
+    ((and test) test)
+    ((and test1 test2 ...)
+     (if test1 (and test2 ...) \sharpfoo{f}))))%
+\end{scheme}
+
+The last \hyper{test} expression is in tail context if the {\cf and}
+expression itself is; see section~\ref{basetailcontextsection}.
+\end{entry}
+
+
+\begin{entry}{%
+\proto{or}{ \hyperi{test} \dotsfoo}{\exprtype}}
+
+\syntax The \hyper{test}s must be expressions.
+
+\semantics If there are no \hyper{test}s, \schfalse{} is returned.
+Otherwise, the \hyper{test} expressions are evaluated from left to
+right until a \hyper{test} returns a true value \var{val}
+(see section~\ref{booleanvaluessection}) or the last
+\hyper{test} is reached.  In the former case, the {\cf or} expression
+returns \var{val} without evaluating the remaining expressions.
+In the latter case, the last expression is evaluated and its values
+are returned.
+
+\begin{scheme}
+(or (= 2 2) (> 2 1))            \ev  \schtrue
+(or (= 2 2) (< 2 1))            \ev  \schtrue
+(or \schfalse \schfalse \schfalse) \ev  \schfalse
+(or '(b c) (/ 3 0))             \ev  (b c)%
+\end{scheme}
+
+The {\cf or} keyword could be defined in terms of {\cf if} using {\cf
+  syntax-rules} (see section~\ref{syntaxrulessection}) as follows:
+
+\begin{scheme}
+(define-syntax \ide{or}
+  (syntax-rules ()
+    ((or) \sharpfoo{f})
+    ((or test) test)
+    ((or test1 test2 ...)
+     (let ((x test1))
+       (if x x (or test2 ...))))))%
+\end{scheme}
+
+The last \hyper{test} expression is in tail context if the {\cf or}
+expression itself is; see section~\ref{basetailcontextsection}.
+\end{entry}
+
+
+\subsection{Binding constructs}
+
+The binding constructs described in this section
+create local bindings for variables that are visible only in a
+delimited region.  The syntax of the 
+constructs
+{\cf let}, {\cf let*}, {\cf letrec}, and {\cf letrec*}
+ is identical, but they differ in the regions\index{region}
+(see section~\ref{variablesection}) they establish
+for their variable bindings and in the order in which the values for
+the bindings are computed.  In a {\cf let} expression, the initial
+values are computed before any of the variables become bound; in a
+{\cf let*} expression, the bindings and evaluations are performed
+sequentially.  In a {\cf letrec} or {\cf letrec*}
+expression, all the bindings are in
+effect while their initial values are being computed, thus allowing
+mutually recursive definitions.  In a {\cf letrec} expression, the
+initial values are computed before being assigned to the variables;
+in a {\cf letrec*}, the evaluations and assignments are performed
+sequentially.
+
+In addition, the binding constructs {\cf let-values} and {\cf
+  let*-values} generalize {\cf let} and {\cf let*} to allow multiple
+variables to be bound to the results of expressions that evaluate to
+multiple values.
+They are analogous to {\cf let} and {\cf let*} in the
+way they establish regions: in a {\cf let-values} expression, the
+initial values are computed before any of the variables become bound;
+in a {\cf let*-values} expression, the bindings are performed
+sequentially. 
+
+Sample definitions of all the binding forms of this section in terms
+of simpler forms are in appendix~\ref{derivedformsappendix}.
+
+\begin{entry}{%
+\proto{let}{ \hyper{bindings} \hyper{body}}{\exprtype}}
+
+\syntax
+\hyper{Bindings} must have the form
+\begin{scheme}
+((\hyperi{variable} \hyperi{init}) \dotsfoo)\rm,%
+\end{scheme}
+where each \hyper{init} is an expression, and \hyper{body} 
+is as described in section~\ref{bodiessection}.  
+Any variable must not appear more than once in the \hyper{variable}s.
+
+\semantics
+The \hyper{init}s are evaluated in the current environment (in some
+unspecified order), the \hyper{variable}s are bound to fresh locations
+holding the results, the \hyper{body} is evaluated in the extended
+environment, and the values of the last expression of \hyper{body}
+are returned.  Each binding of a \hyper{variable} has \hyper{body} as its
+region.\index{region}
+
+\begin{scheme}
+(let ((x 2) (y 3))
+  (* x y))                      \ev  6
+
+(let ((x 2) (y 3))
+  (let ((x 7)
+        (z (+ x y)))
+    (* z x)))                   \ev  35%
+\end{scheme}
+
+See also named {\cf let}, section \ref{namedlet}.
+
+\end{entry}
+
+
+\begin{entry}{%
+\proto{let*}{ \hyper{bindings} \hyper{body}}{\exprtype}}\nobreak
+
+\nobreak
+\syntax
+\hyper{Bindings} must have the form
+\begin{scheme}
+((\hyperi{variable} \hyperi{init}) \dotsfoo)\rm,%
+\end{scheme}
+where each \hyper{init} is an expression, and \hyper{body} 
+is as described in section~\ref{bodiessection}.
+
+\semantics
+The {\cf let*} form is similar to {\cf let}, but the \hyper{init}s are
+evaluated and bindings created sequentially from left to right, with
+the region\index{region} of each binding including the bindings to
+its right as well as \hyper{body}.  Thus the second \hyper{init} is evaluated
+in an environment in which the first binding is visible and initialized,
+and so on.
+
+\begin{scheme}
+(let ((x 2) (y 3))
+  (let* ((x 7)
+         (z (+ x y)))
+    (* z x)))             \ev  70%
+\end{scheme}
+
+\begin{note}
+  While the variables bound by a {\cf let} expression must be distinct,
+  the variables bound by a {\cf let*} expression need not be distinct.
+\end{note}
+\end{entry}
+
+\begin{entry}{%
+\proto{letrec}{ \hyper{bindings} \hyper{body}}{\exprtype}}
+
+\syntax
+\hyper{Bindings} must have the form
+\begin{scheme}
+((\hyperi{variable} \hyperi{init}) \dotsfoo)\rm,%
+\end{scheme}
+where each \hyper{init} is an expression, and \hyper{body} 
+is as described in section~\ref{bodiessection}.  Any
+variable must not appear more than once in the
+\hyper{variable}s.
+
+\semantics
+The \hyper{variable}s are bound to fresh locations, the \hyper{init}s
+are evaluated in the resulting environment (in
+some unspecified order), each \hyper{variable} is assigned to the result
+of the corresponding \hyper{init}, the \hyper{body} is evaluated in the
+resulting environment, and the values of the last expression in
+\hyper{body} are returned.  Each binding of a \hyper{variable} has the
+entire {\cf letrec} expression as its region\index{region}, making it possible to
+define mutually recursive procedures.
+
+\begin{scheme}
+%(letrec ((x 2) (y 3))
+%  (letrec ((foo (lambda (z) (+ x y z))) (x 7))
+%    (foo 4)))                   \ev  14
+%
+(letrec ((even?
+          (lambda (n)
+            (if (zero? n)
+                \schtrue
+                (odd? (- n 1)))))
+         (odd?
+          (lambda (n)
+            (if (zero? n)
+                \schfalse
+                (even? (- n 1))))))
+  (even? 88))   
+                \ev  \schtrue%
+\end{scheme}
+
+It should be possible
+to evaluate each \hyper{init} without assigning or referring to the
+value of any \hyper{variable}.  In the most
+common uses of {\cf letrec}, all the \hyper{init}s are \lambdaexp{}s
+and the restriction is satisfied automatically.
+Another restriction is that the continuation of each \hyper{init} should not be invoked
+more than once.
+
+\implresp Implementations must detect references to a \hyper{variable} during the
+evaluation of the \hyper{init} expressions (using one particular
+evaluation order and order of evaluating the \hyper{init} expressions).
+If an implementation detects such a violation of the
+restriction, it must raise an exception with condition type
+{\cf\&assertion}.
+Implementations may or may not detect that the continuation of each
+\hyper{init} is invoked more than once.  However, if the
+implementation detects this, it must raise an exception with condition
+type {\cf\&assertion}.
+\end{entry}
+
+\begin{entry}{%
+\proto{letrec*}{ \hyper{bindings} \hyper{body}}{\exprtype}}
+
+\syntax
+\hyper{Bindings} must have the form
+\begin{scheme}
+((\hyperi{variable} \hyperi{init}) \dotsfoo)\rm,%
+\end{scheme}
+where each \hyper{init} is an expression, and \hyper{body} 
+is as described in section~\ref{bodiessection}. 
+Any variable must not appear more than once in the
+\hyper{variable}s.
+
+\semantics
+The \hyper{variable}s are bound to fresh locations,
+each \hyper{variable} is assigned in left-to-right order to the
+result of evaluating the corresponding \hyper{init}, the \hyper{body} is
+evaluated in the resulting environment, and the values of the last
+expression in \hyper{body} are returned. 
+Despite the left-to-right evaluation and assignment order, each binding of
+a \hyper{variable} has the entire {\cf letrec*} expression as its
+region\index{region}, making it possible to define mutually recursive
+procedures.
+
+\begin{scheme}
+(letrec* ((p
+           (lambda (x)
+             (+ 1 (q (- x 1)))))
+          (q
+           (lambda (y)
+             (if (zero? y)
+                 0
+                 (+ 1 (p (- y 1))))))
+          (x (p 5))
+          (y x))
+  y)
+                \ev  5%
+\end{scheme}
+
+It must be possible
+to evaluate each \hyper{init} without assigning or referring to the value
+of the corresponding \hyper{variable} or the \hyper{variable} of any of
+the bindings that follow it in \hyper{bindings}.
+Another restriction is that the continuation of each \hyper{init} should not be invoked
+more than once.
+
+\implresp Implementations must, during the evaluation of an
+\hyper{init} expression, detect references to the
+value of the corresponding \hyper{variable} or the \hyper{variable} of
+any of the bindings that follow it in \hyper{bindings}.
+If an implementation detects such a
+violation of the restriction, it must raise an exception with
+condition type {\cf\&assertion}.  Implementations may or may not
+detect that the continuation of each \hyper{init} is invoked more than
+once.  However, if the implementation detects this, it must raise an
+exception with condition type {\cf\&assertion}.
+\end{entry}
+
+\begin{entry}{%
+\proto{let-values}{ \hyper{mv-bindings} \hyper{body}}{\exprtype}}
+
+\syntax
+\hyper{Mv-bindings} must have the form
+\begin{scheme}
+((\hyperi{formals} \hyperi{init}) \dotsfoo)\rm,%
+\end{scheme}
+where each \hyper{init} is an expression, and \hyper{body} 
+is as described in section~\ref{bodiessection}.  
+Any variable must not appear more
+than once in the set of \hyper{formals}.
+
+\semantics The \hyper{init}s are evaluated in the current environment
+(in some unspecified order), and the variables occurring in the
+\hyper{formals} are bound to fresh locations containing the values
+returned by the \hyper{init}s, where the \hyper{formals} are matched
+to the return values in the same way that the \hyper{formals} in a
+\lambdaexp{} are matched to the arguments in a procedure call.
+Then, the \hyper{body} is evaluated in the extended environment, and the
+values of the last expression of \hyper{body} are returned.
+Each binding of a variable has \hyper{body} as its
+region.\index{region}
+If the \hyper{formals} do not match, an exception with condition type
+{\cf\&assertion} is raised.
+
+\begin{scheme}
+(let-values (((a b) (values 1 2))
+             ((c d) (values 3 4)))
+  (list a b c d)) \ev (1 2 3 4)
+
+(let-values (((a b . c) (values 1 2 3 4)))
+  (list a b c))            \ev (1 2 (3 4))
+
+(let ((a 'a) (b 'b) (x 'x) (y 'y))
+  (let-values (((a b) (values x y))
+               ((x y) (values a b)))
+    (list a b x y)))       \ev (x y a b)%
+\end{scheme}
+\end{entry}
+
+\begin{entry}{%
+\proto{let*-values}{ \hyper{mv-bindings} \hyper{body}}{\exprtype}}
+
+\syntax
+\hyper{Mv-bindings} must have the form
+\begin{scheme}
+((\hyperi{formals} \hyperi{init}) \dotsfoo)\rm,%
+\end{scheme}
+where each \hyper{init} is an expression, and \hyper{body} 
+is as described in section~\ref{bodiessection}.
+In each \hyper{formals}, any variable must not appear more than once.
+
+\semantics
+The {\cf let*-values} form is similar to {\cf let-values}, but the \hyper{init}s are
+evaluated and bindings created sequentially from left to right, with
+the region\index{region} of the bindings of each \hyper{formals} including
+the bindings to its right as well as \hyper{body}. 
+Thus the second \hyper{init} is evaluated in an environment in which the
+bindings of the first \hyper{formals} is visible and initialized, and so
+on.
+
+\begin{scheme}
+(let ((a 'a) (b 'b) (x 'x) (y 'y))
+  (let*-values (((a b) (values x y))
+                ((x y) (values a b)))
+    (list a b x y)))  \ev (x y x y)%
+\end{scheme}
+
+\begin{note}
+  While all of the variables bound by a {\cf let-values} expression
+  must be distinct, the variables bound by different \hyper{formals} of a
+  {\cf let*-values} expression need not be distinct.
+\end{note}
+
+\end{entry}
+
+\subsection{Sequencing}\unsection
+
+\begin{entry}{%
+\proto{begin}{ \hyper{form} \dotsfoo}{\exprtype}
+\rproto{begin}{ \hyper{expression} \hyper{expression} \dotsfoo}{\exprtype}}
+
+The \hyper{begin} keyword has two different roles, depending on its
+context:
+\begin{itemize}
+\item It may appear as a form in a \hyper{body} (see
+  section~\ref{bodiessection}), \hyper{library body} (see
+  section~\ref{librarybodysection}), or \hyper{top-level body} (see
+  chapter~\ref{programchapter}), or directly nested in a {\cf begin}
+  form that appears in a body.  In this case, the {\cf begin} form
+  must have the shape specified in the first header line.  This use of
+  {\cf begin} acts as a \defining{splicing} form---the forms inside
+  the \hyper{body} are spliced into the surrounding body, as if the
+  {\cf begin} wrapper were not actually present.
+  
+  A {\cf begin} form in a \hyper{body} or \hyper{library body} must
+  be non-empty if it appears after the first \hyper{expression}
+  within the body.
+\item It may appear as an ordinary expression and must have the shape
+  specified in the second header line.  In this case, the
+  \hyper{expression}s are evaluated sequentially from left to right,
+  and the values of the last \hyper{expression} are returned.
+  This expression type is used to sequence side effects such as
+  assignments or input
+  and output.
+\end{itemize}
+
+\begin{scheme}
+(define x 0)
+
+(begin (set! x 5)
+       (+ x 1))                  \ev  6
+
+(begin (display "4 plus 1 equals ")
+       (display (+ 4 1)))      \ev  \unspecified
+ \>{\em and prints}  4 plus 1 equals 5%
+\end{scheme}
+\end{entry}
+
+\section{Equivalence predicates}
+\label{equivalencesection}
+
+A \defining{predicate} is a procedure that always returns a boolean
+value (\schtrue{} or \schfalse).  An \defining{equivalence predicate} is
+the computational analogue of a mathematical equivalence relation (it is
+symmetric, reflexive, and transitive).  Of the equivalence predicates
+described in this section, {\cf eq?}\ is the finest or most
+discriminating, and {\cf equal?}\ is the coarsest.  The {\cf eqv?} predicate is
+slightly less discriminating than {\cf eq?}.  \todo{Pitman doesn't like
+this paragraph.  Lift the discussion from the Maclisp manual.  Explain
+why there's more than one predicate.}
+
+
+\begin{entry}{%
+\proto{eqv?}{ \vari{obj} \varii{obj}}{procedure}}
+
+The {\cf eqv?} procedure defines a useful equivalence relation on objects.
+Briefly, it returns \schtrue{} if \vari{obj} and \varii{obj} should
+normally be regarded as the same object and \schfalse{} otherwise.  This relation is left slightly
+open to interpretation, but the following partial specification of
+{\cf eqv?} must hold for all implementations.
+
+The {\cf eqv?} procedure returns \schtrue{} if one of the following holds:
+
+\begin{itemize}
+\item \vari{Obj} and \varii{obj} are both booleans and are the same
+  according to the {\cf boolean=?} procedure (section~\ref{boolean=?}).
+
+\item \vari{Obj} and \varii{obj} are both symbols and are the same
+  according to the {\cf symbol=?} procedure (section~\ref{symbol=?}).
+
+\item \vari{Obj} and \varii{obj} are both exact\index{exact} number objects
+  and are numerically equal (see {\cf =}, 
+  section~\ref{genericarithmeticsection}).
+
+\item \vari{Obj} and \varii{obj} are both inexact\index{inexact}
+  number objects, are numerically
+  equal (see {\cf =}, section~\ref{genericarithmeticsection}), and
+  yield the same results (in the sense of {\cf eqv?}) when passed
+  as arguments to any other procedure that can be defined
+  as a finite composition of Scheme's standard arithmetic
+  procedures.
+
+\item \vari{Obj} and \varii{obj} are both characters and are the same
+character according to the {\cf char=?} procedure
+(section~\ref{charactersection}).
+
+\item Both \vari{obj} and \varii{obj} are the empty list.
+
+\item \vari{Obj} and \varii{obj} are objects such as pairs, vectors, bytevectors
+  (library chapter~\extref{lib:bytevectorschapter}{Bytevectors}),
+  strings, hashtables, records (library
+  chapter~\extref{lib:recordschapter}{Records}), ports (library
+  section~\extref{lib:portsiosection}{Port I/O}), or hashtables
+  (library chapter~\extref{lib:hashtablechapter}{Hash tables}) that
+  refer to the same locations in the store (section~\ref{storagemodel}).
+
+\item \vari{Obj} and \varii{obj} are record-type descriptors that are
+  specified to be {\cf eqv?} in library
+  section~\extref{lib:recordsproceduralsection}{Procedural layer}.
+\end{itemize}
+
+The {\cf eqv?} procedure returns \schfalse{} if one of the following holds:
+
+\begin{itemize}
+\item \vari{Obj} and \varii{obj} are of different types
+(section~\ref{disjointness}).
+
+\item \vari{Obj} and \varii{obj} are booleans for which the {\cf
+    boolean=?} procedure returns \schfalse.
+
+\item \vari{Obj} and \varii{obj} are symbols for which the {\cf
+    symbol=?} procedure returns \schfalse.
+
+\item One of \vari{obj} and \varii{obj} is an exact number object but the other is
+        an inexact number object.
+
+\item \vari{Obj} and \varii{obj} are rational number objects for which the {\cf =} procedure
+  returns \schfalse{}.
+
+\item \vari{Obj} and \varii{obj} yield different results (in the sense of
+  {\cf eqv?}) when passed as arguments to any other procedure
+  that can be defined as a finite composition of Scheme's
+  standard arithmetic procedures.
+
+\item \vari{Obj} and \varii{obj} are characters for which the {\cf char=?}
+  procedure returns \schfalse{}.
+
+\item One of \vari{obj} and \varii{obj} is the empty list, but the other is not.
+
+\item \vari{Obj} and \varii{obj} are objects such as pairs, vectors,
+  bytevectors (library
+  chapter~\extref{lib:bytevectorschapter}{Bytevectors}), strings,
+  records (library
+  chapter~\extref{lib:recordschapter}{Records}), ports (library
+  section~\extref{lib:portsiosection}{Port I/O}), or hashtables
+  (library chapter~\extref{lib:hashtablechapter}{Hashtables}) that
+  refer to distinct locations.
+
+\item \vari{Obj} and \varii{obj} are pairs, vectors, strings, or
+  records, or hashtables, where the applying the same accessor (i.e.\
+  {\cf car}, {\cf cdr}, {\cf vector-ref}, {\cf string-ref}, or record
+  accessors) to both yields results for which {\cf eqv?} returns
+  \schfalse.
+
+\item \vari{Obj} and \varii{obj} are procedures that would behave differently
+(return different values or have different side effects) for some arguments.
+
+\end{itemize}
+
+\begin{note}
+  The {\cf eqv?} procedure returning \schtrue{} when \vari{obj} and
+  \varii{obj} are number objects does not imply that {\cf =} would also
+  return \schtrue{} when called with \vari{obj} and \varii{obj} as
+  arguments.
+\end{note}
+
+
+\begin{scheme}
+(eqv? 'a 'a)                     \ev  \schtrue
+(eqv? 'a 'b)                     \ev  \schfalse
+(eqv? 2 2)                       \ev  \schtrue
+(eqv? '() '())                   \ev  \schtrue
+(eqv? 100000000 100000000)       \ev  \schtrue
+(eqv? (cons 1 2) (cons 1 2))     \ev  \schfalse
+(eqv? (lambda () 1)
+      (lambda () 2))             \ev  \schfalse
+(eqv? \#f 'nil)                  \ev  \schfalse%
+\end{scheme}
+
+The following examples illustrate cases in which the above rules do
+not fully specify the behavior of {\cf eqv?}.  All that can be said
+about such cases is that the value returned by {\cf eqv?} must be a
+boolean.
+
+\begin{scheme}
+(let ((p (lambda (x) x)))
+  (eqv? p p))                    \ev  \unspecified
+(eqv? "" "")             \ev  \unspecified
+(eqv? '\#() '\#())         \ev  \unspecified
+(eqv? (lambda (x) x)
+      (lambda (x) x))    \ev  \unspecified
+(eqv? (lambda (x) x)
+      (lambda (y) y))    \ev  \unspecified
+(eqv? +nan.0 +nan.0)             \ev \unspecified%
+\end{scheme}
+
+The next set of examples shows the use of {\cf eqv?}\ with procedures
+that have local state.  Calls to {\cf gen-counter} must return a
+distinct procedure every time, since each procedure has its own
+internal counter.  Calls to {\cf gen-loser} return procedures that
+behave equivalently when called.  However, {\cf eqv?} may
+not detect this equivalence.
+
+\begin{scheme}
+(define gen-counter
+  (lambda ()
+    (let ((n 0))
+      (lambda () (set! n (+ n 1)) n))))
+(let ((g (gen-counter)))
+  (eqv? g g))           \ev  \unspecified
+(eqv? (gen-counter) (gen-counter))
+                        \ev  \schfalse
+(define gen-loser
+  (lambda ()
+    (let ((n 0))
+      (lambda () (set! n (+ n 1)) 27))))
+(let ((g (gen-loser)))
+  (eqv? g g))           \ev  \unspecified
+(eqv? (gen-loser) (gen-loser))
+                        \ev  \unspecified
+
+(letrec ((f (lambda () (if (eqv? f g) 'both 'f)))
+         (g (lambda () (if (eqv? f g) 'both 'g))))
+  (eqv? f g)) \ev  \unspecified
+
+(letrec ((f (lambda () (if (eqv? f g) 'f 'both)))
+         (g (lambda () (if (eqv? f g) 'g 'both))))
+  (eqv? f g)) \ev  \schfalse%
+\end{scheme}
+
+Implementations may
+share structure between constants where appropriate.
+Furthermore, a constant may be copied at any time by the implementation so
+as to exist simultaneously in different sets of locations, as noted in
+section~\ref{quote}.
+Thus the value of {\cf eqv?} on constants is sometimes
+implementation-dependent.
+
+\begin{scheme}
+(eqv? '(a) '(a))                 \ev  \unspecified
+(eqv? "a" "a")                   \ev  \unspecified
+(eqv? '(b) (cdr '(a b)))         \ev  \unspecified
+(let ((x '(a)))
+  (eqv? x x))                    \ev  \schtrue%
+\end{scheme}
+\end{entry}
+
+
+\begin{entry}{%
+\proto{eq?}{ \vari{obj} \varii{obj}}{procedure}}
+
+The {\cf eq?} predicate is similar to {\cf eqv?}\ except that in some cases it is
+capable of discerning distinctions finer than those detectable by
+{\cf eqv?}.
+
+The {\cf eq?}\ and {\cf eqv?} predicates are guaranteed to have the
+same behavior on symbols, booleans, the empty list, pairs, procedures,
+non-empty strings, bytevectors, and vectors, and records.  The
+behavior of {\cf eq?} on number objects and characters is
+implementation-dependent, but it always returns either \schtrue{} or
+\schfalse{}, and returns \schtrue{} only when {\cf eqv?}\ would also
+return \schtrue.  The {\cf eq?} predicate may also behave differently
+from {\cf eqv?} on empty vectors, empty bytevectors, and empty strings.
+
+\begin{scheme}
+(eq? 'a 'a)                     \ev  \schtrue
+(eq? '(a) '(a))                 \ev  \unspecified
+(eq? (list 'a) (list 'a))       \ev  \schfalse
+(eq? "a" "a")                   \ev  \unspecified
+(eq? "" "")                     \ev  \unspecified
+(eq? '() '())                   \ev  \schtrue
+(eq? 2 2)                       \ev  \unspecified
+(eq? \#\backwhack{}A \#\backwhack{}A) \ev  \unspecified
+(eq? car car)                   \ev  \schtrue
+(let ((n (+ 2 3)))
+  (eq? n n))      \ev  \unspecified
+(let ((x '(a)))
+  (eq? x x))      \ev  \schtrue
+(let ((x '\#()))
+  (eq? x x))      \ev  \unspecified
+(let ((p (lambda (x) x)))
+  (eq? p p))      \ev  \unspecified%
+\end{scheme}
+
+\todo{Needs to be explained better above.  How can this be made to be
+not confusing?  A table maybe?}
+
+\end{entry}
+
+\begin{entry}{%
+\proto{equal?}{ \vari{obj} \varii{obj}}{procedure}}
+
+The {\cf equal?}  predicate returns \schtrue{} if and only if the
+(possibly infinite) unfoldings of its arguments into regular trees are
+equal as ordered trees.
+
+The {\cf equal?} predicate treats pairs and vectors
+as nodes with outgoing edges, uses {\cf
+  string=?} to compare strings, uses {\cf
+  bytevector=?} to compare bytevectors (see library chapter~\extref{lib:bytevectorschapter}{Bytevectors}),
+  and uses {\cf eqv?} to compare other nodes.
+
+\begin{scheme}
+(equal? 'a 'a)                  \ev  \schtrue
+(equal? '(a) '(a))              \ev  \schtrue
+(equal? '(a (b) c)
+        '(a (b) c))             \ev  \schtrue
+(equal? "abc" "abc")            \ev  \schtrue
+(equal? 2 2)                    \ev  \schtrue
+(equal? (make-vector 5 'a)
+        (make-vector 5 'a))     \ev  \schtrue
+(equal? '\#vu8(1 2 3 4 5)
+        (u8-list->bytevector
+         '(1 2 3 4 5))          \ev  \schtrue
+(equal? (lambda (x) x)
+        (lambda (y) y))  \ev  \unspecified
+
+(let* ((x (list 'a))
+       (y (list 'a))
+       (z (list x y)))
+  (list (equal? z (list y x))
+        (equal? z (list x x))))             \lev  (\schtrue{} \schtrue{})%
+\end{scheme}
+
+\begin{note}
+  The {\cf equal?} procedure must always terminate, even if its
+  arguments contain cycles.
+\end{note}
+
+\end{entry}
+
+\section{Procedure predicate}
+
+\begin{entry}{%
+\proto{procedure?}{ obj}{procedure}}
+
+Returns \schtrue{} if \var{obj} is a procedure, otherwise returns \schfalse.
+
+\begin{scheme}
+(procedure? car)            \ev  \schtrue
+(procedure? 'car)           \ev  \schfalse
+(procedure? (lambda (x) (* x x)))   
+                            \ev  \schtrue
+(procedure? '(lambda (x) (* x x)))  
+                            \ev  \schfalse%
+\end{scheme}
+
+\end{entry}
+
+\section{Arithmetic}
+\label{genericarithmeticsection}
+
+The procedures described here implement arithmetic that is
+generic over
+the numerical tower described in chapter~\ref{numbertypeschapter}.
+The generic procedures described in this section
+accept both exact and inexact number objects as arguments,
+performing coercions and selecting the appropriate operations
+as determined by the numeric subtypes of their arguments.
+
+Library chapter~\extref{lib:numberchapter}{Arithmetic} describes
+libraries that define other numerical procedures.
+
+\subsection{Propagation of exactness and inexactness}
+\label{propagationsection}
+
+The procedures listed below must return the mathematically correct exact result
+provided all their arguments are exact:
+
+\begin{scheme}
++            -            *
+max          min          abs
+numerator    denominator  gcd
+lcm          floor        ceiling
+truncate     round        rationalize
+real-part    imag-part    make-rectangular%
+\end{scheme}
+
+The procedures listed below must return the correct exact result
+provided all their arguments are exact, and no divisors are zero:
+
+\begin{scheme}
+/
+div          mod           div-and-mod
+div0         mod0          div0-and-mod0%
+\end{scheme}
+
+Moreover, the procedure {\cf expt} must return the correct exact
+result provided its first argument is an exact real number object and
+its second argument is an exact integer object.
+
+The general rule is that the generic operations return the correct
+exact result when all of their arguments are exact and the result is
+mathematically well-defined, but return an inexact result when any
+argument is inexact.  Exceptions to this rule include
+{\cf sqrt}, {\cf exp}, {\cf log},
+{\cf sin}, {\cf cos}, {\cf tan},
+{\cf asin}, {\cf acos}, {\cf atan},
+{\cf expt}, {\cf make-polar}, {\cf magnitude}, and {\cf angle}, which
+may (but are not required to) return inexact results even when
+given exact arguments, as indicated in the specification of these
+procedures.
+
+One general exception to the rule above is that an implementation may
+return an exact result despite inexact arguments if that exact result
+would be the correct result for all possible substitutions of exact
+arguments for the inexact ones.  An example is {\cf (* 1.0 0)} which
+may return either {\cf 0} (exact) or {\cf 0.0} (inexact).
+
+\subsection{Representability of infinities and NaNs}
+\label{infinitiesnanssection}
+
+The specification of the numerical operations is written as though
+infinities and NaNs are representable, and specifies many operations
+with respect to these number objects in ways that are consistent with the
+IEEE-754 standard for binary floating-point arithmetic.  
+An implementation of Scheme may or may not represent infinities and
+NaNs; however,
+an implementation must raise a continuable exception with
+condition type {\cf\&no-infinities} or {\cf\&no-nans} (respectively;
+see library section~\extref{lib:flonumssection}{Flonums})
+whenever it is unable to represent an infinity or NaN as specified. 
+In this case, the continuation of the exception
+handler is the continuation that otherwise would have received
+the infinity or NaN value.  This requirement also applies to
+conversions between number objects and external representations, including
+the reading of program source code.
+
+\subsection{Semantics of common operations}
+
+Some operations are the semantic basis for several arithmetic
+procedures.  The behavior of these operations is described in this
+section for later reference.
+
+\subsubsection{Integer division}
+\label{integerdivision}
+
+Scheme's operations for performing integer
+division rely on mathematical operations $\mathrm{div}$,
+$\mathrm{mod}$, $\mathrm{div}_0$, and
+$\mathrm{mod}_0$, that are defined as follows:
+
+$\mathrm{div}$, $\mathrm{mod}$, $\mathrm{div}_0$, and $\mathrm{mod}_0$
+each accept two real numbers $x_1$ and $x_2$ as operands, where
+$x_2$ must be nonzero.
+
+$\mathrm{div}$ returns an integer, and $\mathrm{mod}$ returns a real.
+Their results are specified by
+%
+\begin{eqnarray*}
+x_1~\mathrm{div}~x_2 &=& n_d\\
+x_1~\mathrm{mod}~x_2 &=& x_m
+\end{eqnarray*}
+%
+where
+%
+\begin{displaymath}
+\begin{array}{c}
+x_1 = n_d \cdot x_2 + x_m\\
+0 \leq x_m < |x_2|
+\end{array}
+\end{displaymath}
+%
+Examples:
+\begin{eqnarray*}
+123~\mathrm{div}~10    &=&  12\\
+123~\mathrm{mod}~10    &=&  3\\
+123~\mathrm{div}~\textrm{$-10$}   &=&  -12\\
+123~\mathrm{mod}~\textrm{$-10$}   &=&  3\\
+-123~\mathrm{div}~10    &=&  -13\\
+-123~\mathrm{mod}~10    &=&  7\\
+-123~\mathrm{div}~\textrm{$-10$}   &=&  13\\
+-123~\mathrm{mod}~\textrm{$-10$}   &=&  7
+\end{eqnarray*}
+%
+$\mathrm{div}_0$ and $\mathrm{mod}_0$ are like $\mathrm{div}$ and
+$\mathrm{mod}$, except the result of $\mathrm{mod}_0$ lies within a
+half-open interval centered on zero.  The results are specified by
+%
+\begin{eqnarray*}
+x_1~\mathrm{div}_0~x_2 &=& n_d\\
+x_1~\mathrm{mod}_0~x_2 &=& x_m
+\end{eqnarray*}
+%
+where:
+%
+\begin{displaymath}
+\begin{array}{c}
+x_1 = n_d \cdot x_2 + x_m\\
+-|\frac{x_2}{2}| \leq x_m < |\frac{x_2}{2}|
+\end{array}
+\end{displaymath}
+%
+Examples:
+%
+\begin{eqnarray*}
+123~\mathrm{div}_0~10    &=&  12\\
+123~\mathrm{mod}_0~10    &=&  3\\
+123~\mathrm{div}_0~\textrm{$-10$}   &=&  -12\\
+123~\mathrm{mod}_0~\textrm{$-10$}   &=&  3\\
+-123~\mathrm{div}_0~10    &=&  -12\\
+-123~\mathrm{mod}_0~10    &=&  -3\\
+-123~\mathrm{div}_0~\textrm{$-10$}   &=&  12\\
+-123~\mathrm{mod}_0~\textrm{$-10$}   &=&  -3
+\end{eqnarray*}
+
+\subsubsection{Transcendental functions}
+\label{transcendentalfunctions}
+
+In general, the transcendental functions $\log$, $\sin^{-1}$
+(arcsine), $\cos^{-1}$ (arccosine), and $\tan^{-1}$ are multiply
+defined.  The value of $\log z$ is defined to be the one whose
+imaginary part lies in the range from $-\pi$ (inclusive if $-0.0$ is
+distinguished, exclusive otherwise) to $\pi$ (inclusive).  $\log 0$ is
+undefined.
+
+The value of $\log z$ for non-real $z$ is defined in terms of log on real numbers as 
+
+\begin{displaymath}
+\log z = \log |z| + (\mathrm{angle}~z)i
+\end{displaymath}
+%
+where $\mathrm{angle}~z$ is the angle of $z = a\cdot e^{ib}$ specified
+as:
+$$\mathrm{angle}~z = b+2\pi n$$
+with $-\pi \leq \mathrm{angle}~z\leq \pi$ and $\mathrm{angle}~z =
+b+2\pi n$ for some integer $n$.
+
+With the one-argument version of $\log$ defined this way, the values
+of the two-argument-version of $\log$, $\sin^{-1} z$, $\cos^{-1} z$,
+$\tan^{-1} z$, and the two-argument version of $\tan^{-1}$ are
+according to the following formul\ae:
+\begin{eqnarray*}
+\log z~b &=& \frac{\log z}{\log b}\\
+\sin^{-1} z &=& -i \log (i z + \sqrt{1 - z^2})\\
+\cos^{-1} z &=& \pi / 2 - \sin^{-1} z\\
+\tan^{-1} z &=& (\log (1 + i z) - \log (1 - i z)) / (2 i)\\
+\tan^{-1} x~y &=& \mathrm{angle}(x+ yi)
+\end{eqnarray*}
+
+The range of $\tan^{-1} x~y$ is as in the following table. The
+asterisk (*) indicates that the entry applies to implementations that
+distinguish minus zero.
+
+\begin{center}
+\begin{tabular}{clll}
+& $y$ condition & $x$ condition & range of result $r$\\\hline
+& $y = 0.0$ & $x > 0.0$ & $0.0$\\
+$\ast$ & $y = +0.0$  & $x > 0.0$ & $+0.0$\\     
+$\ast$ & $y = -0.0$ & $x > 0.0$ & $-0.0$\\
+& $y > 0.0$ & $x > 0.0$ & $0.0 < r < \frac{\pi}{2}$\\
+& $y > 0.0$ & $x = 0.0$ & $\frac{\pi}{2}$\\
+& $y > 0.0$ & $x < 0.0$ & $\frac{\pi}{2} < r < \pi$\\
+& $y = 0.0$ & $x < 0$ & $\pi$\\
+$\ast$ & $y = +0.0$ & $x < 0.0$ & $\pi$\\
+$\ast$ & $y = -0.0$ & $x < 0.0$ & $-\pi$\\      
+&$y < 0.0$ & $x < 0.0$ & $-\pi< r< -\frac{\pi}{2}$\\
+&$y < 0.0$ & $x = 0.0$ & $-\frac{\pi}{2}$\\
+&$y < 0.0$ & $x > 0.0$ & $-\frac{\pi}{2} < r< 0.0$\\    
+&$y = 0.0$ & $x = 0.0$ & undefined\\
+$\ast$& $y = +0.0$ & $x = +0.0$ & $+0.0$\\
+$\ast$& $y = -0.0$ & $x = +0.0$& $-0.0$\\
+$\ast$& $y = +0.0$ & $x = -0.0$ & $\pi$\\
+$\ast$& $y = -0.0$ & $x = -0.0$ & $-\pi$\\
+$\ast$& $y = +0.0$ & $x = 0$ & $\frac{\pi}{2}$\\
+$\ast$& $y = -0.0$ & $x = 0$    & $-\frac{\pi}{2}$
+\end{tabular}
+\end{center}
+
+\subsection{Numerical operations}
+
+\subsubsection{Numerical type predicates}
+
+\begin{entry}{%
+\proto{number?}{ obj}{procedure}
+\proto{complex?}{ obj}{procedure}
+\proto{real?}{ obj}{procedure}
+\proto{rational?}{ obj}{procedure}
+\proto{integer?}{ obj}{procedure}}
+
+These numerical type predicates can be applied to any kind of
+argument.  They return \schtrue{} if the object is a number object
+of the named type, and \schfalse{} otherwise.
+In general, if a type predicate is true of a number object then all higher
+type predicates are also true of that number object.  Consequently, if a type
+predicate is false of a number object, then all lower type predicates are
+also false of that number object.
+
+If \var{z} is a complex number object, then {\cf (real? \var{z})} is true if
+and only if {\cf (zero? (imag-part \var{z}))} and {\cf (exact?
+  (imag-part \var{z}))} are both true.
+
+If \var{x} is a real number object, then {\cf (rational? \var{x})} is true if
+and only if there exist exact integer objects \vari{k} and \varii{k} such that
+{\cf (= \var{x} (/ \vari{k} \varii{k}))} and {\cf (= (numerator
+  \var{x}) \vari{k})} and {\cf (= (denominator \var{x}) \varii{k})} are
+all true.  Thus infinities and NaNs are not rational number objects.
+
+If \var{q} is a rational number objects, then {\cf (integer?
+\var{q})} is true if and only if {\cf (= (denominator
+\var{q}) 1)} is true.  If \var{q} is not a rational number object,
+then {\cf (integer? \var{q})} is \schfalse.
+
+\begin{scheme}
+(complex? 3+4i)                        \ev  \schtrue{}
+(complex? 3)                           \ev  \schtrue{}
+(real? 3)                              \ev  \schtrue{}
+(real? -2.5+0.0i)                      \ev  \schfalse{}
+(real? -2.5+0i)                        \ev  \schtrue{}
+(real? -2.5)                           \ev  \schtrue{}
+(real? \sharpsign{}e1e10)                         \ev  \schtrue{}
+(rational? 6/10)                       \ev  \schtrue{}
+(rational? 6/3)                        \ev  \schtrue{}
+(rational? 2)                          \ev  \schtrue{}
+(integer? 3+0i)                        \ev  \schtrue{}
+(integer? 3.0)                         \ev  \schtrue{}
+(integer? 8/4)                         \ev  \schtrue{}
+
+(number? +nan.0)                       \ev  \schtrue{}
+(complex? +nan.0)                      \ev  \schtrue{}
+(real? +nan.0)                         \ev  \schtrue{}
+(rational? +nan.0)                     \ev  \schfalse{}
+(complex? +inf.0)                      \ev  \schtrue{}
+(real? -inf.0)                         \ev  \schtrue{}
+(rational? -inf.0)                     \ev  \schfalse{}
+(integer? -inf.0)                      \ev  \schfalse{}%
+\end{scheme}
+
+\begin{note}
+Except for {\cf number?}, the behavior of these type predicates
+on inexact number objects is
+unreliable, because any inaccuracy may
+affect the result.
+\end{note}
+\end{entry}
+
+\begin{entry}{%
+\proto{real-valued?}{ obj}{procedure}
+\proto{rational-valued?}{ obj}{procedure}
+\proto{integer-valued?}{ obj}{procedure}}
+
+These numerical type predicates can be applied to any kind of
+argument.  The {\cf real-valued?} procedure
+returns \schtrue{} if the object is a number object and is equal in the
+sense of {\cf =} to some real number object, or if the object is a NaN, or a
+complex number object whose real part is a NaN and whose imaginary
+part is zero
+in the sense of {\cf zero?}.  The {\cf rational-valued?} and {\cf
+  integer-valued?} procedures return \schtrue{} if the object is a
+number object and is equal in the sense of {\cf =} to some object of the
+named type, and otherwise they return \schfalse{}.
+
+\begin{scheme}
+(real-valued? +nan.0)                  \ev  \schtrue{}
+(real-valued? +nan.0+0i)                  \ev  \schtrue{}
+(real-valued? -inf.0)                  \ev  \schtrue{}
+(real-valued? 3)                       \ev  \schtrue{}
+(real-valued? -2.5+0.0i)               \ev  \schtrue{}
+(real-valued? -2.5+0i)                 \ev  \schtrue{}
+(real-valued? -2.5)                    \ev  \schtrue{}
+(real-valued? \sharpsign{}e1e10)                  \ev  \schtrue{}
+
+(rational-valued? +nan.0)              \ev  \schfalse{}
+(rational-valued? -inf.0)              \ev  \schfalse{}
+(rational-valued? 6/10)                \ev  \schtrue{}
+(rational-valued? 6/10+0.0i)           \ev  \schtrue{}
+(rational-valued? 6/10+0i)             \ev  \schtrue{}
+(rational-valued? 6/3)                 \ev  \schtrue{}
+
+(integer-valued? 3+0i)                 \ev  \schtrue{}
+(integer-valued? 3+0.0i)               \ev  \schtrue{}
+(integer-valued? 3.0)                  \ev  \schtrue{}
+(integer-valued? 3.0+0.0i)             \ev  \schtrue{}
+(integer-valued? 8/4)                  \ev  \schtrue{}%
+\end{scheme}
+
+\begin{note}
+  These procedures test whether a given number object can be coerced
+  to the specified type without loss of numerical accuracy.
+  Specifically, the behavior of these predicates differs from the
+  behavior of {\cf real?}, {\cf rational?}, and {\cf integer?} on
+  complex number objects whose imaginary part is inexact zero.
+\end{note}
+
+\begin{note}
+The behavior of these type predicates on inexact number objects is
+unreliable, because any inaccuracy may
+affect the result.
+\end{note}
+\end{entry}
+
+\begin{entry}{%
+\proto{exact?}{ z}{procedure}
+\proto{inexact?}{ z}{procedure}}
+
+These numerical predicates provide tests for the exactness of a
+quantity.  For any number object, precisely one of these predicates is
+true.
+
+\begin{scheme}
+(exact? 5)                   \ev  \schtrue{}
+(inexact? +inf.0)            \ev  \schtrue{}%
+\end{scheme}
+\end{entry}
+
+\subsubsection{Generic conversions}
+
+\begin{entry}{%
+\proto{inexact}{ z}{procedure}
+\proto{exact}{ z}{procedure}}
+
+The {\cf inexact} procedure returns an inexact representation of \var{z}.  If
+inexact number objects of the appropriate type have bounded precision, then
+the value returned is an inexact number object that is nearest to the
+argument.  If an exact argument has no reasonably close inexact
+equivalent, an exception with condition type
+{\cf\&implementation-violation} may be
+raised.
+
+\begin{note}
+  For a real number object whose magnitude is finite but so large that it has
+  no reasonable finite approximation as an inexact number, a
+  reasonably close inexact equivalent may be {\cf +inf.0} or {\cf
+    -inf.0}.  Similarly, the inexact representation of a complex
+  number object whose components are finite may have infinite components.
+\end{note}
+
+The {\cf exact} procedure returns an exact representation of \var{z}.  The value
+returned is the exact number object that is numerically closest to the
+argument; in most cases, the result of this procedure should be
+numerically equal to its argument.  If an inexact argument has no
+reasonably close exact equivalent, an exception with condition type
+{\cf\&implementation-violation} may be
+raised.
+
+These procedures implement the natural one-to-one correspondence
+between exact and inexact integer objects throughout an
+implementation-dependent range.
+
+The {\cf inexact} and {\cf exact} procedures are idempotent.
+\end{entry}
+
+\subsubsection{Arithmetic operations}
+
+\begin{entry}{%
+\proto{=}{ \vari{z} \varii{z} \variii{z} \dotsfoo}{procedure}
+\proto{<}{ \vari{x} \varii{x} \variii{x} \dotsfoo}{procedure}
+\proto{>}{ \vari{x} \varii{x} \variii{x} \dotsfoo}{procedure}
+\proto{<=}{ \vari{x} \varii{x} \variii{x} \dotsfoo}{procedure}
+\proto{>=}{ \vari{x} \varii{x} \variii{x} \dotsfoo}{procedure}}
+
+These procedures return \schtrue{} if their arguments are
+(respectively): equal, monotonically increasing, monotonically
+decreasing, monotonically nondecreasing, or monotonically
+nonincreasing, and \schfalse{} otherwise.
+
+\begin{scheme}
+(= +inf.0 +inf.0)           \ev  \schtrue{}
+(= -inf.0 +inf.0)           \ev  \schfalse{}
+(= -inf.0 -inf.0)           \ev  \schtrue{}%
+\end{scheme}
+
+For any real number object \var{x} that is neither infinite nor NaN:
+
+\begin{scheme}
+(< -inf.0 \var{x} +inf.0))        \ev  \schtrue{}
+(> +inf.0 \var{x} -inf.0))        \ev  \schtrue{}%
+\end{scheme}
+
+For any number object \var{z}:
+%
+\begin{scheme}
+(= +nan.0 \var{z})               \ev  \schfalse{}%
+\end{scheme}
+%
+For any real number object \var{x}:
+%
+\begin{scheme}
+(< +nan.0 \var{x})               \ev  \schfalse{}
+(> +nan.0 \var{x})               \ev  \schfalse{}%
+\end{scheme}
+
+These predicates must be transitive.
+
+\begin{note}
+The traditional implementations of these predicates in Lisp-like
+languages are not transitive.
+\end{note}
+
+\begin{note}
+While it is possible to compare inexact number objects using these
+predicates, the results may be unreliable because a small inaccuracy
+may affect the result; this is especially true of {\cf =} and {\cf zero?} (below).
+
+When in doubt, consult a numerical analyst.
+\end{note}
+\end{entry}
+
+\begin{entry}{%
+\proto{zero?}{ z}{procedure}
+\proto{positive?}{ x}{procedure}
+\proto{negative?}{ x}{procedure}
+\proto{odd?}{ n}{procedure}
+\proto{even?}{ n}{procedure}
+\proto{finite?}{ x}{procedure}
+\proto{infinite?}{ x}{procedure}
+\proto{nan?}{ x}{procedure}}
+
+These numerical predicates test a number object for a particular property,
+returning \schtrue{} or \schfalse{}.  The {\cf zero?}
+procedure
+tests if the number object is {\cf =} to zero, {\cf positive?} tests whether it is
+greater than zero, {\cf negative?} tests whether it is less than zero, {\cf
+  odd?} tests whether it is odd, {\cf even?} tests whether it is even, {\cf
+  finite?} tests whether it is not an infinity and not a NaN, {\cf
+  infinite?} tests whether it is an infinity, {\cf nan?} tests whether it is a
+NaN.
+
+\begin{scheme}
+(zero? +0.0)                  \ev  \schtrue{}
+(zero? -0.0)                  \ev  \schtrue{}
+(zero? +nan.0)                \ev  \schfalse{}
+(positive? +inf.0)            \ev  \schtrue{}
+(negative? -inf.0)            \ev  \schtrue{}
+(positive? +nan.0)            \ev  \schfalse{}
+(negative? +nan.0)            \ev  \schfalse{}
+(finite? +inf.0)              \ev  \schfalse{}
+(finite? 5)                   \ev  \schtrue{}
+(finite? 5.0)                 \ev  \schtrue{}
+(infinite? 5.0)               \ev  \schfalse{}
+(infinite? +inf.0)            \ev  \schtrue{}%
+\end{scheme}
+
+\begin{note}
+  As with the predicates above, the results may be unreliable because
+  a small inaccuracy may affect the result.
+\end{note}
+\end{entry}
+
+\begin{entry}{%
+\proto{max}{ \vari{x} \varii{x} \dotsfoo}{procedure}
+\proto{min}{ \vari{x} \varii{x} \dotsfoo}{procedure}}
+
+These procedures return the maximum or minimum of their arguments.
+
+\begin{scheme}
+(max 3 4)                              \ev  4
+(max 3.9 4)                            \ev  4.0%
+\end{scheme}
+
+For any real number object \var{x}:
+
+\begin{scheme}
+(max +inf.0 \var{x})                         \ev  +inf.0
+(min -inf.0 \var{x})                         \ev  -inf.0%
+\end{scheme}
+
+\begin{note}
+If any argument is inexact, then the result is also inexact (unless
+the procedure can prove that the inaccuracy is not large enough to affect the
+result, which is possible only in unusual implementations).  If {\cf min} or
+{\cf max} is used to compare number objects of mixed exactness, and the numerical
+value of the result cannot be represented as an inexact number object without loss of
+accuracy, then the procedure may raise an exception with condition
+type {\cf\&implementation-restriction}.
+\end{note}
+
+\end{entry}
+
+\begin{entry}{%
+\proto{+}{ \vari{z} \dotsfoo}{procedure}
+\proto{*}{ \vari{z} \dotsfoo}{procedure}}
+
+These procedures return the sum or product of their arguments.
+
+\begin{scheme}
+(+ 3 4)                                \ev  7
+(+ 3)                                  \ev  3
+(+)                                    \ev  0
+(+ +inf.0 +inf.0)                      \ev  +inf.0
+(+ +inf.0 -inf.0)                      \ev  +nan.0
+
+(* 4)                                  \ev  4
+(*)                                    \ev  1
+(* 5 +inf.0)                           \ev  +inf.0
+(* -5 +inf.0)                          \ev  -inf.0
+(* +inf.0 +inf.0)                      \ev  +inf.0
+(* +inf.0 -inf.0)                      \ev  -inf.0
+(* 0 +inf.0)                           \ev  0 \textnormal{\textit{or}} +nan.0
+(* 0 +nan.0)                           \ev  0 \textnormal{\textit{or}} +nan.0
+(* 1.0 0)                              \ev  0 \textnormal{\textit{or}} 0.0%
+\end{scheme}
+
+For any real number object \var{x} that is neither infinite nor NaN:
+
+\begin{scheme}
+(+ +inf.0 \var{x})                           \ev  +inf.0
+(+ -inf.0 \var{x})                           \ev  -inf.0%
+\end{scheme}
+
+For any real number object \var{x}:
+
+\begin{scheme}
+(+ +nan.0 \var{x})                           \ev  +nan.0%
+\end{scheme}
+
+For any real number object \var{x} that is not an exact 0:
+
+\begin{scheme}
+(* +nan.0 \var{x})                           \ev  +nan.0%
+\end{scheme}
+
+If any of these procedures are applied to mixed non-rational real and
+non-real complex arguments, they either raise an exception with
+condition type {\cf\&implementation-restriction} or return an
+unspecified number object.
+
+Implementations that distinguish $-0.0$ should adopt behavior
+consistent with the following examples:
+
+\begin{scheme}
+(+ 0.0 -0.0)  \ev 0.0
+(+ -0.0 0.0)  \ev 0.0
+(+ 0.0 0.0)   \ev 0.0
+(+ -0.0 -0.0) \ev -0.0%
+\end{scheme}
+\end{entry}
+
+\begin{entry}{%
+\proto{-}{ z}{procedure}
+\rproto{-}{ \vari{z} \varii{z} \dotsfoo}{procedure}}
+
+With two or more arguments, this procedures returns the difference of
+its arguments, associating to the left.  With one argument, however,
+it returns the additive inverse of its argument.
+
+\begin{scheme}
+(- 3 4)                                \ev  -1
+(- 3 4 5)                              \ev  -6
+(- 3)                                  \ev  -3
+(- +inf.0 +inf.0)                      \ev  +nan.0%
+\end{scheme}
+
+If this procedure is applied to mixed non-rational real and
+non-real complex arguments, it either raises an exception with
+condition type {\cf\&implementation-restriction} or returns an
+unspecified number object.
+
+Implementations that distinguish $-0.0$ should adopt behavior
+consistent with the following examples:
+
+\begin{scheme}
+(- 0.0)       \ev -0.0
+(- -0.0)      \ev 0.0
+(- 0.0 -0.0)  \ev 0.0
+(- -0.0 0.0)  \ev -0.0
+(- 0.0 0.0)   \ev 0.0
+(- -0.0 -0.0) \ev 0.0%
+\end{scheme}
+\end{entry}
+
+\begin{entry}{%
+\proto{/}{ z}{procedure}
+\rproto{/}{ \vari{z} \varii{z} \dotsfoo}{procedure}}
+
+\domain{If all of the arguments are exact, then the divisors must all
+  be nonzero.}
+With two or more arguments, this procedure returns the 
+quotient of its arguments, associating to the left.  With one
+argument, however, it returns the multiplicative inverse
+of its argument.
+
+\begin{scheme}
+(/ 3 4 5)                              \ev  3/20
+(/ 3)                                  \ev  1/3
+(/ 0.0)                                \ev  +inf.0
+(/ 1.0 0)                              \ev  +inf.0
+(/ -1 0.0)                             \ev  -inf.0
+(/ +inf.0)                             \ev  0.0
+(/ 0 0)                                \xev \exception{\&assertion}
+(/ 3 0)                                \xev \exception{\&assertion}
+(/ 0 3.5)                              \ev  0.0
+(/ 0 0.0)                              \ev  +nan.0
+(/ 0.0 0)                              \ev  +nan.0
+(/ 0.0 0.0)                            \ev  +nan.0%
+\end{scheme}
+
+If this procedure is applied to mixed non-rational real and
+non-real complex arguments, it either raises an exception with
+condition type {\cf\&implementation-restriction} or returns an
+unspecified number object.
+\end{entry}
+
+\begin{entry}{%
+\proto{abs}{ x}{procedure}}
+
+Returns the absolute value of its argument.
+
+\begin{scheme}
+(abs -7)                               \ev  7
+(abs -inf.0)                           \ev  +inf.0%
+\end{scheme}
+
+\end{entry}
+
+\begin{entry}{%
+\proto{div-and-mod}{ \vari{x} \varii{x}}{procedure}
+\proto{div}{ \vari{x} \varii{x}}{procedure}
+\proto{mod}{ \vari{x} \varii{x}}{procedure}
+\proto{div0-and-mod0}{ \vari{x} \varii{x}}{procedure}
+\proto{div0}{ \vari{x} \varii{x}}{procedure}
+\proto{mod0}{ \vari{x} \varii{x}}{procedure}}
+
+These procedures implement number-theoretic integer division and
+return the results of the corresponding mathematical operations
+specified in section~\ref{integerdivision}.  In each case, \vari{x}
+must be neither infinite nor a NaN, and \varii{x} must be nonzero;
+otherwise, an exception with condition type {\cf\&assertion} is raised.
+
+\begin{scheme}
+(div \vari{x} \varii{x})         \ev \(\vari{x}~\mathrm{div}~\varii{x}\)
+(mod \vari{x} \varii{x})         \ev \(\vari{x}~\mathrm{mod}~\varii{x}\)
+(div-and-mod \vari{x} \varii{x})     \ev \(\vari{x}~\mathrm{div}~\varii{x}, \vari{x}~\mathrm{mod}~\varii{x}\)\\\>\>\>; \textrm{two return values}
+(div0 \vari{x} \varii{x})        \ev \(\vari{x}~\mathrm{div}_0~\varii{x}\)
+(mod0 \vari{x} \varii{x})        \ev \(\vari{x}~\mathrm{mod}_0~\varii{x}\)
+(div0-and-mod0 \vari{x} \varii{x})   \lev \(\vari{x}~\mathrm{div}_0~\varii{x}, \vari{x}~\mathrm{mod}_0~\varii{x}\)\\\>\>; \textrm{two return values}%
+\end{scheme}
+
+\begin{entry}{%
+\proto{gcd}{ \vari{n} \dotsfoo}{procedure}
+\proto{lcm}{ \vari{n} \dotsfoo}{procedure}}
+
+These procedures return the greatest common divisor or least common
+multiple of their arguments.  The result is always non-negative.
+
+\begin{scheme}
+(gcd 32 -36)                           \ev  4
+(gcd)                                  \ev  0
+(lcm 32 -36)                           \ev  288
+(lcm 32.0 -36)                         \ev  288.0
+(lcm)                                  \ev  1%
+\end{scheme}
+\end{entry}
+
+\begin{entry}{%
+\proto{numerator}{ q}{procedure}
+\proto{denominator}{ q}{procedure}}
+
+These procedures return the numerator or denominator of their
+argument; the result is computed as if the argument was represented as
+a fraction in lowest terms.  The denominator is always positive.  The
+denominator of $0$ is defined to be $1$.
+
+\begin{scheme}
+(numerator (/ 6 4))                    \ev  3
+(denominator (/ 6 4))                  \ev  2
+(denominator
+  (inexact (/ 6 4)))                   \ev  2.0%
+\end{scheme}
+\end{entry}
+
+\begin{entry}{%
+\proto{floor}{ x}{procedure}
+\proto{ceiling}{ x}{procedure}
+\proto{truncate}{ x}{procedure}
+\proto{round}{ x}{procedure}}
+
+These procedures return inexact integer objects for inexact arguments that are
+not infinities or NaNs, and exact integer objects for exact rational
+arguments.  For such arguments, {\cf floor} returns the largest
+integer object not larger than \var{x}.  The {\cf ceiling} procedure returns the smallest
+integer object not smaller than \var{x}.  The {\cf truncate} procedure returns the integer
+object closest to \var{x} whose absolute value is not larger than the
+absolute value of \var{x}.  The {\cf round} procedure returns the
+closest integer object to
+\var{x}, rounding to even when \var{x} represents a number halfway between two
+integers.
+
+\begin{note}
+If the argument to one of these procedures is inexact, then the result
+is also inexact.  If an exact value is needed, the
+result should be passed to the {\cf exact} procedure.
+\end{note}
+
+Although infinities and NaNs are not integer objects, these procedures return
+an infinity when given an infinity as an argument, and a NaN when
+given a NaN.
+
+\begin{scheme}
+(floor -4.3)                           \ev  -5.0
+(ceiling -4.3)                         \ev  -4.0
+(truncate -4.3)                        \ev  -4.0
+(round -4.3)                           \ev  -4.0
+
+(floor 3.5)                            \ev  3.0
+(ceiling 3.5)                          \ev  4.0
+(truncate 3.5)                         \ev  3.0
+(round 3.5)                            \ev  4.0
+
+(round 7/2)                            \ev  4
+(round 7)                              \ev  7
+
+(floor +inf.0)                         \ev  +inf.0
+(ceiling -inf.0)                       \ev  -inf.0
+(round +nan.0)                         \ev  +nan.0%
+\end{scheme}
+
+\end{entry}
+
+\begin{entry}{%
+\proto{rationalize}{ \vari{x} \varii{x}}{procedure}}
+
+The {\cf rationalize} procedure returns the a number object
+representing the {\em simplest} rational
+number differing from \vari{x} by no more than \varii{x}.    A rational number $r_1$ is
+{\em simpler} \mainindex{simplest rational} than another rational number
+$r_2$ if $r_1 = p_1/q_1$ and $r_2 = p_2/q_2$ (in lowest terms) and $|p_1|
+\leq |p_2|$ and $|q_1| \leq |q_2|$.  Thus $3/5$ is simpler than $4/7$.
+Although not all rationals are comparable in this ordering (consider $2/7$
+and $3/5$) any interval contains a rational number that is simpler than
+every other rational number in that interval (the simpler $2/5$ lies
+between $2/7$ and $3/5$).  Note that $0 = 0/1$ is the simplest rational of
+all.
+%
+\begin{scheme}
+(rationalize (exact .3) 1/10)          \lev 1/3
+(rationalize .3 1/10)                  \lev \sharpsign{}i1/3  ; \textrm{approximately}
+
+(rationalize +inf.0 3)                 \ev  +inf.0
+(rationalize +inf.0 +inf.0)            \ev  +nan.0
+(rationalize 3 +inf.0)                 \ev  0.0%
+\end{scheme}
+%
+The first two examples hold only in implementations whose inexact real
+number objects have sufficient precision.
+
+\end{entry}
+
+\begin{entry}{%
+\proto{exp}{ z}{procedure}
+\proto{log}{ z}{procedure}
+\rproto{log}{ \vari{z} \varii{z}}{procedure}
+\proto{sin}{ z}{procedure}
+\proto{cos}{ z}{procedure}
+\proto{tan}{ z}{procedure}
+\proto{asin}{ z}{procedure}
+\proto{acos}{ z}{procedure}
+\proto{atan}{ z}{procedure}
+\rproto{atan}{ \vari{x} \varii{x}}{procedure}}
+
+These procedures compute the usual transcendental functions.  The {\cf
+  exp} procedure computes the base-$e$ exponential of \var{z}. 
+The {\cf log} procedure with a single argument computes the natural logarithm of
+\var{z} (not the base-ten logarithm); {\cf (log \vari{z}
+  \varii{z})} computes the base-\varii{z} logarithm of \vari{z}.
+The {\cf asin}, {\cf acos}, and {\cf atan} procedures compute arcsine,
+arccosine, and arctangent, respectively.  The two-argument variant of
+{\cf atan} computes {\cf (angle (make-rectangular \varii{x}
+\vari{x}))}.
+
+See section~\ref{transcendentalfunctions} for the underlying
+mathematical operations. These procedures may return inexact results
+even when given exact arguments.
+
+\begin{scheme}
+(exp +inf.0)                   \ev +inf.0
+(exp -inf.0)                   \ev 0.0
+(log +inf.0)                   \ev +inf.0
+(log 0.0)                      \ev -inf.0
+(log 0)                        \xev \exception{\&assertion}
+(log -inf.0)                   \lev +inf.0+3.141592653589793i\\\> ; \textrm{approximately}
+(atan -inf.0)                  \lev -1.5707963267948965 ; \textrm{approximately}
+(atan +inf.0)                  \lev 1.5707963267948965 ; \textrm{approximately}
+(log -1.0+0.0i)                \lev 0.0+3.141592653589793i ; \textrm{approximately}
+(log -1.0-0.0i)                \lev 0.0-3.141592653589793i ; \textrm{approximately}\\\>; \textrm{if -0.0 is distinguished}%
+\end{scheme}
+\end{entry}
+
+\begin{entry}{%
+\proto{sqrt}{ z}{procedure}}
+
+Returns the principal square root of \var{z}.  For rational \var{z},
+the result has either positive real part, or zero real part and
+non-negative imaginary part.  With $\log$ defined as in
+section~\ref{transcendentalfunctions}, the value of {\cf (sqrt
+  \var{z})} could be expressed as $e^{\frac{\log z}{2}}$.
+
+The {\cf sqrt} procedure may return an inexact result even when given an exact
+argument.
+
+\begin{scheme}
+(sqrt -5)                   \lev  0.0+2.23606797749979i ; \textrm{approximately}
+(sqrt +inf.0)               \ev  +inf.0
+(sqrt -inf.0)               \ev  +inf.0i%
+\end{scheme}
+\end{entry}
+
+\begin{entry}{%
+\proto{exact-integer-sqrt}{ k}{procedure}}
+
+The {\cf exact-integer-sqrt} procedure returns two non-negative exact
+integer objects $s$ and $r$ where $\var{k} = s^2 +
+r$ and $\var{k} < (s+1)^2$.
+
+\begin{scheme}
+(exact-integer-sqrt 4) \ev 2 0\\\>\>\>; \textrm{two return values}
+(exact-integer-sqrt 5) \ev 2 1\\\>\>\>; \textrm{two return values}
+\end{scheme}
+\end{entry}
+
+\begin{entry}{%
+\proto{expt}{ \vari{z} \varii{z}}{procedure}}
+
+Returns \vari{z} raised to the power \varii{z}.  For nonzero \vari{z},
+this is $e^{z_2 \log z_1}$.
+$0.0^{z}$ is $1.0$ if $\var{z} = 0.0$, and $0.0$ if {\cf
+  (real-part \var{z})} is positive.  For other cases in which
+the first argument is zero, either an exception is raised with
+condition type {\cf\&implementation-restriction}, or an unspecified
+number object is returned.
+
+For an exact real number object \vari{z} and an exact
+integer object \varii{z}, {\cf (expt \vari{z}
+\varii{z})} must return an exact result.  For all other
+values of \vari{z} and \varii{z}, {\cf (expt \vari{z}
+\varii{z})} may return an inexact result, even when both
+\vari{z} and \varii{z} are exact.
+
+\begin{scheme}
+(expt 5 3)                  \ev  125
+(expt 5 -3)                 \ev  1/125
+(expt 5 0)                  \ev  1
+(expt 0 5)                  \ev  0
+(expt 0 5+.0000312i)        \ev  0
+(expt 0 -5)                 \ev  \unspecified
+(expt 0 -5+.0000312i)       \ev  \unspecified
+(expt 0 0)                  \ev  1
+(expt 0.0 0.0)              \ev  1.0%
+\end{scheme}
+\end{entry}
+
+\begin{entry}{%
+\proto{make-rectangular}{ \vari{x} \varii{x}}{procedure}
+\proto{make-polar}{ \variii{x} \variv{x}}{procedure}
+\proto{real-part}{ z}{procedure}
+\proto{imag-part}{ z}{procedure}
+\proto{magnitude}{ z}{procedure}
+\proto{angle}{ z}{procedure}}
+
+Suppose $a_1$, $a_2$, $a_3$, and $a_4$ are real
+numbers, and $c$ is a complex number such that the
+following holds:
+%
+\begin{displaymath}
+c = a_1 + a_2 i = a_3 e^{i a_4}
+\end{displaymath}
+
+Then, if \vari{x}, \varii{x}, \variii{x}, and \variv{x} are number
+objects representing $a_1$, $a_2$, $a_3$, and $a_4$, respectively,
+{\cf (make-rectangular \vari{x} \varii{x})} returns $c$, and {\cf
+  (make-polar \variii{x} \variv{x})} returns $c$.
+%
+\begin{scheme}
+(make-rectangular 1.1 2.2) \lev 1.1+2.2i ; \textrm{approximately}
+(make-polar 1.1 2.2) \lev 1.1@2.2 ; \textrm{approximately}
+\end{scheme}
+%
+Conversely, if $-\pi \leq a_4 \leq \pi$, and if $z$ is a number object
+representing $c$, then {\cf (real-part \var{z})} returns $a_1$ {\cf
+  (imag-part \var{z})} returns $a_2$, {\cf (magnitude \var{z})}
+returns $a_3$, and {\cf (angle \var{z})} returns $a_4$.
+
+\begin{scheme}
+(real-part 1.1+2.2i)              \ev 1.1 ; \textrm{approximately}
+(imag-part 1.1+2.2i)              \ev 2.2i ; \textrm{approximately}
+(magnitude 1.1@2.2)              \ev 1.1 ; \textrm{approximately}
+(angle 1.1@2.2)                  \ev 2.2 ; \textrm{approximately}
+
+(angle -1.0)         \lev 3.141592653589793 ; \textrm{approximately}
+(angle -1.0+0.0i)    \lev 3.141592653589793 ; \textrm{approximately}
+(angle -1.0-0.0i)    \lev -3.141592653589793 ; \textrm{approximately}\\\>; \textrm{if -0.0 is distinguished}
+(angle +inf.0)       \ev 0.0
+(angle -inf.0)       \lev 3.141592653589793 ; \textrm{approximately}%
+\end{scheme}
+
+Moreover, suppose \vari{x}, \varii{x} are such that either \vari{x}
+or \varii{x} is an infinity, then
+%
+\begin{scheme}
+(make-rectangular \vari{x} \varii{x}) \ev \var{z}
+(magnitude \var{z})              \ev +inf.0%
+\end{scheme}
+\end{entry}
+
+The {\cf make-polar}, {\cf magnitude}, and
+{\cf angle} procedures may return inexact results even when given exact
+arguments.
+
+\begin{scheme}
+(angle -1)                    \lev 3.141592653589793 ; \textrm{approximately}
+\end{scheme}
+\end{entry}
+
+\subsubsection{Numerical Input and Output}
+
+\begin{entry}{%
+\proto{number->string}{ z}{procedure}
+\rproto{number->string}{ z radix}{procedure}
+\rproto{number->string}{ z radix precision}{procedure}}
+
+\var{Radix} must be an exact integer object, either 2, 8, 10, or 16.  If
+omitted, \var{radix} defaults to 10.  If a \var{precision} is
+specified, then \var{z} must be an inexact complex number object,
+\var{precision} must be an exact positive integer object, and \var{radix}
+must be 10.  The {\cf number->string} procedure takes a number object and a
+radix and returns as a string an external representation of the given
+number object in the given radix such that
+%
+\begin{scheme}
+(let ((number \var{z}) (radix \var{radix}))
+  (eqv? (string->number
+          (number->string number radix)
+          radix)
+        number))%
+\end{scheme}
+%
+is true.  If no possible result makes this expression
+true, an exception with condition type
+{\cf\&implementation-\hp{}restriction} is raised.
+
+\begin{note}
+The error case can occur only when \var{z} is not a complex number object
+or is a complex number object with a non-rational real or imaginary part.
+\end{note}
+
+If a \var{precision} is specified, then the representations of the
+inexact real components of the result, unless they are infinite or
+NaN, specify an explicit \meta{mantissa width} \var{p}, and \var{p} is the
+least $\var{p} \geq \var{precision}$ for which the above expression is
+true.
+
+If \var{z} is inexact, the radix is 10, and the above expression and
+condition can be satisfied by a result that contains a decimal point,
+then the result contains a decimal point and is expressed using the
+minimum number of digits (exclusive of exponent, trailing zeroes, and
+mantissa width) needed to make the above expression and condition
+true~\cite{howtoprint,howtoread}; otherwise the format of the result
+is unspecified.
+
+The result returned by {\cf number->string} never contains an explicit
+radix prefix.
+\end{entry}
+
+\begin{entry}{%
+\proto{string->number}{ string}{procedure}
+\rproto{string->number}{ string radix}{procedure}}
+
+Returns a number object with maximally precise representation expressed by the
+given \var{string}.  \var{Radix} must be an exact integer object, either 2, 8, 10,
+or 16.  If supplied, \var{radix} is a default radix that may be overridden
+by an explicit radix prefix in \var{string} (e.g., {\tt "\#o177"}).  If \var{radix}
+is not supplied, then the default radix is 10.  If \var{string} is not
+a syntactically valid notation for a number object or a notation for a
+rational number object with a zero denominator, then {\cf string->number}
+returns \schfalse{}.
+%
+\begin{scheme}
+(string->number "100")                 \ev  100
+(string->number "100" 16)              \ev  256
+(string->number "1e2")                 \ev  100.0
+(string->number "0/0")                 \ev  \schfalse
+(string->number "+inf.0")              \ev  +inf.0
+(string->number "-inf.0")              \ev  -inf.0
+(string->number "+nan.0")              \ev  +nan.0%
+\end{scheme}
+
+\begin{note}
+  The {\cf string->number} procedure always returns a number object or
+  \schfalse{}; it never raises an exception.
+\end{note}
+\end{entry}
+
+
+\section{Booleans}
+\label{booleansection}
+
+The standard boolean objects for true and false have external representations
+\schtrue{} and \schfalse.\sharpindex{t}\sharpindex{f} However, of all
+objects, only \schfalse{} counts as false in
+conditional expressions.  See section~\ref{booleanvaluessection}.
+
+\begin{note}
+Programmers accustomed to other dialects of Lisp should be aware that
+Scheme distinguishes both \schfalse{} and the empty list \index{empty list}
+from each other and from the symbol \ide{nil}.
+\end{note}
+
+\begin{entry}{%
+\proto{not}{ obj}{procedure}}
+
+Returns \schtrue{} if \var{obj} is \schfalse, and returns
+\schfalse{} otherwise.
+
+\begin{scheme}
+(not \schtrue)   \ev  \schfalse
+(not 3)          \ev  \schfalse
+(not (list 3))   \ev  \schfalse
+(not \schfalse)  \ev  \schtrue
+(not '())        \ev  \schfalse
+(not (list))     \ev  \schfalse
+(not 'nil)       \ev  \schfalse%
+\end{scheme}
+
+\end{entry}
+
+
+\begin{entry}{%
+\proto{boolean?}{ obj}{procedure}}
+
+Returns \schtrue{} if \var{obj} is either \schtrue{} or
+\schfalse{} and returns \schfalse{} otherwise.
+
+\begin{scheme}
+(boolean? \schfalse)  \ev  \schtrue
+(boolean? 0)          \ev  \schfalse
+(boolean? '())        \ev  \schfalse%
+\end{scheme}
+
+\begin{entry}{%
+\proto{boolean=?}{ \vari{bool} \varii{bool} \variii{bool}
+  \dotsfoo}{procedure}}
+
+Returns \schtrue{} if the booleans are the same.
+\end{entry}
+
+\end{entry}
+
+ 
+\section{Pairs and lists}
+\label{listsection}
+
+A \defining{pair} is a
+compound structure with two fields called the car and cdr fields (for
+historical reasons).  Pairs are created by the procedure {\cf cons}.
+The car and cdr fields are accessed by the procedures {\cf car} and
+{\cf cdr}.
+
+Pairs are used primarily to represent lists.  A list can
+be defined recursively as either the empty list\index{empty list} or a pair whose
+cdr is a list.  More precisely, the set of lists is defined as the smallest
+set \var{X} such that
+
+\begin{itemize}
+\item The empty list is in \var{X}.
+\item If \var{list} is in \var{X}, then any pair whose cdr field contains
+      \var{list} is also in \var{X}.
+\end{itemize}
+
+The objects in the car fields of successive pairs of a list are the
+elements of the list.  For example, a two-element list is a pair whose car
+is the first element and whose cdr is a pair whose car is the second element
+and whose cdr is the empty list.  The length of a list is the number of
+elements, which is the same as the number of pairs.
+
+The empty list\mainindex{empty list} is a special object of its own type.
+It is not a pair.  It has no elements and its length is zero.
+
+\begin{note}
+The above definitions imply that all lists have finite length and are
+terminated by the empty list.
+\end{note}
+
+A chain of pairs not ending in the empty list is called an
+\defining{improper list}.  Note that an improper list is not a list.
+The list and dotted notations can be combined to represent
+improper lists:
+
+\begin{scheme}
+(a b c . d)%
+\end{scheme}
+
+is equivalent to
+
+\begin{scheme}
+(a . (b . (c . d)))%
+\end{scheme}
+
+Whether a given pair is a list depends upon what is stored in the cdr
+field.
+
+\begin{entry}{%
+\proto{pair?}{ obj}{procedure}}
+
+Returns \schtrue{} if \var{obj} is a pair, and otherwise
+returns \schfalse.
+
+\begin{scheme}
+(pair? '(a . b))        \ev  \schtrue
+(pair? '(a b c))        \ev  \schtrue
+(pair? '())             \ev  \schfalse
+(pair? '\#(a b))         \ev  \schfalse%
+\end{scheme}
+\end{entry}
+
+
+\begin{entry}{%
+\proto{cons}{ \vari{obj} \varii{obj}}{procedure}}
+
+Returns a newly allocated pair whose car is \vari{obj} and whose cdr is
+\varii{obj}.  The pair is guaranteed to be different (in the sense of
+{\cf eqv?}) from every existing object.
+
+\begin{scheme}
+(cons 'a '())           \ev  (a)
+(cons '(a) '(b c d))    \ev  ((a) b c d)
+(cons "a" '(b c))       \ev  ("a" b c)
+(cons 'a 3)             \ev  (a . 3)
+(cons '(a b) 'c)        \ev  ((a b) . c)%
+\end{scheme}
+\end{entry}
+
+
+\begin{entry}{%
+\proto{car}{ pair}{procedure}}
+
+Returns the contents of the car field of \var{pair}.
+
+\begin{scheme}
+(car '(a b c))          \ev  a
+(car '((a) b c d))      \ev  (a)
+(car '(1 . 2))          \ev  1
+(car '())               \xev \exception{\&assertion}%
+\end{scheme}
+ 
+\end{entry}
+
+
+\begin{entry}{%
+\proto{cdr}{ pair}{procedure}}
+
+Returns the contents of the cdr field of \var{pair}.
+
+\begin{scheme}
+(cdr '((a) b c d))      \ev  (b c d)
+(cdr '(1 . 2))          \ev  2
+(cdr '())               \xev \exception{\&assertion}%
+\end{scheme}
+ 
+\end{entry}
+
+
+
+\setbox0\hbox{\tt(cadr \var{pair})}
+\setbox1\hbox{procedure}
+
+
+\begin{entry}{%
+\proto{caar}{ pair}{procedure}
+\proto{cadr}{ pair}{procedure}
+\texonly
+\pproto{\hbox to 1\wd0 {\hfil$\vdots$\hfil}}{\hbox to 1\wd1 {\hfil$\vdots$\hfil}}
+\endtexonly
+\htmlonly $\vdots$ \endhtmlonly
+\proto{cdddar}{ pair}{procedure}
+\proto{cddddr}{ pair}{procedure}}
+
+These procedures are compositions of {\cf car} and {\cf cdr}, where
+for example {\cf caddr} could be defined by
+
+\begin{scheme}
+(define caddr (lambda (x) (car (cdr (cdr x))))){\rm.}%
+\end{scheme}
+
+Arbitrary compositions, up to four deep, are provided.  There are
+twenty-eight of these procedures in all.
+
+\end{entry}
+
+
+\begin{entry}{%
+\proto{null?}{ obj}{procedure}}
+
+Returns \schtrue{} if \var{obj} is the empty list\index{empty list},
+\schfalse otherwise.
+
+\end{entry}
+
+\begin{entry}{%
+\proto{list?}{ obj}{procedure}}
+
+Returns \schtrue{} if \var{obj} is a list, \schfalse{} otherwise.
+By definition, all lists are chains of pairs that have finite length and are terminated by
+the empty list.
+
+\begin{scheme}
+(list? '(a b c))     \ev  \schtrue
+(list? '())          \ev  \schtrue
+(list? '(a . b))     \ev  \schfalse%
+\end{scheme}
+\end{entry}
+
+
+\begin{entry}{%
+\proto{list}{ \var{obj} \dotsfoo}{procedure}}
+
+Returns a newly allocated list of its arguments.
+
+\begin{scheme}
+(list 'a (+ 3 4) 'c)            \ev  (a 7 c)
+(list)                          \ev  ()%
+\end{scheme}
+\end{entry}
+
+
+\begin{entry}{%
+\proto{length}{ list}{procedure}}
+
+Returns the length of \var{list}.
+
+\begin{scheme}
+(length '(a b c))               \ev  3
+(length '(a (b) (c d e)))       \ev  3
+(length '())                    \ev  0%
+\end{scheme}
+\end{entry}
+
+
+\begin{entry}{%
+\proto{append}{ list \dotsfoo{} obj}{procedure}}
+
+Returns a possibly improper list consisting of the elements of the first \var{list}
+followed by the elements of the other \var{list}s, with \var{obj} as
+the cdr of the final pair.
+An improper list results if \var{obj} is not a
+list.
+
+\begin{scheme}
+(append '(x) '(y))              \ev  (x y)
+(append '(a) '(b c d))          \ev  (a b c d)
+(append '(a (b)) '((c)))        \ev  (a (b) (c))
+(append '(a b) '(c . d))        \ev  (a b c . d)
+(append '() 'a)                 \ev  a%
+\end{scheme}
+
+If {\cf append} constructs a nonempty chain of pairs, it is always
+newly allocated.  If no pairs are allocated, \var{obj} is returned.
+\end{entry}
+
+
+\begin{entry}{%
+\proto{reverse}{ list}{procedure}}
+
+Returns a newly allocated list consisting of the elements of \var{list}
+in reverse order.
+
+\begin{scheme}
+(reverse '(a b c))              \ev  (c b a)
+(reverse '(a (b c) d (e (f))))  \lev  ((e (f)) d (b c) a)%
+\end{scheme}
+\end{entry}
+
+
+\begin{entry}{%
+\proto{list-tail}{ list k}{procedure}}
+
+\domain{\var{List} should be a list of size at least \var{k}.}
+The {\cf list-tail} procedure returns the subchain of pairs of \var{list}
+obtained by omitting the first \var{k} elements.
+
+\begin{scheme}
+(list-tail '(a b c d) 2)                 \ev  (c d)%
+\end{scheme}
+
+\implresp The implementation must check that \var{list} is a chain of
+pairs whose length is at least \var{k}.  It should not check that it is a chain
+of pairs beyond this length.
+\end{entry}
+
+
+\begin{entry}{%
+\proto{list-ref}{ list k}{procedure}}
+
+\domain{\var{List} must be a list whose length is at least $\var{k}+1$.}
+The {\cf list-tail} procedure returns the \var{k}th element of \var{list}.
+
+\begin{scheme}
+(list-ref '(a b c d) 2)                 \ev c%
+\end{scheme}
+
+\implresp The implementation must check that \var{list} is a chain of
+pairs whose length is at least $\var{k}+1$.  It should not check that it is a list
+of pairs beyond this length.
+\end{entry}
+
+
+\begin{entry}{%
+\proto{map}{ proc \vari{list} \varii{list} \dotsfoo}{procedure}}
+
+\domain{The \var{list}s should all have the same length.  \var{Proc}
+  should accept as many arguments as there are
+  \var{list}s and return a single value.  \var{Proc} should not mutate
+  any of the \var{list}s.}
+
+The {\cf map} procedure applies \var{proc} element-wise to the elements of the
+\var{list}s and returns a list of the results, in order.
+\var{Proc} is always called in the same dynamic environment 
+as {\cf map} itself.
+The order in which \var{proc} is applied to the elements of the
+\var{list}s is unspecified.
+If multiple returns occur from {\cf map}, the 
+values returned by earlier returns are not mutated.
+
+\begin{scheme}
+(map cadr '((a b) (d e) (g h)))   \lev  (b e h)
+
+(map (lambda (n) (expt n n))
+     '(1 2 3 4 5))                \lev  (1 4 27 256 3125)
+
+(map + '(1 2 3) '(4 5 6))         \ev  (5 7 9)
+
+(let ((count 0))
+  (map (lambda (ignored)
+         (set! count (+ count 1))
+         count)
+       '(a b)))                 \ev  (1 2) \var{or} (2 1)%
+\end{scheme}
+
+\implresp The implementation should check that the \var{list}s all
+have the same length.  The implementation must check the restrictions
+on \var{proc} to the extent performed by applying it as described.  An
+implementation may check whether \var{proc} is an appropriate argument
+before applying it.
+\end{entry}
+
+
+\begin{entry}{%
+\proto{for-each}{ proc \vari{list} \varii{list} \dotsfoo}{procedure}}
+
+\domain{The \var{list}s should all have the same length.  \var{Proc}
+  should accept as many arguments as there are
+  \var{list}s.  \var{Proc} should not mutate
+  any of the \var{list}s.}
+
+The {\cf for-each} procedure applies \var{proc}
+element-wise to the elements of the
+\var{list}s for its side effects,  in order from the first elements to the
+last.
+\var{Proc} is always called in the same dynamic environment 
+as {\cf for-each} itself.
+The return values of {\cf for-each} \areunspecified.
+
+\begin{scheme}
+(let ((v (make-vector 5)))
+  (for-each (lambda (i)
+              (vector-set! v i (* i i)))
+            '(0 1 2 3 4))
+  v)                                \ev  \#(0 1 4 9 16)
+
+(for-each (lambda (x) x) '(1 2 3 4)) \lev \theunspecified
+
+(for-each even? '()) \ev \theunspecified%
+\end{scheme}
+
+\implresp The implementation should check that the \var{list}s all
+have the same length.  The implementation must check the restrictions
+on \var{proc} to the extent performed by applying it as described.
+An implementation may check whether \var{proc} is an appropriate argument
+before applying it.
+
+\begin{note}
+Implementations of {\cf for-each} may or may not tail-call
+\var{proc} on the last elements.
+\end{note}
+
+\end{entry}
+
+
+\section{Symbols}
+\label{symbolsection}
+
+Symbols are objects whose usefulness rests on the fact that two
+symbols are identical (in the sense of {\cf eq?}, {\cf eqv?} and {\cf equal?}) if and only if their
+names are spelled the same way. 
+A symbol literal is formed using {\cf quote}.
+
+\begin{entry}{%
+\proto{symbol?}{ obj}{procedure}}
+
+Returns \schtrue{} if \var{obj} is a symbol, otherwise returns \schfalse.
+
+\begin{scheme}
+(symbol? 'foo)          \ev  \schtrue
+(symbol? (car '(a b)))  \ev  \schtrue
+(symbol? "bar")         \ev  \schfalse
+(symbol? 'nil)          \ev  \schtrue
+(symbol? '())           \ev  \schfalse
+(symbol? \schfalse)     \ev  \schfalse%
+\end{scheme}
+\end{entry}
+
+
+\begin{entry}{%
+\proto{symbol->string}{ symbol}{procedure}}
+
+Returns the name of \var{symbol} as an immutable string.  
+
+\begin{scheme}
+(symbol->string 'flying-fish)     
+                                  \ev  "flying-fish"
+(symbol->string 'Martin)          \ev  "Martin"
+(symbol->string
+   (string->symbol "Malvina"))     
+                                  \ev  "Malvina"%
+\end{scheme}
+\end{entry}
+
+\begin{entry}{%
+\proto{symbol=?}{ \vari{symbol} \varii{symbol} \variii{symbol}
+  \dotsfoo}{procedure}}
+
+Returns \schtrue{} if the symbols are the same, i.e., if their names
+are spelled the same.
+\end{entry}
+
+\begin{entry}{%
+\proto{string->symbol}{ string}{procedure}}
+
+Returns the symbol whose name is \var{string}. 
+
+\begin{scheme}
+(eq? 'mISSISSIppi 'mississippi)  \lev  \schfalse
+(string->symbol "mISSISSIppi")  \lev%
+  {\rm{}the symbol with name} "mISSISSIppi"
+(eq? 'bitBlt (string->symbol "bitBlt"))     \lev  \schtrue
+(eq? 'JollyWog
+     (string->symbol
+       (symbol->string 'JollyWog)))  \lev  \schtrue
+(string=? "K. Harper, M.D."
+          (symbol->string
+            (string->symbol "K. Harper, M.D.")))  \lev  \schtrue%
+\end{scheme}
+
+\end{entry}
+
+
+\section{Characters}
+\label{charactersection}
+
+\mainindex{Unicode}
+\mainindex{scalar value}
+
+\defining{Characters} are objects that represent Unicode scalar
+values~\cite{Unicode}.
+
+\begin{note}
+  Unicode defines a standard mapping between sequences of
+  \textit{Unicode scalar values}\mainindex{Unicode scalar
+    value}\mainindex{scalar value} (integers in the range 0 to
+  \#x10FFFF, excluding the range \#xD800 to \#xDFFF) in the latest
+  version of the standard and human-readable ``characters''. More
+  precisely, Unicode distinguishes between glyphs, which are printed
+  for humans to read, and characters, which are abstract entities that
+  map to glyphs (sometimes in a way that's sensitive to surrounding
+  characters).  Furthermore, different sequences of scalar values
+  sometimes correspond to the same character.  The relationships among
+  scalar, characters, and glyphs are subtle and complex.
+
+  Despite this complexity, most things that a literate human would
+  call a ``character'' can be represented by a single Unicode scalar
+  value (although several sequences of Unicode scalar values may
+  represent that same character). For example, Roman letters, Cyrillic
+  letters, Hebrew consonants, and most Chinese characters fall into
+  this category.
+  
+  Unicode scalar values exclude the range \#xD800 to \#xDFFF, which
+  are part of the range of Unicode \textit{code points}\mainindex{code
+    point}.  However, the Unicode code points in this range,
+  the so-called \textit{surrogates}\mainindex{surrogate}, are an
+  artifact of the UTF-16 encoding, and can only appear in specific
+  Unicode encodings, and even then only in pairs that encode scalar
+  values.  Consequently, all characters represent code points, but the
+  surrogate code points do not have representations as characters.
+\end{note}
+
+\begin{entry}{%
+\proto{char?}{ obj}{procedure}}
+
+Returns \schtrue{} if \var{obj} is a character, otherwise returns \schfalse.
+
+\end{entry}
+
+\begin{entry}{%
+\proto{char->integer}{ char}{procedure}
+\proto{integer->char}{ \vr{sv}}{procedure}}
+
+\domain{\var{Sv} must be a Unicode scalar value, i.e., a non-negative exact
+  integer object in $\left[0, \#x\textrm{D7FF}\right] \cup
+  \left[\#x\textrm{E000}, \#x\textrm{10FFFF}\right]$.}
+
+Given a character, {\cf char\coerce{}integer} returns its Unicode scalar value
+as an exact integer object.  
+For a Unicode scalar value \var{sv}, {\cf integer\coerce{}char}
+returns its associated character.
+
+\begin{scheme}
+(integer->char 32) \ev \sharpsign\backwhack{}space
+(char->integer (integer->char 5000))
+\ev 5000
+(integer->char \sharpsign{}\backwhack{}xD800) \xev \exception{\&assertion}%
+\end{scheme}
+\end{entry}
+
+
+\begin{entry}{%
+\proto{char=?}{ \vari{char} \varii{char} \variii{char} \dotsfoo}{procedure}
+\proto{char<?}{ \vari{char} \varii{char} \variii{char} \dotsfoo}{procedure}
+\proto{char>?}{ \vari{char} \varii{char} \variii{char} \dotsfoo}{procedure}
+\proto{char<=?}{ \vari{char} \varii{char} \variii{char} \dotsfoo}{procedure}
+\proto{char>=?}{ \vari{char} \varii{char} \variii{char} \dotsfoo}{procedure}}
+
+\label{characterequality}
+These procedures impose a total ordering on the set of characters
+according to their Unicode scalar values.
+
+\begin{scheme}
+(char<? \sharpsign\backwhack{}z \sharpsign\backwhack{}\ss) \ev \schtrue
+(char<? \sharpsign\backwhack{}z \sharpsign\backwhack{}Z) \ev \schfalse%
+\end{scheme}
+
+\end{entry}
+
+\section{Strings}
+\label{stringsection}
+
+Strings are sequences of characters.  
+
+\vest The {\em length} of a string is the number of characters that it
+contains.  This number is fixed when the
+string is created.  The \defining{valid indices} of a string are the
+integers less than the length of the string.  The first
+character of a string has index 0, the second has index 1, and so on.
+
+\begin{entry}{%
+\proto{string?}{ obj}{procedure}}
+
+Returns \schtrue{} if \var{obj} is a string, otherwise returns \schfalse.
+\end{entry}
+
+
+\begin{entry}{%
+\proto{make-string}{ k}{procedure}
+\rproto{make-string}{ k char}{procedure}}
+
+Returns a newly allocated string of
+length \var{k}.  If \var{char} is given, then all elements of the string
+are initialized to \var{char}, otherwise the contents of the
+\var{string} are unspecified.
+
+\end{entry}
+
+\begin{entry}{%
+\proto{string}{ char \dotsfoo}{procedure}}
+
+Returns a newly allocated string composed of the arguments.
+
+\end{entry}
+
+\begin{entry}{%
+\proto{string-length}{ string}{procedure}}
+
+Returns the number of characters in the given \var{string} as an exact
+integer object.
+\end{entry}
+
+
+\begin{entry}{%
+\proto{string-ref}{ string k}{procedure}}
+
+\domain{\var{K} must be a valid index of \var{string}.}
+The {\cf string-ref} procedure returns character \vr{k} of \var{string} using zero-origin indexing.
+
+\begin{note}
+  Implementors should make {\cf string-ref} run in constant
+  time.
+\end{note}
+\end{entry}
+
+\begin{entry}{%
+\proto{string=?}{ \vari{string} \varii{string} \variii{string} \dotsfoo}{procedure}}
+
+Returns \schtrue{} if the strings are the same length and contain the same
+characters in the same positions.  Otherwise, the {\cf string=?}
+procedure returns \schfalse.
+
+\begin{scheme}
+(string=? "Stra\ss{}e" "Strasse") \lev \schfalse%
+\end{scheme}
+\end{entry}
+
+\begin{entry}{%
+\proto{string<?}{ \vari{string} \varii{string} \variii{string} \dotsfoo}{procedure}
+\proto{string>?}{ \vari{string} \varii{string} \variii{string} \dotsfoo}{procedure}
+\proto{string<=?}{ \vari{string} \varii{string} \variii{string} \dotsfoo}{procedure}
+\proto{string>=?}{ \vari{string} \varii{string} \variii{string} \dotsfoo}{procedure}}
+
+These procedures are the lexicographic extensions to strings of the
+corresponding orderings on characters.  For example, {\cf string<?}\ is
+the lexicographic ordering on strings induced by the ordering
+{\cf char<?}\ on characters.  If two strings differ in length but
+are the same up to the length of the shorter string, the shorter string
+is considered to be lexicographically less than the longer string.
+
+\begin{scheme}
+(string<? "z" "\ss") \ev \schtrue
+(string<? "z" "zz") \ev \schtrue
+(string<? "z" "Z") \ev \schfalse%
+\end{scheme}
+\end{entry}
+
+
+\begin{entry}{%
+\proto{substring}{ string start end}{procedure}}
+
+\domain{\var{String} must be a string, and \var{start} and \var{end}
+must be exact integer objects satisfying
+$$0 \leq \var{start} \leq \var{end} \leq \hbox{\tt(string-length \var{string})\rm.}$$}
+The {\cf substring} procedure returns a newly allocated string formed from the characters of
+\var{string} beginning with index \var{start} (inclusive) and ending with index
+\var{end} (exclusive).
+\end{entry}
+
+
+\begin{entry}{%
+\proto{string-append}{ \var{string} \dotsfoo}{procedure}}
+
+Returns a newly allocated string whose characters form the concatenation of the
+given strings.
+\end{entry}
+
+
+\begin{entry}{%
+\proto{string->list}{ string}{procedure}
+\proto{list->string}{ list}{procedure}}
+
+\domain{\var{List} must be a list of characters.}
+The {\cf string\coerce{}list} procedure returns a newly allocated list of the
+characters that make up the given string.  The {\cf
+  list\coerce{}string} procedure
+returns a newly allocated string formed from the characters in 
+\var{list}. The {\cf string\coerce{}list}
+and {\cf list\coerce{}string} procedures are
+inverses so far as {\cf equal?}\ is concerned.  
+\end{entry}
+
+\begin{entry}{%
+\proto{string-for-each}{ proc \vari{string} \varii{string} \dotsfoo}{procedure}}
+
+\domain{The \var{string}s must all have the same length.  \var{Proc}
+  should accept as many arguments as there are {\it string}s.}
+The {\cf string-for-each} procedure applies \var{proc}
+element-wise to the characters of the
+\var{string}s for its side effects,  in order from the first characters to the
+last.
+\var{Proc} is always called in the same dynamic environment 
+as {\cf string-for-each} itself.
+The return values of {\cf string-for-each} \areunspecified.
+
+Analogous to {\cf for-each}.
+
+\implresp The implementation must check the restrictions
+on \var{proc} to the extent performed by applying it as described.
+An
+implementation may check whether \var{proc} is an appropriate argument
+before applying it.
+\end{entry}
+
+\begin{entry}{%
+\proto{string-copy}{ string}{procedure}}
+
+Returns a newly allocated copy of the given \var{string}.
+
+\end{entry}
+
+\section{Vectors}
+\label{vectorsection}
+
+Vectors are heterogeneous structures whose elements are indexed
+by integers.  A vector typically occupies less space than a list
+of the same length, and the average time needed to access a randomly
+chosen element is typically less for the vector than for the list.
+
+\vest The {\em length} of a vector is the number of elements that it
+contains.  This number is a non-negative integer that is fixed when the
+vector is created.
+The {\em valid indices}\index{valid indices} of a
+vector are the exact non-negative integer objects less than the length of the
+vector.  The first element in a vector is indexed by zero, and the last
+element is indexed by one less than the length of the vector.
+
+Like list constants, vector constants must be quoted:
+
+\begin{scheme}
+'\#(0 (2 2 2 2) "Anna")  \lev  \#(0 (2 2 2 2) "Anna")%
+\end{scheme}
+
+\begin{entry}{%
+\proto{vector?}{ obj}{procedure}}
+ 
+Returns \schtrue{} if \var{obj} is a vector.  Otherwise the procedure
+returns \schfalse.
+\end{entry}
+
+
+\begin{entry}{%
+\proto{make-vector}{ k}{procedure}
+\rproto{make-vector}{ k fill}{procedure}}
+
+Returns a newly allocated vector of \var{k} elements.  If a second
+argument is given, then each element is initialized to \var{fill}.
+Otherwise the initial contents of each element is unspecified.
+
+\end{entry}
+
+
+\begin{entry}{%
+\proto{vector}{ obj \dotsfoo}{procedure}}
+
+Returns a newly allocated vector whose elements contain the given
+arguments.  Analogous to {\cf list}.
+
+\begin{scheme}
+(vector 'a 'b 'c)               \ev  \#(a b c)%
+\end{scheme}
+\end{entry}
+
+
+\begin{entry}{%
+\proto{vector-length}{ vector}{procedure}}
+
+Returns the number of elements in \var{vector} as an exact integer object.
+\end{entry}
+
+
+\begin{entry}{%
+\proto{vector-ref}{ vector k}{procedure}}
+
+\domain{\var{K} must be a valid index of \var{vector}.}
+The {\cf vector-ref} procedure returns the contents of element \vr{k} of
+\var{vector}.
+
+\begin{scheme}
+(vector-ref '\#(1 1 2 3 5 8 13 21) 5)  \lev  8%
+\end{scheme}
+\end{entry}
+
+
+\begin{entry}{%
+\proto{vector-set!}{ vector k obj}{procedure}}
+
+\domain{\var{K} must be a valid index of \var{vector}.}
+The {\cf vector-set!} procedure stores \var{obj} in element \vr{k} of
+\var{vector}, and returns \unspecifiedreturn.
+
+Passing an immutable vector to {\cf vector-set!} should cause an exception
+with condition type {\cf\&assertion} to be raised.
+
+\begin{scheme}
+(let ((vec (vector 0 '(2 2 2 2) "Anna")))
+  (vector-set! vec 1 '("Sue" "Sue"))
+  vec)      \lev  \#(0 ("Sue" "Sue") "Anna")
+
+(vector-set! '\#(0 1 2) 1 "doe")  \lev  \unspecified
+             ; \textrm{constant vector}
+             ; \textrm{should raise} \exception{\&assertion}%
+\end{scheme}
+
+\end{entry}
+
+
+\begin{entry}{%
+\proto{vector->list}{ vector}{procedure}
+\proto{list->vector}{ list}{procedure}}
+
+The {\cf vector->list} procedure returns a newly allocated list of the objects contained
+in the elements of \var{vector}.  The {\cf list->vector} procedure returns a newly
+created vector initialized to the elements of the list \var{list}.
+
+\begin{scheme}
+(vector->list '\#(dah dah didah))  \lev  (dah dah didah)
+(list->vector '(dididit dah))   \lev  \#(dididit dah)%
+\end{scheme}
+\end{entry}
+
+
+\begin{entry}{%
+\proto{vector-fill!}{ vector fill}{procedure}}
+
+Stores \var{fill} in every element of \var{vector}
+and returns \unspecifiedreturn.
+\end{entry}
+
+\begin{entry}{%
+\proto{vector-map}{ proc \vari{vector} \varii{vector} \dotsfoo}{procedure}}
+
+\domain{The \var{vector}s must all have the same length.  \var{Proc}
+  should accept as many arguments as there are {\it vector}s and return a
+  single value.}
+
+The {\cf vector-map} procedure applies \var{proc} element-wise to the elements of the
+\var{vector}s and returns a vector of the results, in order.
+\var{Proc} is always called in the same dynamic environment 
+as {\cf vector-map} itself.
+The order in which \var{proc} is applied to the elements of the
+\var{vector}s is unspecified.
+If multiple returns occur from {\cf vector-map}, the return
+values returned by earlier returns are not mutated.
+
+
+Analogous to {\cf map}.
+
+\implresp The implementation must check the restrictions
+on \var{proc} to the extent performed by applying it as described.
+An
+implementation may check whether \var{proc} is an appropriate argument
+before applying it.
+\end{entry}
+
+
+\begin{entry}{%
+\proto{vector-for-each}{ proc \vari{vector} \varii{vector} \dotsfoo}{procedure}}
+
+\domain{The \var{vector}s must all have the same length.  \var{Proc}
+  should accept as many arguments as there are {\it vector}s.}
+The {\cf vector-for-each} procedure applies \var{proc}
+element-wise to the elements of the
+\var{vector}s for its side effects,  in order from the first elements to the
+last.
+\var{Proc} is always called in the same dynamic environment 
+as {\cf vector-for-each} itself.
+The return values of {\cf vector-for-each} \areunspecified.
+
+Analogous to {\cf for-each}.
+
+\implresp The implementation must check the restrictions
+on \var{proc} to the extent performed by applying it as described.
+An
+implementation may check whether \var{proc} is an appropriate argument
+before applying it.
+\end{entry}
+
+\section{Errors and violations}
+\label{errorviolation}
+
+\begin{entry}{%
+\proto{error}{ who message \vari{irritant} \dotsfoo}{procedure}
+\proto{assertion-violation}{ who message \vari{irritant} \dotsfoo}{procedure}}
+
+\domain{\var{Who} must be a string or a symbol or \schfalse{}.
+  \var{Message} must be a string.
+  The \var{irritant}s are arbitrary objects.}
+
+These procedures raise an exception.  The {\cf error}
+procedure should be called when an error has occurred, typically caused by
+something that has gone wrong in the interaction of the program with the
+external world or the user.  The {\cf assertion-violation} procedure
+should be called when an invalid call to a procedure was made, either passing an
+invalid number of arguments, or passing an argument that it is not
+specified to handle.
+
+The \var{who} argument should describe the procedure or operation that
+detected the exception.  The \var{message} argument should describe
+the exceptional situation.  The \var{irritant}s should be the arguments
+to the operation that detected the operation.
+
+The condition object provided with the exception (see
+library chapter~\extref{lib:exceptionsconditionschapter}{Exceptions
+  and conditions}) has the following condition types:
+%
+\begin{itemize}
+\item If \var{who} is not \schfalse, the condition has condition type
+  {\cf \&who}, with \var{who} as the value of its field.  In
+  that case, \var{who} should be the name of the procedure or entity that
+  detected the exception.  If it is \schfalse, the condition does not
+  have condition type {\cf \&who}.
+\item The condition has condition type {\cf \&message}, with
+  \var{message} as the value of its field.
+\item The condition has condition type {\cf \&irritants}, and its
+  field has as its value a list of the \var{irritant}s.
+\end{itemize}
+%
+Moreover, the condition created by {\cf error} has condition type 
+{\cf \&error}, and the condition created by {\cf assertion-\hp{}violation} has
+condition type {\cf \&assertion}.
+
+\begin{scheme}
+(define (fac n)
+  (if (not (integer-valued? n))
+      (assertion-violation
+       'fac "non-integral argument" n))
+  (if (negative? n)
+      (assertion-violation
+       'fac "negative argument" n))
+  (letrec
+    ((loop (lambda (n r)
+             (if (zero? n)
+                 r
+                 (loop (- n 1) (* r n))))))
+      (loop n 1)))
+
+(fac 5) \ev 120
+(fac 4.5) \xev \exception{\&assertion}
+(fac -3) \xev \exception{\&assertion}%
+\end{scheme}
+\end{entry}
+
+\begin{entry}{%
+\proto{assert}{ \hyper{expression}}{\exprtype}}
+
+An {\cf assert} form is evaluated by evaluating \hyper{expression}.
+If \hyper{expression} returns a true value, that value is returned
+from the {\cf assert} expression.  If \hyper{expression} returns
+\schfalse, an exception with condition types {\cf \&assertion} and
+{\cf \&message} is raised.  The message provided in the condition
+object is implementation-dependent.
+
+\begin{note}
+  Implementations should exploit the fact that
+  {\cf assert} is syntax to provide as much information as possible
+  about the location of the assertion failure.
+\end{note}
+\end{entry}
+
+\section{Control features}
+\label{controlsection}
+\label{valuessection}
+ 
+This chapter describes various primitive procedures which control the
+flow of program execution in special ways.
+
+\begin{entry}{%
+\proto{apply}{ proc \vari{arg} $\ldots$ rest-args}{procedure}}
+
+\domain{\var{Rest-args} must be a list.
+ \var{Proc} should accept $n$ arguments, where $n$ is
+  number of \var{arg}s plus the length of \var{rest-args}.}
+The {\cf apply} procedure calls \var{proc} with the elements of the list
+{\cf(append (list \vari{arg} \dotsfoo) \var{rest-args})} as the actual
+arguments.
+
+If a call to {\cf apply} occurs in a tail context, the call
+to \var{proc} is also in a tail context.
+
+\begin{scheme}
+(apply + (list 3 4))              \ev  7
+
+(define compose
+  (lambda (f g)
+    (lambda args
+      (f (apply g args)))))
+
+((compose sqrt *) 12 75)              \ev  30%
+\end{scheme}
+\end{entry}
+
+
+\begin{entry}{%
+\proto{call-with-current-continuation}{ proc}{procedure}
+\proto{call/cc}{ proc}{procedure}}
+
+\label{continuations} \domain{\var{Proc} should accept one
+argument.} The procedure {\cf call-with-current-continuation} 
+(which is the same as the procedure {\cf call/cc}) packages
+the current continuation as an ``escape
+procedure''\mainindex{escape procedure} and passes it as an argument to
+\var{proc}.  The escape procedure is a Scheme procedure that, if it is
+later called, will abandon whatever continuation is in effect at that later
+time and will instead reinstate the continuation that was in effect
+when the escape procedure was created.  Calling the escape procedure
+may cause the invocation of \var{before} and \var{after} procedures installed using
+\ide{dynamic-wind}.
+
+The escape procedure accepts the same number of arguments as the
+continuation of the original call to {\cf call-\hp{}with-\hp{}current-\hp{}continuation}.
+
+The escape procedure that is passed to \var{proc} has
+unlimited extent just like any other procedure in Scheme.  It may be stored
+in variables or data structures and may be called as many times as desired.
+
+If a call to {\cf call-with-current-continuation} occurs in a tail
+context, the call to \var{proc} is also in a tail context.
+
+The following examples show only some ways in which
+{\cf call-with-current-continuation} is used.  If all real uses were as
+simple as these examples, there would be no need for a procedure with
+the power of {\cf call-\hp{}with-\hp{}current-\hp{}continuation}.
+
+\begin{scheme}
+(call-with-current-continuation
+  (lambda (exit)
+    (for-each (lambda (x)
+                (if (negative? x)
+                    (exit x)))
+              '(54 0 37 -3 245 19))
+    \schtrue))                        \ev  -3
+
+(define list-length
+  (lambda (obj)
+    (call-with-current-continuation
+      (lambda (return)
+        (letrec ((r
+                  (lambda (obj)
+                    (cond ((null? obj) 0)
+                          ((pair? obj)
+                           (+ (r (cdr obj)) 1))
+                          (else (return \schfalse))))))
+          (r obj))))))
+
+(list-length '(1 2 3 4))            \ev  4
+
+(list-length '(a b . c))            \ev  \schfalse%
+
+(call-with-current-continuation procedure?)
+                            \ev  \schtrue%
+\end{scheme}
+
+\begin{note}
+  Calling an escape procedure reenters the dynamic extent of the call
+  to {\cf call-with-current-continuation}, and thus restores its
+  dynamic environment; see section~\ref{dynamicenvironmentsection}.
+\end{note}
+
+\end{entry}
+
+\begin{entry}{%
+\proto{values}{ obj $\ldots$}{procedure}}
+
+Delivers all of its arguments to its continuation.
+The {\cf values} procedure might be defined as follows:
+\begin{scheme}
+(define (values . things)
+  (call-with-current-continuation 
+    (lambda (cont) (apply cont things))))%
+\end{scheme}
+
+The continuations of all non-final expressions within a sequence of
+expressions, such as in {\cf lambda}, {\cf begin}, {\cf let}, {\cf
+  let*}, {\cf letrec}, {\cf letrec*}, {\cf let-values}, {\cf
+  let*-values}, {\cf case}, and {\cf cond} forms, usually take an
+arbitrary number of values.
+
+Except for these and the continuations created by {\cf
+  call-\hp{}with-\hp{}values}, {\cf let-values}, and {\cf let*-values},
+continuations implicitly accepting a single value, such as the
+continuations of \hyper{operator} and \hyper{operand}s of procedure
+calls or the \hyper{test} expressions in conditionals, take exactly
+one value.  The effect of passing an inappropriate number of values to
+such a continuation is undefined.
+\end{entry}
+
+\begin{entry}{%
+\proto{call-with-values}{ producer consumer}{procedure}}
+
+\domain{\var{Producer} must be a procedure and should accept zero
+  arguments.  \var{Consumer} must be a procedure and should accept as many
+  values as \var{producer} returns.}
+The {\cf call-\hp{}with-\hp{}values} procedure calls \var{producer} with no arguments and
+a continuation that, when passed some values, calls the
+\var{consumer} procedure with those values as arguments.
+The continuation for the call to \var{consumer} is the
+continuation of the call to {\tt call-with-values}.
+
+\begin{scheme}
+(call-with-values (lambda () (values 4 5))
+                  (lambda (a b) b))
+                                                   \ev  5
+
+(call-with-values * -)                             \ev  -1%
+\end{scheme}
+
+If a call to {\cf call-with-values} occurs in a tail context, the call
+to \var{consumer} is also in a tail context.
+
+\implresp After \var{producer} returns, the implementation must check
+that \var{consumer} accepts as many values as \var{consumer} has
+returned.
+\end{entry}
+
+\begin{entry}{%
+\proto{dynamic-wind}{ before thunk after}{procedure}}
+
+\domain{\var{Before}, \var{thunk}, and \var{after} must be procedures,
+  and each should accept zero arguments.  These procedures may return
+  any number of values.}  The {\cf dynamic-wind} procedure calls
+\var{thunk} without arguments, returning the results of this call.
+Moreover, {\cf dynamic-wind} calls \var{before} without arguments
+whenever the dynamic extent of the call to \var{thunk} is entered, and
+\var{after} without arguments whenever the dynamic extent of the call
+to \var{thunk} is exited.  Thus, in the absence of calls to escape
+procedures created by {\cf call-with-current-continuation}, {\cf
+  dynamic-wind} calls \var{before}, \var{thunk}, and \var{after}, in
+that order.
+
+While the calls to \var{before} and \var{after} are not considered to be
+within the dynamic extent of the call to \var{thunk}, calls to the \var{before}
+and \var{after} procedures of any other calls to {\cf dynamic-wind} that occur
+within the dynamic extent of the call to \var{thunk} are considered to be
+within the dynamic extent of the call to \var{thunk}.
+
+More precisely, an escape procedure transfers control out of the
+dynamic extent of a set of zero or more active {\cf dynamic-wind}
+calls $x\ \dots$ and transfer control into the dynamic extent
+of a set of zero or more active {\cf dynamic-wind} calls
+$y\ \dots$.  
+It leaves the dynamic extent of the most recent $x$ and calls without
+arguments the corresponding \var{after} procedure.
+If the \var{after} procedure returns, the escape procedure proceeds to
+the next most recent $x$, and so on.
+Once each $x$ has been handled in this manner,
+the escape procedure calls without arguments the \var{before} procedure
+corresponding to the least recent $y$.
+If the \var{before} procedure returns, the escape procedure reenters the
+dynamic extent of the least recent $y$ and proceeds with the next least
+recent $y$, and so on.
+Once each $y$ has been handled in this manner, control is transferred to
+the continuation packaged in the escape procedure.
+
+\implresp The implementation must check the restrictions on
+\var{thunk} and \var{after} only if they are actually called.
+
+\begin{scheme}
+(let ((path '())
+      (c \#f))
+  (let ((add (lambda (s)
+               (set! path (cons s path)))))
+    (dynamic-wind
+      (lambda () (add 'connect))
+      (lambda ()
+        (add (call-with-current-continuation
+               (lambda (c0)
+                 (set! c c0)
+                 'talk1))))
+      (lambda () (add 'disconnect)))
+    (if (< (length path) 4)
+        (c 'talk2)
+        (reverse path))))
+    \lev (connect talk1 disconnect
+               connect talk2 disconnect)
+
+(let ((n 0))
+  (call-with-current-continuation
+    (lambda (k)
+      (dynamic-wind
+        (lambda ()
+          (set! n (+ n 1))
+          (k))
+        (lambda ()
+          (set! n (+ n 2)))
+        (lambda ()
+          (set! n (+ n 4))))))
+  n) \ev 1
+
+(let ((n 0))
+  (call-with-current-continuation
+    (lambda (k)
+      (dynamic-wind
+        values
+        (lambda ()
+          (dynamic-wind
+            values
+            (lambda ()
+              (set! n (+ n 1))
+              (k))
+            (lambda ()
+              (set! n (+ n 2))
+              (k))))
+        (lambda ()
+          (set! n (+ n 4))))))
+  n) \ev 7%
+\end{scheme}
+
+\begin{note}
+  Entering a dynamic extent restores its dynamic environment; see
+  section~\ref{dynamicenvironmentsection}.
+\end{note}
+\end{entry}
+
+\section{Iteration}\unsection
+
+\begin{entry}{%
+\rproto{let}{ \hyper{variable} \hyper{bindings} \hyper{body}}{\exprtype}}
+
+\label{namedlet}
+``Named {\cf let}'' is a variant on the syntax of \ide{let} that provides
+a general looping construct and may also be used to express
+recursion.
+It has the same syntax and semantics as ordinary {\cf let}
+except that \hyper{variable} is bound within \hyper{body} to a procedure
+whose parameters are the bound variables and whose body is
+\hyper{body}.  Thus the execution of \hyper{body} may be repeated by
+invoking the procedure named by \hyper{variable}.
+
+%                                              |  <-- right margin
+\begin{scheme}
+(let loop ((numbers '(3 -2 1 6 -5))
+           (nonneg '())
+           (neg '()))
+  (cond ((null? numbers) (list nonneg neg))
+        ((>= (car numbers) 0)
+         (loop (cdr numbers)
+               (cons (car numbers) nonneg)
+               neg))
+        ((< (car numbers) 0)
+         (loop (cdr numbers)
+               nonneg
+               (cons (car numbers) neg))))) %
+  \lev  ((6 1 3) (-5 -2))%
+\end{scheme}
+
+\end{entry}
+
+\section{Quasiquotation}\unsection
+\label{quasiquotesection}
+
+\begin{entry}{%
+\proto{quasiquote}{ \hyper{qq template}}{\exprtype}
+\litproto{unquote}
+\litproto{unquote-splicing}}
+
+``Backquote'' or ``quasiquote''\index{backquote} expressions are useful
+for constructing a list or vector structure when some but not all of the
+desired structure is known in advance.  
+
+\syntax \hyper{Qq template} should be as specified by the grammar at
+the end of this entry.
+
+\semantics If no
+{\cf unquote} or {\cf unquote-splicing} forms
+appear within the \hyper{qq template}, the result of
+evaluating
+{\cf (quasiquote \hyper{qq template})} is equivalent to the result of evaluating
+{\cf (quote \hyper{qq template})}.
+
+If an {\cf (unquote \hyper{expression} \dotsfoo)} form appears inside a
+\hyper{qq template}, however, the \hyper{expression}s are evaluated
+(``unquoted'') and their results are inserted into the structure instead
+of the {\cf unquote} form.
+
+If an {\cf (unquote-splicing \hyper{expression} \dotsfoo)} form
+appears inside a \hyper{qq template}, then the \hyper{expression}s must
+evaluate to lists; the opening and closing parentheses of the lists are
+then ``stripped away'' and the elements of the lists are inserted in
+place of the {\cf unquote-splicing} form.
+
+Any {\cf unquote-splicing} or multi-operand {\cf unquote} form must
+appear only within a list or vector \hyper{qq template}.
+
+As noted in section~\ref{abbreviationsection},
+{\cf (quasiquote \hyper{qq template})} may be abbreviated
+\backquote\hyper{qq template},
+{\cf (unquote \hyper{expression})} may be abbreviated
+{\cf,}\hyper{expression}, and
+{\cf (unquote-splicing \hyper{expression})} may be abbreviated
+{\cf,}\atsign\hyper{expression}.
+
+\begin{scheme}
+`(list ,(+ 1 2) 4)  \ev  (list 3 4)
+(let ((name 'a)) `(list ,name ',name)) %
+          \lev  (list a (quote a))
+`(a ,(+ 1 2) ,@(map abs '(4 -5 6)) b) %
+          \lev  (a 3 4 5 6 b)
+`(({\cf foo} ,(- 10 3)) ,@(cdr '(c)) . ,(car '(cons))) %
+          \lev  ((foo 7) . cons)
+`\#(10 5 ,(sqrt 4) ,@(map sqrt '(16 9)) 8) %
+          \lev  \#(10 5 2 4 3 8)
+(let ((name 'foo))
+  `((unquote name name name)))%
+          \lev (foo foo foo)
+(let ((name '(foo)))
+  `((unquote-splicing name name name)))%
+          \lev (foo foo foo)
+(let ((q '((append x y) (sqrt 9))))
+  ``(foo ,,@q)) \lev `(foo
+                 (unquote (append x y) (sqrt 9)))
+(let ((x '(2 3))
+      (y '(4 5)))
+  `(foo (unquote (append x y) (sqrt 9)))) \lev (foo (2 3 4 5) 3)%
+\end{scheme}
+
+Quasiquote forms may be nested.  Substitutions are made only for
+unquoted components appearing at the same nesting level
+as the outermost {\cf quasiquote}.  The nesting level increases by one inside
+each successive quasiquotation, and decreases by one inside each
+unquotation.
+
+\begin{scheme}
+`(a `(b ,(+ 1 2) ,(foo ,(+ 1 3) d) e) f) %
+          \lev  (a `(b ,(+ 1 2) ,(foo 4 d) e) f)
+(let ((name1 'x)
+      (name2 'y))
+  `(a `(b ,,name1 ,',name2 d) e)) %
+          \lev  (a `(b ,x ,'y d) e)%
+\end{scheme}
+
+A {\cf quasiquote} expression may return either fresh, mutable objects
+or literal structure for any structure that is constructed at run time
+during the evaluation of the expression.  Portions that do not need to
+be rebuilt are always literal.  Thus,
+%
+\begin{scheme}
+(let ((a 3)) `((1 2) ,a ,4 ,'five 6))%
+\end{scheme}
+%
+may be equivalent to either of the following expressions:
+%
+\begin{scheme}
+'((1 2) 3 4 five 6)
+(let ((a 3)) 
+  (cons '(1 2)
+        (cons a (cons 4 (cons 'five '(6))))))%
+\end{scheme}
+%
+However, it is not equivalent to this expression:
+%
+\begin{scheme}
+(let ((a 3)) (list (list 1 2) a 4 'five 6))
+\end{scheme}
+%
+It is a syntax violation if any of the identifiers
+\ide{quasiquote}, \ide{unquote}, or \ide{unquote-splicing} appear in
+positions within a \hyper{qq template} otherwise than as described above.
+
+The following grammar for quasiquote expressions is not context-free.
+It is presented as a recipe for generating an infinite number of
+production rules.  Imagine a copy of the following rules for $D = 1, 2,
+3, \ldots$.  $D$ keeps track of the nesting depth.
+
+\begin{grammar}%
+\meta{qq template} \: \meta{qq template 1}
+\meta{qq template 0} \: \meta{expression}
+\meta{quasiquotation $D$} \: (quasiquote \meta{qq template $D$})
+\meta{qq template $D$} \: \meta{lexeme datum}
+\>    \| \meta{list qq template $D$}
+\>    \| \meta{vector qq template $D$}
+\>    \| \meta{unquotation $D$}
+\meta{list qq template $D$} \: (\arbno{\meta{qq template or splice $D$}})
+\>    \| (\atleastone{\meta{qq template or splice $D$}} .\ \meta{qq template $D$})
+\>    \| \meta{quasiquotation $D+1$}
+\meta{vector qq template $D$} \: \#(\arbno{\meta{qq template or splice $D$}})
+\meta{unquotation $D$} \: (unquote \meta{qq template $D-1$})
+\meta{qq template or splice $D$} \: \meta{qq template $D$}
+\>    \| \meta{splicing unquotation $D$}
+\meta{splicing unquotation $D$} \:
+\>\> (unquote-splicing \arbno{\meta{qq template $D-1$}})
+\>    \| (unquote \arbno{\meta{qq template $D-1$}}) %
+\end{grammar}
+
+In \meta{quasiquotation}s, a \meta{list qq template $D$} can sometimes
+be confused with either an \meta{un\-quota\-tion $D$} or a \meta{splicing
+un\-quo\-ta\-tion $D$}.  The interpretation as an
+\meta{un\-quo\-ta\-tion} or \meta{splicing
+un\-quo\-ta\-tion $D$} takes precedence.
+
+\end{entry}
+
+\section{Binding constructs for syntactic keywords}
+\label{bindsyntax}
+
+The {\cf let-syntax} and {\cf letrec-syntax} forms 
+bind keywords.
+Like a {\cf begin} form, a {\cf let-syntax} or {\cf letrec-syntax} form
+may appear in a definition context, in which case it is treated as a
+definition, and the forms in the body must also be
+definitions.
+A {\cf let-syntax} or {\cf letrec-syntax} form may also appear in an
+expression context, in which case the forms within their bodies must be
+expressions.
+
+\begin{entry}{%
+\proto{let-syntax}{ \hyper{bindings} \hyper{form} \dotsfoo}{\exprtype}}
+
+\syntax
+\hyper{Bindings} must have the form
+\begin{scheme}
+((\hyper{keyword} \hyper{expression}) \dotsfoo)%
+\end{scheme}
+Each \hyper{keyword} is an identifier,
+and each \hyper{expression} is 
+an expression that evaluates, at macro-expansion
+time, to a \textit{transformer}\index{transformer}\index{macro transformer}.
+Transformers may be created by {\cf syntax-rules} or {\cf identifier-syntax}
+(see section~\ref{syntaxrulessection}) or by one of the other mechanisms
+described in library chapter~\extref{lib:syntaxcasechapter}{{\cf syntax-case}}.  It is a
+syntax violation for \hyper{keyword} to appear more than once in the list of keywords
+being bound.
+
+\semantics
+The \hyper{form}s are expanded in the syntactic environment
+obtained by extending the syntactic environment of the
+{\cf let-syntax} form with macros whose keywords are
+the \hyper{keyword}s, bound to the specified transformers.
+Each binding of a \hyper{keyword} has the \hyper{form}s as its region.
+
+The \hyper{form}s of a {\cf let-syntax}
+form are treated, whether in definition or expression context, as if
+wrapped in an implicit {\cf begin}; see section~\ref{begin}.
+Thus definitions in the result of expanding the \hyper{form}s have
+the same region as any definition appearing in place of the {\cf
+  let-syntax} form would have.
+
+\implresp The implementation should detect if the value of
+\hyper{expression} cannot possibly be a transformer.
+
+\begin{scheme}
+(let-syntax ((when (syntax-rules ()
+                     ((when test stmt1 stmt2 ...)
+                      (if test
+                          (begin stmt1
+                                 stmt2 ...))))))
+  (let ((if \schtrue))
+    (when if (set! if 'now))
+    if))                           \ev  now
+
+(let ((x 'outer))
+  (let-syntax ((m (syntax-rules () ((m) x))))
+    (let ((x 'inner))
+      (m))))                       \ev  outer%
+
+(let ()
+  (let-syntax
+    ((def (syntax-rules ()
+            ((def stuff ...) (define stuff ...)))))
+    (def foo 42))
+  foo) \ev 42
+
+(let ()
+  (let-syntax ())
+  5) \ev 5%
+\end{scheme}
+
+\end{entry}
+
+\begin{entry}{%
+\proto{letrec-syntax}{ \hyper{bindings} \hyper{form} \dotsfoo}{\exprtype}}
+
+\syntax
+Same as for {\cf let-syntax}.
+
+\semantics
+The \hyper{form}s are
+expanded in the syntactic environment obtained by
+extending the syntactic environment of the {\cf letrec-syntax}
+form with macros whose keywords are the
+\hyper{keyword}s, bound to the specified transformers.
+Each binding of a \hyper{keyword} has the \hyper{bindings}
+as well as the \hyper{form}s within its region,
+so the transformers can
+transcribe forms into uses of the macros
+introduced by the {\cf letrec-syntax} form.
+
+The \hyper{form}s of a {\cf letrec-syntax}
+form are treated, whether in definition or expression context, as if
+wrapped in an implicit {\cf begin}; see section~\ref{begin}.
+Thus definitions in the result of expanding the \hyper{form}s have
+the same region as any definition appearing in place of the {\cf
+  letrec-syntax} form would have.
+
+\implresp The implementation should detect if the value of
+\hyper{expression} cannot possibly be a transformer.
+
+\begin{scheme}
+(letrec-syntax
+  ((my-or (syntax-rules ()
+            ((my-or) \schfalse)
+            ((my-or e) e)
+            ((my-or e1 e2 ...)
+             (let ((temp e1))
+               (if temp
+                   temp
+                   (my-or e2 ...)))))))
+  (let ((x \schfalse)
+        (y 7)
+        (temp 8)
+        (let odd?)
+        (if even?))
+    (my-or x
+           (let temp)
+           (if y)
+           y)))        \ev  7%
+\end{scheme}
+
+The following example highlights how {\cf let-syntax}
+and {\cf letrec-syntax} differ.
+
+\begin{scheme}
+(let ((f (lambda (x) (+ x 1))))
+  (let-syntax ((f (syntax-rules ()
+                    ((f x) x)))
+               (g (syntax-rules ()
+                    ((g x) (f x)))))
+    (list (f 1) (g 1)))) \lev (1 2)
+
+(let ((f (lambda (x) (+ x 1))))
+  (letrec-syntax ((f (syntax-rules ()
+                       ((f x) x)))
+                  (g (syntax-rules ()
+                       ((g x) (f x)))))
+    (list (f 1) (g 1)))) \lev (1 1)%
+\end{scheme}
+
+The two expressions are identical except that the {\cf let-syntax} form
+in the first expression is a {\cf letrec-syntax} form in the second.
+In the first expression, the {\cf f} occurring in {\cf g} refers to
+the {\cf let}-bound variable {\cf f}, whereas in the second it refers
+to the keyword {\cf f} whose binding is established by the
+{\cf letrec-syntax} form.
+\end{entry}
+
+\section{Macro transformers}
+\label{syntaxrulessection}
+
+\begin{entry}{%
+\pproto{(syntax-rules (\hyper{literal} \dotsfoo) \hyper{syntax rule} \dotsfoo)}{\exprtype~({\cf expand})}
+\litprotoexpandnoindex{\_}
+\litprotoexpand{...}}
+\mainschindex{syntax-rules}\schindex{\_}
+
+\syntax Each \hyper{literal} must be an identifier.
+Each \hyper{syntax rule} must have the following form:
+
+\begin{scheme}
+(\hyper{srpattern} \hyper{template})%
+\end{scheme}
+
+An \hyper{srpattern} is a restricted form of \hyper{pattern},
+namely, a nonempty \hyper{pattern} in one of four parenthesized forms below
+whose first subform is an identifier or an underscore {\cf \_}\schindex{\_}.
+A \hyper{pattern} is an identifier, constant, or one of the following.
+
+\begin{schemenoindent}
+(\hyper{pattern} \ldots)
+(\hyper{pattern} \hyper{pattern} \ldots . \hyper{pattern})
+(\hyper{pattern} \ldots \hyper{pattern} \hyper{ellipsis} \hyper{pattern} \ldots)
+(\hyper{pattern} \ldots \hyper{pattern} \hyper{ellipsis} \hyper{pattern} \ldots . \hyper{pattern})
+\#(\hyper{pattern} \ldots)
+\#(\hyper{pattern} \ldots \hyper{pattern} \hyper{ellipsis} \hyper{pattern} \ldots)%
+\end{schemenoindent}
+
+An \hyper{ellipsis} is the identifier ``{\cf ...}'' (three periods).\schindex{...}
+
+A \hyper{template} is a pattern variable, an identifier that
+is not a pattern
+variable, a pattern datum, or one of the following.
+
+\begin{scheme}
+(\hyper{subtemplate} \ldots)
+(\hyper{subtemplate} \ldots . \hyper{template})
+\#(\hyper{subtemplate} \ldots)%
+\end{scheme}
+
+A \hyper{subtemplate} is a \hyper{template} followed by zero or more ellipses.
+
+\semantics An instance of {\cf syntax-rules} evaluates, at
+macro-expansion time, to a new macro
+transformer by specifying a sequence of hygienic rewrite rules.  A use
+of a macro whose keyword is associated with a transformer specified by
+{\cf syntax-rules} is matched against the patterns contained in the
+\hyper{syntax rule}s, beginning with the leftmost \hyper{syntax rule}.
+When a match is found, the macro use is transcribed hygienically
+according to the template.  It is a syntax violation when no match is found.
+
+An identifier appearing within a \hyper{pattern} may be an underscore
+(~{\cf \_}~), a literal identifier listed in the list of literals
+{\cf (\hyper{literal} \dotsfoo)}, or an ellipsis (~{\cf ...}~).
+All other identifiers appearing within a \hyper{pattern} are
+\textit{pattern variables\mainindex{pattern variable}}.
+It is a syntax violation if an ellipsis or underscore appears in {\cf (\hyper{literal} \dotsfoo)}.
+
+While the first subform of \hyper{srpattern} may be an identifier, the
+identifier is not involved in the matching and
+is not considered a pattern variable or literal identifier.
+
+Pattern variables match arbitrary input subforms and
+are used to refer to elements of the input.
+It is a syntax violation if the same pattern variable appears more than once in a
+\hyper{pattern}.
+
+Underscores also match arbitrary input subforms but are not pattern variables
+and so cannot be used to refer to those elements.
+Multiple underscores may appear in a \hyper{pattern}.
+
+A literal identifier matches an input subform if and only if the input
+subform is an identifier and either both its occurrence in the input
+expression and its occurrence in the list of literals have the same
+lexical binding, or the two identifiers have the same name and both have
+no lexical binding.
+
+A subpattern followed by an ellipsis can match zero or more elements of
+the input.
+
+More formally, an input form $F$ matches a pattern $P$ if and only if
+one of the following holds:
+
+\begin{itemize}
+\item $P$ is an underscore (~{\cf \_}~).
+
+\item $P$ is a pattern variable.
+
+\item $P$ is a literal identifier
+and $F$ is an identifier such that both $P$ and $F$ would refer to the
+same binding if both were to appear in the output of the macro outside
+of any bindings inserted into the output of the macro.
+(If neither of two like-named identifiers refers to any binding, i.e., both
+are undefined, they are considered to refer to the same binding.)
+
+\item $P$ is of the form
+{\cf ($P_1$ \dotsfoo{} $P_n$)}
+and $F$ is a list of $n$ elements that match $P_1$ through
+$P_n$.
+
+\item $P$ is of the form
+{\cf ($P_1$ \dotsfoo{} $P_n$ . $P_x$)}
+and $F$ is a list or improper list of $n$ or more elements
+whose first $n$ elements match $P_1$ through $P_n$
+and
+whose $n$th cdr matches $P_x$.
+
+\item $P$ is of the form
+{\cf ($P_1$ \dotsfoo{} $P_k$ $P_e$ \hyper{ellipsis} $P_{m+1}$ \dotsfoo{} $P_n$)},
+where \hyper{ellipsis} is the identifier {\cf ...}
+and $F$ is a list of $n$
+elements whose first $k$ elements match $P_1$ through $P_k$,
+whose next $m-k$ elements each match $P_e$,
+and
+whose remaining $n-m$ elements match $P_{m+1}$ through $P_n$.
+
+\item $P$ is of the form
+{\cf ($P_1$ \dotsfoo{} $P_k$ $P_e$ \hyper{ellipsis} $P_{m+1}$ \dotsfoo{} $P_n$ . $P_x$)},
+where \hyper{ellipsis} is the identifier {\cf ...}
+and $F$ is a list or improper list of $n$
+elements whose first $k$ elements match $P_1$ through $P_k$,
+whose next $m-k$ elements each match $P_e$,
+whose next $n-m$ elements match $P_{m+1}$ through $P_n$,
+and 
+whose $n$th and final cdr matches $P_x$.
+
+\item $P$ is of the form
+{\cf \#($P_1$ \dotsfoo{} $P_n$)}
+and $F$ is a vector of $n$ elements that match $P_1$ through
+$P_n$.
+
+\item $P$ is of the form
+{\cf \#($P_1$ \dotsfoo{} $P_k$ $P_e$ \hyper{ellipsis} $P_{m+1}$ \dotsfoo{} $P_n$)},
+where \hyper{ellipsis} is the identifier {\cf ...}
+and $F$ is a vector of $n$ or more elements
+whose first $k$ elements match $P_1$ through $P_k$,
+whose next $m-k$ elements each match $P_e$,
+and
+whose remaining $n-m$ elements match $P_{m+1}$ through $P_n$.
+
+\item $P$ is a pattern datum (any nonlist, nonvector, nonsymbol
+datum) and $F$ is equal to $P$ in the sense of the
+{\cf equal?} procedure.
+\end{itemize}
+
+When a macro use is transcribed according to the template of the
+matching \hyper{syntax rule}, pattern variables that occur in the
+template are replaced by the subforms they match in the input.
+
+Pattern data and identifiers that are not pattern variables
+or ellipses are copied into the output.
+A subtemplate followed by an ellipsis expands
+into zero or more occurrences of the subtemplate.
+Pattern variables that occur in subpatterns followed by one or more
+ellipses may occur only in subtemplates that are
+followed by (at least) as many ellipses.
+These pattern variables are replaced in the output by the input
+subforms to which they are bound, distributed as specified.
+If a pattern variable is followed by more ellipses in the subtemplate
+than in the associated subpattern, the input form is replicated as
+necessary.
+The subtemplate must contain at least one pattern variable from a
+subpattern followed by an ellipsis, and for at least one such pattern
+variable, the subtemplate must be followed by exactly as many ellipses as
+the subpattern in which the pattern variable appears.
+(Otherwise, the expander would not be able to determine how many times the
+subform should be repeated in the output.)
+It is a syntax violation if the constraints of this paragraph are not met.
+
+A template of the form
+{\cf (\hyper{ellipsis} \hyper{template})} is identical to \hyper{template}, except that
+ellipses within the template have no special meaning.
+That is, any ellipses contained within \hyper{template} are
+treated as ordinary identifiers.
+In particular, the template {\cf (... ...)} produces a single
+ellipsis, {\cf ...}.
+This allows syntactic abstractions to expand into forms containing
+ellipses.
+
+\begin{scheme}
+(define-syntax be-like-begin
+  (syntax-rules ()
+    ((be-like-begin name)
+     (define-syntax name
+       (syntax-rules ()
+         ((name expr (... ...))
+          (begin expr (... ...))))))))
+
+(be-like-begin sequence)
+(sequence 1 2 3 4) \ev 4%
+\end{scheme}
+
+As an example for hygienic use of auxiliary identifier,
+if \ide{let} and \ide{cond} are defined as in
+section~\ref{let} and appendix~\ref{derivedformsappendix} then they
+are hygienic (as required) and the following is not an error.
+
+\begin{scheme}
+(let ((=> \schfalse))
+  (cond (\schtrue => 'ok)))           \ev ok%
+\end{scheme}
+
+The macro transformer for {\cf cond} recognizes {\cf =>}
+as a local variable, and hence an expression, and not as the
+identifier {\cf =>}, which the macro transformer treats
+as a syntactic keyword.  Thus the example expands into
+
+\begin{scheme}
+(let ((=> \schfalse))
+  (if \schtrue (begin => 'ok)))%
+\end{scheme}
+
+instead of
+
+\begin{scheme}
+(let ((=> \schfalse))
+  (let ((temp \schtrue))
+    (if temp ('ok temp))))%
+\end{scheme}
+
+which would result in an assertion violation.
+\end{entry}
+
+\begin{entry}{%
+\proto{identifier-syntax}{ \hyper{template}}{\exprtype~({\cf expand})}
+\pproto{(identifier-syntax}{\exprtype~({\cf expand})}}\\
+{\tt\obeyspaces
+  (\hyperi{id} \hyperi{template})\\
+  ((set! \hyperii{id} \hyper{pattern})\\
+   \hyperii{template}))\\
+\litprotoexpandnoindex{set!}}
+
+\syntax The \hyper{id}s must be identifiers.  The \hyper{template}s
+must be as for {\cf syntax-rules}.
+
+\semantics
+When a keyword is bound to a transformer produced by the first form of
+{\cf identifier-syntax}, references to the keyword within the scope
+of the binding are replaced by \hyper{template}.
+
+\begin{scheme}
+(define p (cons 4 5))
+(define-syntax p.car (identifier-syntax (car p)))
+p.car \ev 4
+(set! p.car 15) \ev \exception{\&syntax}%
+\end{scheme}
+
+The second, more general, form of {\cf identifier-syntax} permits
+the transformer to determine what happens when {\cf set!} is used.
+In this case, uses of the identifier by itself are replaced by
+\hyperi{template}, and uses of {\cf set!} with the identifier are
+replaced by \hyperii{template}.
+
+\begin{scheme}
+(define p (cons 4 5))
+(define-syntax p.car
+  (identifier-syntax
+    (\_ (car p))
+    ((set! \_ e) (set-car! p e))))
+(set! p.car 15)
+p.car           \ev 15
+p               \ev (15 5)%
+\end{scheme}
+
+\end{entry}
+
+\section{Tail calls and tail contexts}
+\label{basetailcontextsection}
+
+A {\em tail call}\mainindex{tail call} is a procedure call that occurs
+in a {\em tail context}.  Tail contexts are defined inductively.  Note
+that a tail context is always determined with respect to a particular lambda
+expression.
+
+\begin{itemize}
+\item The last expression within the body of a lambda expression,
+  shown as \hyper{tail expression} below, occurs in a tail context.
+%
+\begin{scheme}
+(l\=ambda \hyper{formals}
+  \>\arbno{\hyper{definition}} 
+  \>\arbno{\hyper{expression}} \hyper{tail expression})%
+\end{scheme}
+%
+\item If one of the following expressions is in a tail context,
+then the subexpressions shown as \hyper{tail expression} are in a tail context.
+These were derived from specifications of the syntax of the forms described in
+this chapter by replacing some occurrences of \hyper{expression}
+with \hyper{tail expression}.  Only those rules that contain tail contexts
+are shown here.
+%
+\begin{scheme}
+(if \hyper{expression} \hyper{tail expression} \hyper{tail expression})
+(if \hyper{expression} \hyper{tail expression})
+
+(cond \atleastone{\hyper{cond clause}})
+(cond \arbno{\hyper{cond clause}} (else \hyper{tail sequence}))
+
+(c\=ase \hyper{expression}
+  \>\atleastone{\hyper{case clause}})
+(c\=ase \hyper{expression}
+  \>\arbno{\hyper{case clause}}
+  \>(else \hyper{tail sequence}))
+
+(and \arbno{\hyper{expression}} \hyper{tail expression})
+(or \arbno{\hyper{expression}} \hyper{tail expression})
+
+(let \hyper{bindings} \hyper{tail body})
+(let \hyper{variable} \hyper{bindings} \hyper{tail body})
+(let* \hyper{bindings} \hyper{tail body})
+(letrec* \hyper{bindings} \hyper{tail body})
+(letrec \hyper{bindings} \hyper{tail body})
+(let-values \hyper{mv-bindings} \hyper{tail body})
+(let*-values \hyper{mv-bindings} \hyper{tail body})
+
+(let-syntax \hyper{bindings} \hyper{tail body})
+(letrec-syntax \hyper{bindings} \hyper{tail body})
+
+(begin \hyper{tail sequence})%
+\end{scheme}
+%
+A \hyper{cond clause} is 
+%
+\begin{scheme}
+(\hyper{test} \hyper{tail sequence})\textrm{,}%
+\end{scheme}
+a \hyper{case clause} is
+%
+\begin{scheme}
+((\arbno{\hyper{datum}}) \hyper{tail sequence})\textrm{,}%
+\end{scheme}
+%
+a \hyper{tail body} is
+\begin{scheme}
+\arbno{\hyper{definition}} \hyper{tail sequence}\textrm{,}%
+\end{scheme}
+%
+and a \hyper{tail sequence} is
+%
+\begin{scheme}
+\arbno{\hyper{expression}} \hyper{tail expression}\textrm{.}%
+\end{scheme}%
+
+\item
+If a {\cf cond} expression is in a tail context, and has a clause of
+the form {\cf (\hyperi{expression} => \hyperii{expression})}
+then the (implied) call to
+the procedure that results from the evaluation of \hyperii{expression} is in a
+tail context.  \hyperii{Expression} itself is not in a tail context.
+
+\end{itemize}
+
+Certain built-in procedures must also perform tail calls.
+The first argument passed to {\cf apply} and to
+{\cf call-\hp{}with-\hp{}current-continuation}, and the second argument passed to
+{\cf call-with-values}, must be called via a tail call.
+
+In the following example the only tail call is the call to {\cf f}.
+None of the calls to {\cf g} or {\cf h} are tail calls.  The reference to
+{\cf x} is in a tail context, but it is not a call and thus is not a
+tail call.
+\begin{scheme}%
+(lambda ()
+  (if (g)
+      (let ((x (h)))
+        x)
+      (and (g) (f))))%
+\end{scheme}%
+
+\begin{note}
+Implementations may
+recognize that some non-tail calls, such as the call to {\cf h}
+above, can be evaluated as though they were tail calls.
+In the example above, the {\cf let} expression could be compiled
+as a tail call to {\cf h}. (The possibility of {\cf h} returning
+an unexpected number of values can be ignored, because in that
+case the effect of the {\cf let} is explicitly unspecified and
+implementation-dependent.)
+\end{note}
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "r6rs"
+%%% End: 
+

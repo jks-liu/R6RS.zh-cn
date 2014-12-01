@@ -1,0 +1,757 @@
+\chapter{Exceptions and conditions}
+\label{exceptionsconditionschapter}
+
+Scheme allows programs to deal with exceptional situations using two
+cooperating facilities: The exception system for raising and handling
+exceptional situations, and the condition system for describing these
+situations.
+
+The exception system allows the program, when it detects an
+exceptional situation, to pass control to an exception handler, and
+to dynamically establish such exception handlers.  Exception
+handlers are always invoked with an object describing the exceptional
+situation.  Scheme's condition system provides a standardized taxonomy
+of such descriptive objects, as well as a facility for extending the
+taxonomy.
+
+\section{Exceptions}
+\label{exceptionssection}
+\mainindex{exceptions}
+
+This section describes Scheme's exception-handling and
+exception-raising constructs provided by the \defrsixlibrary{exceptions} library.
+
+Exception handlers are one-argument procedures that determine the
+action the program takes when an exceptional situation is signalled.
+The system implicitly maintains a current exception handler.
+
+\mainindex{current exception handler}The program raises an exception
+by invoking the current exception handler, passing it an object
+encapsulating information about the exception. Any procedure accepting
+one argument may serve as an exception handler and any object may be
+used to represent an exception.
+
+The system maintains the current exception handler as part of the
+dynamic environment of the program; see report
+section~\extref{report:dynamicenvironmentsection}{Dynamic extent and
+  dynamic environment}.
+
+When a program begins its execution, the current
+exception handler is expected to handle all {\cf\&serious}
+conditions by interrupting execution, reporting that an
+exception has been raised, and displaying information
+about the condition object that was provided.  The handler
+may then exit, or may provide a choice of other options.
+Moreover, the exception handler is expected to return when
+passed any other non-{\cf\&serious} condition.
+Interpretation of these expectations necessarily depends
+upon the nature of the system in which programs are executed,
+but the intent is that users perceive the raising of an
+exception as a controlled escape from the situation that
+raised the exception, not as a crash.
+
+\begin{entry}{%
+\proto{with-exception-handler}{ \var{handler} \var{thunk}}{procedure}}
+
+\domain{\var{Handler} must be a procedure and should accept one argument.
+\var{Thunk} must be a procedure that accepts zero arguments.}  The {\cf
+with-exception-handler} procedure returns the results of invoking
+\var{thunk}.  \var{Handler} is installed as the current
+exception handler for the dynamic extent (as determined by {\cf
+  dynamic-wind}) of the invocation of \var{thunk}.
+
+\implresp The implementation must check the restrictions on
+\var{handler} to the extent performed by applying it as described
+when it is called as a result of a call to {\cf raise} or {\cf
+  raise-continuable}.
+An
+implementation may check whether \var{handler} is an appropriate argument
+before applying it.
+\end{entry}
+
+\begin{entry}{%
+\pproto{(guard (\hyper{variable}}{\exprtype}
+{\tt\obeyspaces%
+\hspace*{3em}\hyperi{cond clause} \hyperii{cond clause} \dotsfoo)\\
+\hspace*{2em}\hyper{body})}\\
+\litprotonoindex{=>}
+\litprotonoindex{else}}
+\mainschindex{guard}\schindex{=>}\schindex{else}
+
+\syntax
+Each \hyper{cond clause} is as in the specification of {\cf cond}.
+(See report section~\extref{report:cond}{Derived conditionals}.)
+{\cf \=>} and {\cf else} are the same as in the \rsixlibrary{base} library.
+
+\semantics 
+Evaluating a {\cf guard} form evaluates \hyper{body} with an exception
+handler that binds the raised object to \hyper{variable} and within the scope of
+that binding evaluates the clauses as if they were the clauses of a
+{\cf cond} expression. That implicit {\cf cond} expression is evaluated with the
+continuation and dynamic environment of the {\cf guard} expression. If every
+\hyper{cond clause}'s \hyper{test} evaluates to \schfalse{} and there
+is no {\cf else} clause, then
+{\cf raise} is re-invoked on the raised object within the dynamic
+environment of the original call to {\cf raise} except that the current
+exception handler is that of the {\cf guard} expression.  
+
+The final expression in a \hyper{cond} clause is in a tail context if
+the {\cf guard} expression itself is.
+\end{entry}
+
+\begin{entry}{%
+\proto{raise}{ \var{obj}}{procedure}}
+
+Raises a non-continuable exception by invoking the current exception
+handler on \var{obj}. The handler is called with a continuation whose
+dynamic environment is that of the call to {\cf raise}, except that
+the current exception handler is the one that was in place when the handler being
+called was installed.  When the handler returns, a non-continuable
+exception with condition type {\cf \&non-continuable} is raised in the
+same dynamic environment as the handler.
+\end{entry}
+
+\begin{entry}{%
+\proto{raise-continuable}{ \var{obj}}{procedure}}
+
+Raises a \defining{continuable exception} by invoking the current exception
+handler on \var{obj}. The handler is called with a continuation that
+is equivalent to the continuation of the call to {\cf
+  raise-continuable}, with these two exceptions: (1) the current
+exception handler is the one that was in place 
+when the handler being called was installed, and
+(2) if the handler being called returns, then it will again become the
+current exception handler.  If the handler returns, the values it
+returns become the values returned by the call to
+{\cf raise-continuable}.
+\end{entry}
+
+\begin{scheme}
+(guard (con
+         ((error? con)
+          (if (message-condition? con)
+              (display (condition-message con))
+              (display "an error has occurred"))
+          'error)
+         ((violation? con)
+          (if (message-condition? con)
+              (display (condition-message con))
+              (display "the program has a bug"))
+          'violation))
+  (raise
+    (condition
+      (make-error)
+      (make-message-condition "I am an error"))))
+   {\it prints:} I am an error
+   \ev error%
+
+(guard (con
+         ((error? con)
+          (if (message-condition? con)
+              (display (condition-message con))
+              (display "an error has occurred"))
+          'error))
+  (raise
+    (condition
+      (make-violation
+      (make-message-condition "I am an error"))))
+  \ev \exception{\&violation}
+
+(guard (con
+         ((error? con)
+          (display "error opening file")
+          \schfalse))
+  (call-with-input-file "foo.scm" read))
+   {\it prints:} error opening file
+   \ev \schfalse{}
+
+(with-exception-handler
+  (lambda (con)
+    (cond
+      ((not (warning? con))
+       (raise con))
+      ((message-condition? con)
+       (display (condition-message con)))
+      (else
+       (display "a warning has been issued")))
+    42)
+  (lambda ()
+    (+ (raise-continuable
+         (condition
+           (make-warning)
+           (make-message-condition
+             "should be a number")))
+       23)))
+   {\it prints:} should be a number
+   \ev 65
+\end{scheme}
+
+\section{Conditions}
+\label{conditionssection}
+
+The section describes Scheme's \defrsixlibrary{conditions} library 
+for creating and inspecting
+condition types and values. A condition value encapsulates information
+about an exceptional situation\mainindex{exceptional situation}.
+Scheme also defines a
+number of basic condition types.
+
+Scheme conditions provides two mechanisms to enable communication
+about an exceptional situation: subtyping among condition types allows
+handling code to determine the general nature of an exception even
+though it does not anticipate its exact nature, and compound
+conditions allow an exceptional situation to be described in multiple
+ways.
+
+\subsection{Condition objects}
+
+Conceptually, there are two different kinds of condition objects:
+\textit{simple conditions}\mainindex{simple condition} and
+\textit{compound conditions}\mainindex{compound condition}.  An object
+that is either a simple condition or a compound condition is 
+simply a \defining{condition}.  Compound conditions form a type disjoint
+from the base types described in report
+section~\extref{report:disjointness}{Base types}.  A simple condition
+describes a single aspect of an exceptional situation.  A compound
+condition represents multiple aspects of an exceptional situation as a
+list of simple conditions, its \textit{components}.  Most of the
+operations described in this section treat a simple condition
+identically to a compound condition with itself as its own sole component.  For a
+subtype \var{t} of {\cf\&condition}, a \textit{condition of type
+  \var{t}} is either a record of type \var{t} or a compound condition
+containing a component of type \var{t}.
+
+\begin{entry}{%
+\ctproto{condition}}
+
+Simple conditions are records of subtypes of the {\cf\&condition}
+record type.  The {\cf\&condition} type has no fields and is neither sealed nor opaque.
+\end{entry}
+
+\begin{entry}{%
+\proto{condition}{ \vari{condition} \dotsfoo}{procedure}}
+
+The {\cf condition}
+procedure returns a condition object with the components of the
+\var{condition}s as its components, in the same order, i.e., with the
+components of \vari{condition} appearing first in the same order as in
+\vari{condition}, then with the components of \varii{condition}, and so on.  The
+returned condition is compound if the total number of components is
+zero or greater than one.  Otherwise, it may be compound or simple.
+\end{entry}
+
+\begin{entry}{%
+\proto{simple-conditions}{ condition}{procedure}}
+
+The {\cf simple-conditions}
+procedure returns a list of the components of \var{condition}, in the same
+order as they appeared in the construction of \var{condition}.  The
+returned list is immutable.  If the returned list is modified, the
+effect on \var{condition} is unspecified.
+
+\begin{note}
+  Because {\cf condition} decomposes its arguments into simple
+  conditions, {\cf simple-conditions} always returns a ``flattened''
+  list of simple conditions.
+\end{note}
+\end{entry}
+
+
+\begin{entry}{%
+\proto{condition?}{ obj}{procedure}}
+
+Returns \schtrue{} if \var{obj} is a (simple or compound) condition,
+otherwise returns \schfalse.
+\end{entry}
+
+\begin{entry}{%
+\proto{condition-predicate}{ rtd}{procedure}}
+
+\domain{\var{Rtd} must be a record-type descriptor of a subtype of
+  {\cf\&condition}.}  The {\cf condition-predicate} procedure returns
+a procedure that takes one argument.  This procedure returns
+\schtrue{} if its argument is a condition of the condition type
+represented by \var{rtd}, i.e., if it is either a simple condition of
+that record type (or one of its subtypes) or a compound conditition
+with such a simple condition as one of its components, and \schfalse{}
+otherwise.
+\end{entry}
+
+\begin{entry}{%
+\proto{condition-accessor}{ rtd proc}{procedure}}
+
+\domain{\var{Rtd} must be a record-type descriptor of a subtype of
+  {\cf\&condition}.  \var{Proc} should accept
+  one argument, a record of the record type of \var{rtd}.}  The {\cf
+  condition-accessor} procedure returns a procedure that accepts a
+single argument, which must be a condition of the type represented by
+\var{rtd}.  This procedure extracts the first component of the
+condition of the type represented by \var{rtd}, and returns the result
+of applying \var{proc} to that component.
+\end{entry}
+
+\begin{scheme}
+(define-record-type (\&cond1 make-cond1 real-cond1?)
+  (parent \&condition)
+  (fields
+   (immutable x real-cond1-x)))
+
+(define cond1?
+  (condition-predicate
+    (record-type-descriptor \&cond1)))
+(define cond1-x
+  (condition-accessor
+    (record-type-descriptor \&cond1)
+    real-cond1-x))
+
+(define foo (make-cond1 'foo))
+
+(condition? foo) \ev \schtrue
+(cond1? foo) \ev \schtrue
+(cond1-x foo) \ev foo
+
+(define-record-type (\&cond2 make-cond2 real-cond2?)
+  (parent \&condition)
+  (fields
+   (immutable y real-cond2-y)))
+
+(define cond2?
+  (condition-predicate
+    (record-type-descriptor \&cond2)))
+(define cond2-y
+  (condition-accessor
+     (record-type-descriptor \&cond2)
+     real-cond2-y))
+
+(define bar (make-cond2 'bar))
+
+(condition? (condition foo bar)) \lev \schtrue
+(cond1? (condition foo bar)) \lev \schtrue
+(cond2? (condition foo bar)) \lev \schtrue
+(cond1? (condition foo)) \ev \schtrue
+(real-cond1? (condition foo)) \lev \unspecified
+(real-cond1? (condition foo bar)) \lev \schfalse
+(cond1-x (condition foo bar) \lev foo
+(cond2-y (condition foo bar) \lev bar
+ 
+(equal? (simple-conditions (condition foo bar))
+        (list foo bar)) \ev \schtrue
+
+(equal? (simple-conditions
+          (condition foo (condition bar)))
+        (list foo bar)) \ev \schtrue%
+\end{scheme}
+
+\begin{entry}{%
+\pproto{(define-condition-type \hyper{condition-type}}{\exprtype}}
+{\tt\obeyspaces\\
+    \hyper{supertype}\\
+  \hyper{constructor} \hyper{predicate}\\
+  \hyperi{field-spec} \dotsfoo)}
+\mainschindex{define-condition-type}
+
+\syntax \hyper{Condition-type}, \hyper{supertypes},
+\hyper{constructor}, and \hyper{predicate} must all be identifiers.
+Each \hyper{field-spec} must be of the form
+%
+\begin{scheme}
+(\hyper{field} \hyper{accessor})%
+\end{scheme}
+%
+where both \hyper{field} and \hyper{accessor} must be identifiers.
+
+\semantics
+The {\cf define-condition-type} form expands into a record-type
+definition for a record type \hyper{condition-type} (see
+section~\ref{recordssyntacticsection}).  The record type will be
+non-opaque, non-sealed, and its fields will be immutable.
+It will have \hyper{supertype} has its parent type.  The remaining
+identifiers will be bound as follows:
+% 
+
+\begin{itemize}
+
+\item \hyper{Constructor} is bound to a default constructor for the
+  type (see section~\ref{recordsproceduralsection}): It accepts one
+  argument for each of the record type's complete set of fields
+  (including parent types, with the fields of the parent coming before
+  those of the extension in the arguments) and returns a condition
+  object initialized to those arguments.
+
+\item \hyper{Predicate} is bound to a predicate that identifies
+  conditions of type \hyper{condition-type} or any of its
+  subtypes.
+
+\item Each \hyper{accessor} is bound to a procedure that extracts the
+  corresponding field from a condition of type \hyper{condition-type}.
+\end{itemize}
+\end{entry}
+
+\begin{scheme}
+(define-condition-type \&c \&condition
+  make-c c?
+  (x c-x))
+
+(define-condition-type \&c1 \&c
+  make-c1 c1?
+  (a c1-a))
+
+(define-condition-type \&c2 \&c
+  make-c2 c2?
+  (b c2-b))%
+\end{scheme}
+
+\begin{scheme}
+(define v1 (make-c1 "V1" "a1"))
+
+(c? v1)        \ev \schtrue
+(c1? v1)       \ev \schtrue
+(c2? v1)       \ev \schfalse
+(c-x v1)       \ev "V1"
+(c1-a v1)      \ev "a1"%
+\end{scheme}
+
+\begin{scheme}
+(define v2 (make-c2 "V2" "b2"))
+
+(c? v2)        \ev \schtrue
+(c1? v2)       \ev \schfalse
+(c2? v2)       \ev \schtrue
+(c-x v2)       \ev "V2"
+(c2-b v2)      \ev "b2"%
+\end{scheme}
+
+\begin{scheme}
+(define v3 (condition
+             (make-c1 "V3/1" "a3")
+             (make-c2 "V3/2" "b3")))
+
+(c? v3)        \ev \schtrue
+(c1? v3)       \ev \schtrue
+(c2? v3)       \ev \schtrue
+(c-x v3)       \ev "V3/1"
+(c1-a v3)      \ev "a3"
+(c2-b v3)      \ev "b3"%
+\end{scheme}
+
+\begin{scheme}
+(define v4 (condition v1 v2))
+
+(c? v4)        \ev \schtrue
+(c1? v4)       \ev \schtrue
+(c2? v4)       \ev \schtrue
+(c-x v4)       \ev "V1"
+(c1-a v4)      \ev "a1"
+(c2-b v4)      \ev "b2"%
+\end{scheme}
+
+\begin{scheme}
+(define v5 (condition v2 v3))
+
+(c? v5)        \ev \schtrue
+(c1? v5)       \ev \schtrue
+(c2? v5)       \ev \schtrue
+(c-x v5)       \ev "V2"
+(c1-a v5)      \ev "a3"
+(c2-b v5)      \ev "b2"%
+\end{scheme}
+
+\section{Standard condition types}
+
+\begin{figure*}[t]
+  \centering
+  {
+\setlength{\unitlength}{1mm}
+\begin{picture}(156,44)
+    \put(47,42){\tt\&condition}
+    \put(53,36){\line(0,1){5}}
+
+    \put(6,36){\line(0,-1){5}}
+    \put(6,36){\line(1,0){39}}
+    \put(0,28){\tt\&warning}
+
+    \put(115,31){\line(0,1){5}}
+    \put(110,24){\parbox{2cm}{
+        {\tt\&message}\\
+        {\tt\&irritants}\\
+        {\tt\&who}
+      }}
+
+    \put(45,36){\line(1,0){70}}
+    \put(45,31){\line(0,1){5}}
+    \put(40,28){\tt\&serious}
+    \put(45,21){\line(0,1){5}}
+
+    \put(5,21){\line(1,0){84}}
+
+    \put(5,16){\line(0,1){5}}
+    \put(0,13){\tt\&error}
+
+    \put(89,16){\line(0,1){5}}
+    \put(80,13){\tt\&violation}
+    \put(89,7){\line(0,1){5}}
+
+    \put(13,7){\line(1,0){133}}
+    \put(13,3){\line(0,1){4}}
+    \put(3,0){{\tt\&assertion}}
+    \put(36,3){\line(0,1){4}}
+    \put(23,0){{\tt\&non-continuable}}
+    \put(77,3){\line(0,1){4}}
+    \put(55,0){{\tt\&implementation-restriction}}
+    \put(114,3){\line(0,1){4}}
+    \put(107,0){{\tt\&lexical}}
+    \put(130,3){\line(0,1){4}}
+    \put(123,0){{\tt\&syntax}}
+    \put(146,3){\line(0,1){4}}
+    \put(138,0){{\tt\&undefined}}
+\end{picture}
+}
+  \caption{Hierarchy of standard condition types}
+  \label{fig:standard-condition-hierarchy}
+\end{figure*}
+
+\begin{entry}{%
+\ctproto{message}
+\proto{make-message-condition}{ message}{procedure}
+\proto{message-condition?}{ obj}{procedure}
+\proto{condition-message}{ condition}{procedure}}
+
+This condition type could be defined by
+%
+\begin{scheme}
+(define-condition-type \&message \&condition
+  make-message-condition message-condition?
+  (message condition-message))%
+\end{scheme}
+%
+It carries a message further describing the nature of the condition to
+humans.  
+\end{entry}
+
+\begin{entry}{%
+\ctproto{warning}
+\proto{make-warning}{}{procedure}
+\proto{warning?}{ obj}{procedure}}
+
+This condition type could be defined by
+%
+\begin{scheme}
+(define-condition-type \&warning \&condition
+  make-warning warning?)%
+\end{scheme}
+%
+This type describes conditions that do not, in
+principle, prohibit immediate continued execution of the program, but
+may interfere with the program's execution later.
+\end{entry}
+
+\begin{entry}{%
+\ctproto{serious}
+\proto{make-serious-condition}{}{procedure}
+\proto{serious-condition?}{ obj}{procedure}}
+
+This condition type could be defined by
+%
+\begin{scheme}
+(define-condition-type \&serious \&condition
+  make-serious-condition serious-condition?)%
+\end{scheme}
+
+This type describes conditions serious enough that they cannot safely
+be ignored. This condition type is primarily intended as a supertype
+of other condition types. 
+\end{entry}
+
+\begin{entry}{%
+\ctproto{error}
+\proto{make-error}{}{procedure}
+\proto{error?}{ obj}{procedure}}
+
+This condition type could be defined by
+%
+\begin{scheme}
+(define-condition-type \&error \&serious
+  make-error error?)%
+\end{scheme}
+%
+This type describes errors, typically caused by something that
+has gone wrong in the interaction of the program with the external
+world or the user.
+\end{entry}
+
+\begin{entry}{%
+\ctproto{violation}
+\proto{make-violation}{}{procedure}
+\proto{violation?}{ obj}{procedure}}
+
+This condition type could be defined by
+%
+\begin{scheme}
+(define-condition-type \&violation \&serious
+  make-violation violation?)%
+\end{scheme}
+%
+This type describes violations of the language standard or a
+library standard, typically caused by a programming error.
+\end{entry}  
+
+\begin{entry}{%
+\ctproto{assertion}
+\proto{make-assertion-violation}{}{procedure}
+\proto{assertion-violation?}{ obj}{procedure}}
+
+This condition type could be defined by
+%
+\begin{scheme}
+(define-condition-type \&assertion \&violation
+  make-assertion-violation assertion-violation?)%
+\end{scheme}
+% 
+This type describes an invalid call to a procedure, either passing an
+invalid number of arguments, or passing an argument of the wrong type.
+\end{entry}
+
+\begin{entry}{%
+\ctproto{irritants}
+\proto{make-irritants-condition}{ irritants}{procedure}
+\proto{irritants-condition?}{ obj}{procedure}
+\proto{condition-irritants}{ condition}{procedure}}
+
+This condition type could be defined by
+%
+\begin{scheme}
+(define-condition-type \&irritants \&condition
+  make-irritants-condition irritants-condition?
+  (irritants condition-irritants))%
+\end{scheme}
+%
+\domain{\var{Irritants} should be a list of objects.}  This
+condition provides additional information about a condition, typically
+the argument list of a procedure that detected an exception.
+Conditions of this type are created by the {\cf error} and {\cf
+  assertion-violation} procedures of report
+section~\extref{report:errorviolation}{Errors and violations}.
+\end{entry}
+ 
+\begin{entry}{%
+\ctproto{who}
+\proto{make-who-condition}{ who}{procedure}
+\proto{who-condition?}{ obj}{procedure}
+\proto{condition-who}{ condition}{procedure}}
+
+This condition type could be defined by
+%
+\begin{scheme}
+(define-condition-type \&who \&condition
+  make-who-condition who-condition?
+  (who condition-who))%
+\end{scheme}
+%
+\var{Who} should be a symbol or string identifying the
+entity reporting the exception.
+Conditions of this type are created by the {\cf error} and {\cf
+  assertion-violation} procedures (report
+section~\extref{report:errorviolation}{Errors and violations}), and
+the {\cf syntax-violation} procedure
+(section~\extref{syntax-violation}{Syntax violations}).
+\end{entry}
+
+\begin{entry}{%
+\ctproto{non-continuable}
+\proto{make-non-continuable-violation}{}{procedure}
+\proto{non-continuable-violation?}{ obj}{procedure}}
+
+This condition type could be defined by
+%
+\begin{scheme}
+(define-condition-type \&non-continuable \&violation
+  make-non-continuable-violation
+  non-continuable-violation?)%
+\end{scheme}
+%
+This type indicates that an exception handler invoked via
+\texttt{raise} has returned.
+\end{entry}
+
+\begin{entry}{%
+\ctproto{implementation-restriction}
+\proto{make-implementation-restriction-violation}{}{procedure}
+\proto{implementation-restriction-violation?}{ obj}{procedure}}
+
+This condition type could be defined by
+%
+\begin{scheme}
+(define-condition-type \&implementation-restriction
+    \&violation
+  make-implementation-restriction-violation
+  implementation-restriction-violation?)%
+\end{scheme}
+%
+This type describes a violation of an implementation restriction
+allowed by the specification, such as the absence of representations
+for NaNs and infinities.  (See section~\ref{flonumssection}.)
+\end{entry}
+
+\begin{entry}{%
+\ctproto{lexical}
+\proto{make-lexical-violation}{}{procedure}
+\proto{lexical-violation?}{ obj}{procedure}}
+
+This condition type could be defined by
+%
+\begin{scheme}
+(define-condition-type \&lexical \&violation
+  make-lexical-violation lexical-violation?)%
+\end{scheme}
+%
+This type describes syntax violations at the level of the datum syntax.
+\end{entry}
+
+\begin{entry}{%
+\ctproto{syntax}
+\proto{make-syntax-violation}{ form subform}{procedure}
+\proto{syntax-violation?}{ obj}{procedure}
+\proto{syntax-violation-form}{ condition}{procedure}
+\proto{syntax-violation-subform}{ condition}{procedure}}
+
+This condition type could be defined by
+%
+\begin{scheme}
+(define-condition-type \&syntax \&violation
+  make-syntax-violation syntax-violation?
+  (form syntax-violation-form)
+  (subform syntax-violation-subform))%
+\end{scheme}
+
+This type describes syntax violations.
+\var{Form} should be the erroneous syntax object or a
+datum representing the code of the erroneous form.  \var{Subform}
+should be an optional syntax object or
+datum within the erroneous form that more precisely locates the
+violation.  It can be \schfalse{} to indicate the absence of more precise
+information.
+\end{entry}
+
+\begin{entry}{%
+\ctproto{undefined}
+\proto{make-undefined-violation}{}{procedure}
+\proto{undefined-violation?}{ obj}{procedure}}
+
+This condition type could be defined by
+%
+\begin{scheme}
+(define-condition-type \&undefined \&violation
+  make-undefined-violation undefined-violation?)%
+\end{scheme}
+% x
+This type describes unbound identifiers in the program.
+\end{entry}
+
+
+
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "r6rs-lib"
+%%% End: 
+

@@ -1,0 +1,198 @@
+\chapter{Expansion process}
+\label{expansionchapter}
+
+Macro uses (see section~\ref{macrosection}) are expanded into \textit{core
+forms}\mainindex{core form} at the start of evaluation (before compilation or interpretation)
+by a syntax \emph{expander}.
+The set of core forms is implementation-dependent, as is the
+representation of these forms in the expander's output.
+If the expander encounters a syntactic abstraction, it invokes
+the associated transformer to expand the syntactic abstraction, then
+repeats the expansion process for the form returned by the transformer.
+If the expander encounters a core form, it recursively
+processes its subforms that are in expression or definition context,
+if any, and reconstructs the form from the
+expanded subforms.
+Information about identifier bindings is maintained during expansion
+to enforce lexical scoping for variables and keywords.
+
+To handle definitions, the expander processes the initial
+forms in a \hyper{body} (see section~\ref{bodiessection}) or
+\hyper{library body} (see section~\ref{librarybodysection})
+from left to
+right.  How the expander processes each form encountered 
+depends upon the kind of form.
+
+\begin{description}
+\item[macro use]
+The expander invokes the associated transformer to transform the macro
+use, then recursively performs whichever of these actions are appropriate
+for the resulting form.
+
+\item[{\cf define-syntax} form]
+The expander expands and evaluates the right-hand-side expression and binds the
+keyword to the resulting transformer.
+
+\item[{\cf define} form]
+The expander records the fact that the defined identifier is a variable but defers
+expansion of the right-hand-side expression until after all of the
+definitions have been processed.
+
+\item[{\cf begin} form]
+The expander splices the subforms into the list of body forms it is
+processing.  (See section~\ref{begin}.)
+
+\item[{\cf let-syntax} or {\cf letrec-syntax} form]
+The expander splic\-es the inner body forms into the list of (outer) body forms it is
+processing, arranging for the keywords bound by the {\cf let-syntax}
+and {\cf letrec-syntax} to be visible only in the inner body forms.
+
+\item[expression, i.e., nondefinition]
+The expander completes the expansion of the deferred right-hand-side expressions
+and the current and remaining expressions in the body, and then
+creates the equivalent of a {\cf letrec*} form from the defined variables,
+expanded right-hand-side expressions, and expanded body expressions.
+\end{description}
+
+For the right-hand side of the definition of a variable, expansion is
+deferred until after all of the definitions have been seen.  Consequently,
+each keyword and variable reference within the right-hand side
+resolves to the local binding, if any.
+
+A definition in the sequence of forms must not define any identifier whose
+binding is used to determine the meaning of the undeferred portions of the
+definition or any definition that precedes it in the sequence of forms.
+For example, the bodies of the following expressions violate this
+restriction.
+
+\begin{scheme}
+(let ()
+  (define define 17)
+  (list define))
+
+(let-syntax ([def0 (syntax-rules ()
+                     [(\_ x) (define x 0)])])
+  (let ([z 3])
+    (def0 z)
+    (define def0 list)
+    (list z)))
+
+(let ()
+  (define-syntax foo
+    (lambda (e)
+      (+ 1 2)))
+  (define + 2)
+  (foo))%
+\end{scheme}
+
+The following do not violate the restriction.
+
+\begin{scheme}
+(let ([x 5])
+  (define lambda list)
+  (lambda x x))         \ev  (5 5)
+
+(let-syntax ([def0 (syntax-rules ()
+                     [(\_ x) (define x 0)])])
+  (let ([z 3])
+    (define def0 list)
+    (def0 z)
+    (list z)))          \ev  (3)
+
+(let ()
+  (define-syntax foo
+    (lambda (e)
+      (let ([+ -]) (+ 1 2))))
+  (define + 2)
+  (foo))                \ev  -1%
+\end{scheme}
+
+The implementation should treat a violation of the restriction as a
+syntax violation.
+
+% Andre's proposed implementation:
+% To detect this violation, the expander can record each
+% identifier whose denotation is determined during expansion
+% of the body, together with the denotation.
+% Before an identifier is bound, its current denotation is compared
+% against denotations already used for the same (in the sense of
+% bound-identifier=?) identifier in the scope of the intended binding,
+% to determine if its current denotation has already been used
+% during the expansion of the body.
+
+Note that this algorithm does not directly reprocess any form.
+It requires a single left-to-right pass over the definitions followed by a
+single pass (in any order) over the body expressions and deferred
+right-hand sides.
+
+Example:
+
+\begin{scheme}
+(lambda (x)
+  (define-syntax defun
+    (syntax-rules ()
+      [(\_ x a e) (define x (lambda a e))]))
+  (defun even? (n) (or (= n 0) (odd? (- n 1))))
+  (define-syntax odd?
+    (syntax-rules () [(\_ n) (not (even? n))]))
+  (odd? (if (odd? x) (* x x) x)))%
+\end{scheme}
+
+In the example, the definition of {\cf defun} is encountered first, and the keyword
+{\cf defun} is associated with the transformer resulting from
+the expansion and evaluation of the corresponding right-hand side.
+A use of {\cf defun} is encountered next and expands into a
+{\cf define} form.
+Expansion of the right-hand side of this define form is deferred.
+The definition of {\cf odd?} is next and results in the association
+of the keyword {\cf odd?} with the transformer resulting from
+expanding and evaluating the corresponding right-hand side.
+A use of {\cf odd?} appears next and is expanded; the resulting
+call to {\cf not} is recognized as an expression
+because {\cf not} is bound as a variable.
+At this point, the expander completes the expansion of the current
+expression (the call to {\cf not}) and the deferred right-hand side of the
+{\cf even?} definition;
+the uses of {\cf odd?} appearing in these expressions are expanded
+using the transformer associated with the keyword {\cf odd?}.
+The final output is the equivalent of
+
+\begin{scheme}
+(lambda (x)
+  (letrec* ([even?
+              (lambda (n)
+                (or (= n 0)
+                    (not (even? (- n 1)))))])
+    (not (even? (if (not (even? x)) (* x x) x)))))%
+\end{scheme}
+
+although the structure of the output is implementation-dependent.
+
+Because definitions and expressions can be interleaved in a
+\hyper{top-level body} (see chapter~\ref{programchapter}),
+the expander's processing of a \hyper{top-level body} is somewhat
+more complicated.
+It behaves as described above for a \hyper{body} or
+\hyper{library body} with the following exceptions:
+When the expander finds a nondefinition,
+it defers its expansion and continues scanning for definitions.
+Once it reaches the end of the set of forms, it processes the
+deferred right-hand-side and body expressions, then
+generates the equivalent of a {\cf letrec*} form from the defined variables,
+expanded right-hand-side expressions, and expanded body expressions.
+For each body expression \hyper{expression} that appears before a variable definition
+in the body, a dummy binding is created at the corresponding place within
+the set of {\cf letrec*} bindings, with a fresh temporary variable on the
+left-hand side and the equivalent of {\cf (begin \hyper{expression}
+  \hyper{unspecified})},
+where \hyper{unspecified} is a side-effect-free expression returning
+an unspecified value,
+on the right-hand side, so that
+left-to-right evaluation order is preserved.
+The {\cf begin} wrapper allows \hyper{expression} to evaluate to an
+arbitrary number of values.
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "r6rs"
+%%% End: 

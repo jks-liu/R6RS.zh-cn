@@ -1,0 +1,192 @@
+\section{Condition types}
+\label{iocondsection}
+
+The procedures described in this chapter, when they detect an
+exceptional situation that arises from an ``I/O errors'', raise an
+exception with condition type {\cf\&i/o}.
+
+The condition types and corresponding predicates and accessors are
+exported by both the \rsixlibrary{io ports} and \rsixlibrary{io
+  simple} libraries.  They are also exported by the \rsixlibrary{files}
+library described in chapter~\ref{filesystemchapter}.
+
+\begin{entry}{%
+\ctproto{i/o}
+\proto{make-i/o-error}{}{procedure}
+\proto{i/o-error?}{ obj}{procedure}}
+
+This condition type could be defined by
+%
+\begin{scheme}
+(define-condition-type \&i/o \&error
+  make-i/o-error i/o-error?)%
+\end{scheme}        
+
+This is a supertype for a set of more specific I/O errors.
+\end{entry}   
+
+\begin{entry}{%
+\ctproto{i/o-read}
+\proto{make-i/o-read-error}{}{procedure}
+\proto{i/o-read-error?}{ obj}{procedure}}
+
+This condition type could be defined by
+\begin{scheme}
+(define-condition-type \&i/o-read \&i/o
+  make-i/o-read-error i/o-read-error?)%
+\end{scheme}
+
+This condition type describes read errors that occurred during an I/O
+operation.
+\end{entry}   
+
+\begin{entry}{%
+\ctproto{i/o-write}
+\proto{make-i/o-write-error}{}{procedure}
+\proto{i/o-write-error?}{ obj}{procedure}}
+
+This condition type could be defined by
+%
+\begin{scheme}
+(define-condition-type \&i/o-write \&i/o
+  make-i/o-write-error i/o-write-error?)%
+\end{scheme}
+This condition type describes write errors that occurred during an I/O
+    operation.
+  \end{entry}   
+  
+\begin{entry}{%
+\ctproto{i/o-invalid-position}
+\proto{make-i/o-invalid-position-error}{ position}{procedure}
+\proto{i/o-invalid-position-error?}{ obj}{procedure}
+\proto{i/o-error-position}{ condition}{procedure}}
+
+This condition type could be defined by
+%
+\begin{scheme}
+(define-condition-type \&i/o-invalid-position \&i/o
+  make-i/o-invalid-position-error
+  i/o-invalid-position-error?
+  (position i/o-error-position))%
+\end{scheme}
+
+This condition type describes attempts to set the file position to an
+invalid position. \var{Position} should be the file position that
+the program intended to set. This condition describes a range error, but
+not an assertion violation.
+\end{entry}   
+
+\begin{entry}{%
+\ctproto{i/o-filename}
+\proto{make-i/o-filename-error}{ filename}{procedure}
+\proto{i/o-filename-error?}{ obj}{procedure}
+\proto{i/o-error-filename}{ condition}{procedure}}
+
+This condition type could be defined by
+%
+\begin{scheme}
+(define-condition-type \&i/o-filename \&i/o
+  make-i/o-filename-error i/o-filename-error?
+  (filename i/o-error-filename))%
+\end{scheme}
+
+This condition type describes an I/O error that occurred during an
+operation on a named file.  \var{Filename} should be the name of the file.
+\end{entry}
+
+\begin{entry}{%
+\ctproto{i/o-file-protection}
+\proto{make-i/o-file-protection-error}{ filename}{procedure}
+\proto{i/o-file-protection-error?}{ obj}{procedure}}
+
+This condition type could be defined by
+%
+\begin{scheme}
+(define-condition-type \&i/o-file-protection
+    \&i/o-filename
+  make-i/o-file-protection-error
+  i/o-file-protection-error?)%
+\end{scheme}
+
+A condition of this type specifies that an operation tried to operate on a
+named file with insufficient access rights.
+\end{entry}   
+
+\begin{entry}{%
+\ctproto{i/o-file-is-read-only}
+\proto{make-i/o-file-is-read-only-error}{ filename}{procedure}
+\proto{i/o-file-is-read-only-error?}{ obj}{procedure}}
+
+This condition type could be defined by
+%
+\begin{scheme}
+(define-condition-type \&i/o-file-is-read-only
+    \&i/o-file-protection
+  make-i/o-file-is-read-only-error
+  i/o-file-is-read-only-error?)%
+\end{scheme}
+
+A condition of this type specifies that an operation tried to operate on a
+named read-only file under the assumption that it is writeable.
+\end{entry}   
+
+\begin{entry}{%
+\ctproto{i/o-file-already-exists}
+\proto{make-i/o-file-already-exists-error}{ filename}{procedure}
+\proto{i/o-file-already-exists-error?}{ obj}{procedure}}
+
+This condition type could be defined by
+%
+\begin{scheme}
+(define-condition-type \&i/o-file-already-exists
+    \&i/o-filename
+  make-i/o-file-already-exists-error
+  i/o-file-already-exists-error?)%
+\end{scheme}
+A condition of this type specifies that an operation tried to operate on an
+existing named file under the assumption that it did not exist.
+\end{entry}   
+
+\begin{entry}{%
+\ctproto{i/o-file-does-not-exist}
+\proto{make-i/o-file-does-not-exist-error}{ filename}{procedure}
+\proto{i/o-file-does-not-exist-error?}{ obj}{procedure}}
+
+This condition type could be defined by
+%
+\begin{scheme}
+(define-condition-type \&i/o-file-does-not-exist
+    \&i/o-filename
+  make-i/o-file-does-not-exist-error
+  i/o-file-does-not-exist-error?)%
+\end{scheme}
+
+A condition of this type specifies that an operation tried to operate on an
+non-existent named file under the assumption that it existed.
+\end{entry}   
+
+\begin{entry}{%
+\ctproto{i/o-port}
+\proto{make-i/o-port-error}{ port}{procedure}
+\proto{i/o-port-error?}{ obj}{procedure}
+\proto{i/o-error-port}{ condition}{procedure}}
+
+This condition type could be defined by
+%
+\begin{scheme}
+(define-condition-type \&i/o-port \&i/o
+  make-i/o-port-error i/o-port-error?
+  (port i/o-error-port))%
+\end{scheme}
+
+This condition type specifies the port with which an I/O
+error is associated. 
+\var{Port} should be the port.
+Conditions raised by procedures accepting a port as an argument should
+include an {\cf\&i/o-port-error} condition.
+\end{entry}
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "r6rs-lib"
+%%% End: 

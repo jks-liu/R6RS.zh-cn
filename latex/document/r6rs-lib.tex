@@ -1,0 +1,128 @@
+\documentclass[twoside,twocolumn]{algol60}
+%\documentclass[twoside]{algol60}
+
+\pagestyle{headings} 
+\showboxdepth=0
+\makeindex
+\input{commands}
+
+\texonly\externaldocument[report:]{r6rs}\endtexonly
+
+\def\headertitle{Revised$^{\rnrsrevision}$ Scheme Libraries}
+\def\integerversion{6}
+
+\begin{document}
+
+\thispagestyle{empty}
+
+\topnewpage[{
+\begin{center}   {\huge\bf
+        Revised{\Huge$^{\mathbf{\htmlonly\tiny\endhtmlonly{}\rnrsrevision}}$} Report on the Algorithmic Language \\
+                              \vskip 3pt
+                              Scheme\\
+                                \vskip 1.5ex
+                              --- Standard Libraries ---}
+
+\vskip 1ex
+$$
+\begin{tabular}{l@{\extracolsep{.5in}}lll}
+\multicolumn{4}{c}{M\authorsc{ICHAEL} S\authorsc{PERBER}}
+\\
+\multicolumn{4}{c}{R.\ K\authorsc{ENT} D\authorsc{YBVIG},
+  M\authorsc{ATTHEW} F\authorsc{LATT},
+  A\authorsc{NTON} \authorsc{VAN} S\authorsc{TRAATEN}}
+\\
+\multicolumn{4}{c}{(\textit{Editors})} \\
+\multicolumn{4}{c}{
+  R\authorsc{ICHARD} K\authorsc{ELSEY}, W\authorsc{ILLIAM} C\authorsc{LINGER},
+  J\authorsc{ONATHAN} R\authorsc{EES}} \\
+\multicolumn{4}{c}{(\textit{Editors, Revised\itspace{}$^5$ Report on the
+    Algorithmic Language Scheme})} \\
+\multicolumn{4}{c}{\bf \rnrsrevisiondate}
+\end{tabular}
+$$
+
+
+
+\end{center}
+
+{\parskip 1ex
+The report gives a defining description of the standard libraries of
+the programming language Scheme.
+
+This report frequently refers back to the \textit{Revised\itspace{}$^6$ Report
+  on the Algorithmic Language Scheme}~\cite{R6RS}; references to the
+report are identified by designations such as ``report section'' or
+``report chapter''.
+}
+
+\medskip
+
+Parts of the library report are derived from earlier revisions of the
+report~\cite{R5RS}.  We gratefully acknowledge their authors for their
+contributions.  More detailed information on authorship can be found
+at the beginning of the \textit{Revised\itspace{}$^6$ Report on the Algorithmic
+  Language Scheme}.
+
+\medskip
+
+We intend this report to belong to the entire Scheme community, and so
+we grant permission to copy it in whole or in part without fee.  In
+particular, we encourage implementors of Scheme to use this report as
+a starting point for manuals and other documentation, modifying it as
+necessary.
+
+\bigskip
+
+\input{status}
+}]
+
+\texonly\clearpage\endtexonly
+
+\chapter*{Contents}
+\addvspace{3.5pt}                  % don't shrink this gap
+\renewcommand{\tocshrink}{-4.0pt}  % value determined experimentally
+{%\footnotesize
+\tableofcontents
+}
+
+\vfill
+
+\texonly\clearpage\endtexonly
+
+\input{unicode} \par
+\input{bytevector} \par
+\input{list}    \par
+\input{sort}    \par
+\input{control} \par
+\input{records} \par
+\input{exc}     \par
+\input{io}      \par
+\input{files}   \par
+\input{programlib} \par
+\input{arith}   \par
+\input{syntax-case} \par
+\input{hashtable} \par
+\input{enum}    \par
+\input{complib} \par
+\input{eval}    \par
+\input{setcar}  \par
+\input{stringset} \par
+\input{r5rscompat} \par
+%\newpage                   %  Put bib on it's own page (it's just one)
+%\twocolumn[\vspace{-.18in}]%  Last bib item was on a page by itself.
+\renewcommand{\bibname}{References}
+
+\bibliographystyle{plain}
+\bibliography{abbrevs,rrs}
+
+\vfill\eject
+
+
+\newcommand{\indexheading}{Alphabetic index of definitions of
+  concepts, keywords, and procedures}
+\newcommand{\indexintro}{}
+
+\printindex
+
+\end{document}

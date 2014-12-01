@@ -1,0 +1,185 @@
+\section{Simple I/O}
+\label{simpleiosection}
+
+This section describes the \defrsixlibrary{io simple} library, which
+provides a somewhat more convenient interface for performing textual
+I/O on ports.  This library implements most of the 
+I/O procedures of the previous revision of this report~\cite{R5RS}.
+
+The ports created by the procedures of this library are textual ports
+associated implementation-dependent transcoders.
+
+\begin{entry}{%
+\rproto{eof-object}{}{procedure}
+\rproto{eof-object?}{ obj}{procedure}}
+
+These are the same as {\cf eof-object} and {\cf eof-object?} from the
+\rsixlibrary{ports} library.\schindex{eof-object}\schindex{eof-object?}
+\end{entry}
+
+\begin{entry}{%
+\proto{call-with-input-file}{ filename proc}{procedure}
+\proto{call-with-output-file}{ filename proc}{procedure}}
+
+\domain{\var{Proc} should accept one argument.}
+These procedures open the file named by \var{filename} for input or
+for output, with no specified file options, and call \var{proc} with
+the obtained port as an argument.  If \var{proc} returns, the
+port is closed automatically and the values returned by \var{proc} are
+returned. If \var{proc} does not return, the port is not
+closed automatically, unless it is possible to prove that the port
+will never again be used for an I/O operation.
+\end{entry}
+
+\begin{entry}{%
+\rproto{input-port?}{ obj}{procedure}
+\rproto{output-port?}{ obj}{procedure}}
+
+These are the same as the {\cf input-port?} and {\cf output-port?}
+procedures in the \rsixlibrary{io ports} library.
+\end{entry}
+
+\begin{entry}{%
+\rproto{current-input-port}{}{procedure}
+\rproto{current-output-port}{}{procedure}
+\rproto{current-error-port}{}{procedure}}
+ 
+These are the same as the {\cf current-input-port}\schindex{current-input-port}, {\cf
+  current-output-port}\schindex{current-output-port}, and {\cf current-error-port}\schindex{current-error-port} procedures from
+the \rsixlibrary{io ports} library.
+\end{entry}
+
+\begin{entry}{%
+\proto{with-input-from-file}{ filename thunk}{procedure}
+\proto{with-output-to-file}{ filename thunk}{procedure}}
+
+\domain{\var{Thunk} must be a procedure and must accept zero arguments.}  The
+file is opened for input or output using empty file options, and
+\var{thunk} is called with no arguments.  During the dynamic extent of
+the call to \var{thunk}, the obtained port is made the value returned
+by {\cf current-input-port} or {\cf current-output-port} procedures;
+the previous default values are reinstated when the dynamic extent is
+exited.  When \var{thunk} returns, the port is closed automatically.
+The values
+returned by \var{thunk} are returned.  If an escape procedure is used
+to escape back into the call to \var{thunk} after \var{thunk} is
+returned, the behavior is unspecified.
+\end{entry}
+
+\begin{entry}{%
+\proto{open-input-file}{ filename}{procedure}}
+
+Opens \var{filename} for input, with empty file options, and returns
+the obtained port.
+\end{entry}
+
+\begin{entry}{%
+\proto{open-output-file}{ filename}{procedure}}
+
+Opens \var{filename} for output, with empty file options, and
+returns the obtained port.
+\end{entry}
+
+\begin{entry}{%
+\proto{close-input-port}{ input-port}{procedure}
+\proto{close-output-port}{ output-port}{procedure}}
+
+Closes \var{input-port} or \var{output-port}, respectively.
+\end{entry}
+
+\begin{entry}{%
+\proto{read-char}{}{procedure}
+\rproto{read-char}{ textual-input-port}{procedure}}
+
+Reads from \var{textual-input-port},
+blocking as necessary until a character
+is available from \var{textual-input-port},
+or the data that are available cannot
+be the prefix of any valid encoding, or an end of file is reached.
+
+If a complete character is available before the next end of file, {\cf
+  read-char} returns that character, and updates the input port to
+point past that character. If an end of file is
+reached before any data are read, {\cf read-char} returns the
+end-of-file object.
+
+If \var{textual-input-port} is omitted, it defaults to the value returned by
+{\cf current-input-port}.
+\end{entry}
+
+\begin{entry}{%
+\rproto{peek-char}{}{procedure}
+\proto{peek-char}{ textual-input-port}{procedure}}
+   
+This is the same as {\cf read-char}, but does not consume any data
+from the port.
+\end{entry}
+
+\begin{entry}{%
+\rproto{read}{}{procedure}
+\proto{read}{ textual-input-port}{procedure}}
+
+Reads an external representation from \var{textual-input-port}
+and returns the datum it
+represents.  The {\cf read} procedure operates in the same way as 
+{\cf get-datum}, see section~\ref{get-datum}.
+
+If \var{textual-input-port} is omitted, it defaults to the value returned by
+{\cf current-input-port}.
+\end{entry}
+
+\begin{entry}{%
+\proto{write-char}{ char}{procedure}
+\rproto{write-char}{ char textual-output-port}{procedure}}
+
+Writes an encoding of the character \var{char} to the
+\var{textual-output-port}, and returns \unspecifiedreturn.
+
+If \var{textual-output-port} is omitted, it defaults to the value returned by
+{\cf current-output-port}.
+\end{entry}
+
+\begin{entry}{%
+\proto{newline}{}{procedure}
+\rproto{newline}{ textual-output-port}{procedure}}
+
+This is equivalent to using {\cf write-char} to write
+{\cf \#\backwhack{}linefeed}
+to \var{textual-output-port}.
+
+If \var{textual-output-port} is omitted, it defaults to the value returned by
+{\cf current-output-port}.
+\end{entry}
+
+\begin{entry}{%
+\proto{display}{ obj}{procedure}
+\rproto{display}{ obj textual-output-port}{procedure}}
+
+Writes a representation of \var{obj} to the given \var{textual-output-port}.
+Strings that appear in
+the written representation are not enclosed in doublequotes, and no
+characters are escaped within those strings.  Character objects appear
+in the representation as if written by {\cf write-char} instead of by
+{\cf write}.  The {\cf display} procedure returns \unspecifiedreturn.  The
+\var{textual-output-port} argument may be omitted, in which case it defaults
+to the value returned by {\cf current-output-port}.
+\end{entry}
+
+\begin{entry}{%
+\proto{write}{ obj}{procedure}
+\rproto{write}{ obj textual-output-port}{procedure}}
+
+Writes the external representation of \var{obj} to \var{textual-output-port}.
+The {\cf write}
+procedure operates in the same way as {\cf put-datum}; see
+section~\ref{put-datum}.
+
+If \var{textual-output-port} is omitted, it defaults to the value returned by
+{\cf current-output-port}.
+\end{entry}
+
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "r6rs-lib"
+%%% End: 

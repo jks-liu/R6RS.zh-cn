@@ -1,0 +1,43 @@
+\chapter{Requirement levels} 
+\label{requirementchapter}
+
+The key words ``must'', ``must not'', ``should'',
+``should not'', ``recommended'', ``may'', and ``optional'' in this
+report are to be interpreted as described in RFC~2119~\cite{mustard}.
+Specifically:
+
+\begin{description}
+\item[must]\mainindex{must} This word means that a statement is an absolute
+  requirement of the specification.
+\item[must not]\mainindex{must not} This phrase means that a statement is an absolute
+  prohibition of the specification.
+\item[should]\mainindex{should} This word, or the adjective ``recommended'', means that
+  valid reasons may exist in particular circumstances to ignore a
+  statement, but that the implications must be understood and weighed
+  before choosing a different course.
+\item[should not]\mainindex{should not} This phrase, or the phrase ``not recommended'', means
+  that valid reasons may exist in particular circumstances when the
+  behavior of a statement is acceptable, but that the implications
+  should be understood and weighed before choosing the course described
+  by the statement.
+\item[may]\mainindex{may} This word, or the adjective ``optional'', means that an item
+  is truly optional.
+\end{description}
+
+In particular, this report occasionally uses ``should'' to designate
+circumstances that are outside the specification of this report, but
+cannot be practically detected by an implementation; see
+section~\ref{argumentcheckingsection}.  In such circumstances, a
+particular implementation may allow the programmer to ignore the
+recommendation of the report and even exhibit reasonable behavior.
+However, as the report does not specify the behavior,
+these programs may be unportable, that is, their execution might
+produce different results on different implementations.
+
+Moreover, this report occasionally uses the phrase ``not required'' to note the
+absence of an absolute requirement.
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "r6rs"
+%%% End: 

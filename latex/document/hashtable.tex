@@ -1,0 +1,262 @@
+\chapter{Hashtables}
+\label{hashtablechapter}
+
+The \defrsixlibrary{hashtables} library provides a set of operations on
+hashtables.
+A \defining{hashtable} is a data structure that associates keys with values.
+Any object can be used as a key, provided a \defining{hash function}
+and a suitable \defining{equivalence function} is available.  A hash function is a
+procedure that maps
+keys to exact integer objects.
+It is the programmer's responsibility to ensure that the hash function
+is compatible with the equivalence function,
+which is a procedure that accepts two keys and returns true if they
+are equivalent and \schfalse{} otherwise.
+Standard hashtables for arbitrary objects based on the {\cf eq?} and 
+{\cf eqv?} predicates (see report section~\extref{report:equivalencesection}{Equivalence predicates}) are provided.  
+Also, hash functions for arbitrary objects, strings, and symbols are provided.
+
+This section uses the \var{hashtable} parameter name for arguments
+that must be hashtables, and the \var{key} parameter name for
+arguments that must be hashtable keys.
+
+\section{Constructors}
+
+\mainindex{hashtable}
+
+\begin{entry}{%
+\proto{make-eq-hashtable}{}{procedure}
+\rproto{make-eq-hashtable}{ \var{k}}{procedure}}
+
+Returns a newly allocated mutable hashtable that accepts
+arbitrary objects as keys,
+and compares those keys with {\cf eq?}. If an argument is given, the initial 
+capacity of the hashtable is set to approximately \var{k} elements.
+
+\end{entry}
+
+\begin{entry}{%
+\proto{make-eqv-hashtable}{}{procedure}
+\rproto{make-eqv-hashtable}{ \var{k}}{procedure}}
+
+Returns a newly allocated mutable hashtable that accepts
+arbitrary objects as keys,
+and compares those keys with {\cf eqv?}.
+If an argument is given, the initial 
+capacity of the hashtable is set to approximately \var{k} elements.
+
+\end{entry}
+
+\begin{entry}{%
+\proto{make-hashtable}{ \var{hash-function} \var{equiv}}{procedure}
+\rproto{make-hashtable}{ \var{hash-function} \var{equiv} \var{k}}{procedure}}
+
+\domain{\var{Hash-function} and \var{equiv} must be procedures.
+\var{Hash-function} should accept a key as an argument and should return a 
+non-negative exact integer object.
+\var{Equiv} should accept two keys as arguments and return a single
+value.
+Neither procedure should mutate the hashtable returned by {\cf make-hashtable}.}
+The {\cf make-hashtable} procedure returns a newly allocated mutable
+hashtable using \var{hash-function} 
+as the hash function and \var{equiv} as the equivalence function used to 
+compare keys.
+If a third argument is given, the 
+initial capacity of the hashtable is set to approximately \var{k} elements.
+
+Both \var{hash-function} and \var{equiv} should behave like pure functions
+on the domain of keys.  For example, the {\cf string-hash}
+and {\cf string=?} procedures are permissible only if all
+keys are strings and the contents of those strings are never
+changed so long as any of them continues to serve as a key in
+the hashtable.  Furthermore, any pair of keys for which
+\var{equiv} returns true should
+be hashed to the same exact integer objects by 
+\var{hash-function}.
+
+\implresp The implementation must check the restrictions on
+\var{hash-function} and \var{equiv} to the extent performed by
+applying them as described.
+
+\begin{note}
+Hashtables are allowed to cache the results of calling the
+hash function and equivalence function, so programs cannot
+rely on the hash function being called for every lookup or
+update.  Furthermore any hashtable operation may call the
+hash function more than once.
+\end{note}
+
+\end{entry}
+
+\section{Procedures}
+
+\begin{entry}{%
+\proto{hashtable?}{ \var{hashtable}}{procedure}}
+
+Returns \schtrue{} if \var{hashtable} is a hashtable,
+\schfalse{} otherwise.
+\end{entry}
+
+\begin{entry}{\proto{hashtable-size}{ \var{hashtable}}{procedure}}
+
+Returns the number of keys contained in \var{hashtable} as an exact
+integer object.
+\end{entry}
+
+\begin{entry}{%
+\proto{hashtable-ref}{ \var{hashtable} \var{key} \var{default}}{procedure}}
+
+Returns the value in \var{hashtable} associated with \var{key}.
+If \var{hashtable} does not contain an association for \var{key},
+\var{default} is returned.
+\end{entry}
+
+\begin{entry}{\proto{hashtable-set!}{ \var{hashtable} \var{key} \var{obj}}{procedure}}
+
+Changes \var{hashtable} to associate \var{key} with \var{obj},
+adding a new association or replacing any existing association for \var{key},
+and returns \unspecifiedreturn.
+\end{entry}
+
+\begin{entry}{\proto{hashtable-delete!}{ \var{hashtable} \var{key}}{procedure}}
+
+Removes any association for \var{key} within \var{hashtable} and
+returns \unspecifiedreturn.
+\end{entry}
+
+\begin{entry}{\proto{hashtable-contains?}{ \var{hashtable} \var{key}}{procedure}}
+
+Returns \schtrue{} if \var{hashtable} contains an association
+for \var{key}, \schfalse{} otherwise.
+\end{entry}
+
+\begin{entry}{%
+\proto{hashtable-update!}{ \var{hashtable} \var{key} \var{proc} \var{default}}{procedure}}
+
+\domain{\var{Proc} should accept one argument,
+should return a single value, and should not mutate \var{hashtable}.}
+The {\cf hashtable-update!} procedure applies \var{proc} to the value in \var{hashtable}
+associated with \var{key}, 
+or to \var{default} if \var{hashtable} does not contain an
+association for \var{key}.
+The \var{hashtable} is then changed to associate \var{key}
+with the value returned by \var{proc}.
+
+The behavior of {\cf hashtable-update!} is equivalent to the
+following code, but may be implemented 
+more efficiently in cases where the implementation can
+avoid multiple lookups of the same key:
+\begin{scheme}
+(hashtable-set!
+  hashtable key
+  (proc (hashtable-ref
+         hashtable key default)))
+\end{scheme}
+\end{entry}
+
+\begin{entry}{%
+\proto{hashtable-copy}{ \var{hashtable}}{procedure}
+\rproto{hashtable-copy}{ \var{hashtable} \var{mutable}}{procedure}}
+
+Returns a copy of \var{hashtable}.  If the
+\var{mutable} argument is provided and is true, the returned hashtable is mutable;
+otherwise it is immutable.
+
+\end{entry}
+\begin{entry}{%
+\proto{hashtable-clear!}{ \var{hashtable}}{procedure}
+\rproto{hashtable-clear!}{ \var{hashtable} \var{k}}{procedure}}
+
+Removes all associations from \var{hashtable} and returns \unspecifiedreturn.
+
+If a second argument is given, the current
+capacity of the hashtable is reset to approximately \var{k} elements.
+\end{entry}
+
+\begin{entry}{\proto{hashtable-keys}{ \var{hashtable}}{procedure}}
+
+Returns a vector of all keys in \var{hashtable}.
+The order of the vector is unspecified.
+\end{entry}
+
+\begin{entry}{%
+\proto{hashtable-entries}{ \var{hashtable}}{procedure}}
+
+Returns two values, a vector of the keys in \var{hashtable}, and a
+vector of the corresponding values.
+
+\begin{scheme}
+(let ((h (make-eqv-hashtable)))
+  (hashtable-set! h 1 'one)
+  (hashtable-set! h 2 'two)
+  (hashtable-set! h 3 'three)
+  (hashtable-entries h)) \lev \sharpsign(1 2 3) \sharpsign(one two three)\\\>; \textrm{two return values}%
+\end{scheme}
+\end{entry}
+
+\section{Inspection}
+
+\begin{entry}{\proto{hashtable-equivalence-function}{ \var{hashtable}}{procedure}}
+
+Returns the equivalence function used by
+\var{hashtable} to compare keys.  For hashtables
+created with {\cf make-eq-hashtable} and {\cf make-eqv-hashtable},
+returns {\cf eq?} and {\cf eqv?} respectively.
+\end{entry}
+
+\begin{entry}{\proto{hashtable-hash-function}{ \var{hashtable}}{procedure}}
+
+Returns the hash function used by \var{hashtable}.
+For hashtables created by {\cf make-eq-hashtable} 
+or {\cf make-\hp{}eqv-\hp{}hashtable}, \schfalse{} is returned.
+\end{entry}
+
+\begin{entry}{\proto{hashtable-mutable?}{ \var{hashtable}}{procedure}}
+
+Returns \schtrue{} if \var{hashtable} is mutable, otherwise \schfalse{}.
+\end{entry}
+
+\section{Hash functions}
+
+The {\cf equal-hash}, {\cf string-hash}, and {\cf string-ci-hash}
+procedures of this section are acceptable as the hash functions of
+a hashtable only if the keys on which they are called are not mutated
+while they remain in use as keys in the hashtable.
+
+\begin{entry}{\proto{equal-hash}{ \var{obj}}{procedure}}
+
+Returns an integer hash value for \var{obj}, based on
+its structure and current contents.  This hash function is suitable
+for use with {\cf equal?} as an equivalence function.
+
+\begin{note}
+  Like {\cf equal?}, the {\cf equal-hash} procedure must always
+  terminate, even if its arguments contain cycles.
+\end{note}
+\end{entry}
+
+\begin{entry}{\proto{string-hash}{ \var{string}}{procedure}}
+
+Returns an integer hash value for \var{string}, based on
+its current contents.
+This hash function is suitable
+for use with {\cf string=?} as an equivalence function.
+\end{entry}
+
+\begin{entry}{\proto{string-ci-hash}{ \var{string}}{procedure}}
+
+Returns an integer hash value for \var{string} based on
+its current contents, ignoring case.
+This hash function is suitable
+for use with {\cf string-ci=?} as an equivalence function.
+\end{entry}
+
+\begin{entry}{\proto{symbol-hash}{ \var{symbol}}{procedure}}
+
+Returns an integer hash value for \var{symbol}.
+\end{entry}
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "r6rs-lib"
+%%% End: 

@@ -1,0 +1,62 @@
+\chapter{\tt{eval}}
+\label{evalchapter}
+
+The \rsixlibrary{eval} library allows a program to create Scheme
+expressions as data at run time and evaluate them.
+
+\begin{entry}{%
+\proto{eval}{ expression environment}{procedure}}
+
+Evaluates \var{expression} in the specified environment and returns its value.
+\var{Expression} must be a syntactically valid Scheme expression represented as a
+datum value, and \var{environment} must be an
+\defining{environment}, which can be created using the {\cf
+  environment} procedure described below.
+
+If the first argument to {\cf eval} is determined not to be a syntactically correct
+expression, then {\cf eval} must raise an exception with condition
+type {\cf \&syntax}.  Specifically, if the first argument to {\cf
+  eval} is a definition or a splicing {\cf begin} form containing a
+definition, it must raise an exception with condition type {\cf
+  \&syntax}.
+\end{entry}
+
+\begin{entry}{%
+\proto{environment}{ import-spec \dots}{procedure}}
+
+\domain{\var{Import-spec} must be a datum representing an
+  \hyper{import spec} (see report
+  section~\extref{report:librarysyntaxsection}{Library form}).}
+The {\cf environment} procedure returns an environment corresponding
+to \var{import-spec}.
+
+The bindings of the environment represented by the specifier are
+immutable: If {\cf eval} is applied to an expression that is
+determined to contain an
+assignment to one of the variables of the environment, then {\cf eval} must
+raise an exception with a condition type {\cf\&assertion}.
+
+\begin{scheme}
+(library (foo)
+  (export)
+  (import (rnrs))
+  (write
+    (eval '(let ((x 3)) x)
+          (environment '(rnrs))))) \\\> {\it writes} 3
+
+(library (foo)
+  (export)
+  (import (rnrs))
+  (write
+    (eval
+      '(eval:car (eval:cons 2 4))
+      (environment
+        '(prefix (only (rnrs) car cdr cons null?)
+                 eval:))))) \\\> {\it writes} 2
+\end{scheme}
+\end{entry}
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "r6rs-lib"
+%%% End: 

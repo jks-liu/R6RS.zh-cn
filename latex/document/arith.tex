@@ -1,0 +1,1011 @@
+\chapter{Arithmetic}
+\label{numberchapter}
+\index{number}
+
+This chapter describes Scheme's libraries for more specialized
+numerical operations: fixnum and flonum arithmetic, as well as bitwise
+operations on exact integer objects.  
+
+\section{Bitwise operations}
+
+A number of procedures operate on the binary two's-complement
+representations of exact integer objects: Bit positions within an
+exact integer object are counted from the right, i.e.\ bit 0 is the
+least significant bit.  Some procedures allow extracting \defining{bit
+  fields}, i.e., number objects representing subsequences of the
+binary representation of an exact integer object.  Bit fields are
+always positive, and always defined using a finite number of bits.
+
+\section{Fixnums}
+\label{fixnumssection}
+
+Every implementation must define its fixnum range as a closed
+interval
+%
+\begin{displaymath}
+[-2^{w-1}, 2^{w-1} - 1]
+\end{displaymath}
+%
+such that $w$ is a (mathematical) integer $w \geq 24$.  Every
+mathematical integer within an implementation's fixnum range must
+correspond to an exact integer object that is representable within the
+implementation.
+A fixnum is an exact integer object whose value lies within this
+fixnum range.
+
+This section describes the \defrsixlibrary{arithmetic fixnums} library,
+which defines various operations on fixnums.
+Fixnum operations perform integer arithmetic on their fixnum
+arguments, but raise an exception with condition type
+{\cf\&implementation-restriction} if the result is not a fixnum.
+
+This section uses \var{fx}, \vari{fx}, \varii{fx}, etc., as parameter
+names for arguments that must be fixnums.
+
+\begin{entry}{%
+\rproto{fixnum?}{ obj}{procedure}}
+
+Returns \schtrue{} if \var{obj} is an exact
+integer object within the fixnum range, \schfalse{} otherwise.
+\end{entry}
+
+\begin{entry}{%
+\rproto{fixnum-width}{}{procedure}
+\rproto{least-fixnum}{}{procedure}
+\rproto{greatest-fixnum}{}{procedure}}
+
+These procedures return $w$,
+$-2^{w-1}$ and $2^{w-1} - 1$: the
+width, minimum and the maximum value of the fixnum range, respectively.
+\end{entry}
+
+\begin{entry}{%
+\proto{fx=?}{ \vari{fx} \varii{fx} \variii{fx} \dotsfoo}{procedure}
+\proto{fx>?}{ \vari{fx} \varii{fx} \variii{fx} \dotsfoo}{procedure}
+\proto{fx<?}{ \vari{fx} \varii{fx} \variii{fx} \dotsfoo}{procedure}
+\proto{fx>=?}{ \vari{fx} \varii{fx} \variii{fx} \dotsfoo}{procedure}
+\proto{fx<=?}{ \vari{fx} \varii{fx} \variii{fx} \dotsfoo}{procedure}}
+
+These procedures return \schtrue{} if their arguments are (respectively):
+equal, monotonically increasing, monotonically decreasing,
+monotonically nondecreasing, or monotonically nonincreasing,
+\schfalse{} otherwise.
+\end{entry}
+
+\begin{entry}{%
+\proto{fxzero?}{ fx}{procedure}
+\proto{fxpositive?}{ fx}{procedure}
+\proto{fxnegative?}{ fx}{procedure}
+\proto{fxodd?}{ fx}{procedure}
+\proto{fxeven?}{ fx}{procedure}}
+
+These numerical predicates test a fixnum for a particular property,
+returning \schtrue{} or \schfalse{}.  The five properties tested by
+these procedures are: whether the number object is zero, greater than zero,
+less than zero, odd, or even.
+\end{entry}
+
+\begin{entry}{%
+\proto{fxmax}{ \vari{fx} \varii{fx} \dotsfoo}{procedure}
+\proto{fxmin}{ \vari{fx} \varii{fx} \dotsfoo}{procedure}}
+
+These procedures return the maximum or minimum of their arguments.
+\end{entry}
+
+\begin{entry}{%
+\proto{fx+}{ \vari{fx} \varii{fx}}{procedure}
+\proto{fx*}{ \vari{fx} \varii{fx}}{procedure}}
+
+These procedures return the sum or product of their arguments,
+provided that sum or product is a fixnum.  An exception with condition
+type {\cf\&implementation-restriction} is raised if
+that sum or product is not a fixnum.
+\end{entry}
+
+\begin{entry}{%
+\proto{fx-}{ \vari{fx} \varii{fx}}{procedure}
+\rproto{fx-}{ fx}{procedure}}
+
+With two arguments, this procedure returns the difference
+$\vari{fx}-\varii{fx}$, provided that difference is a fixnum.
+
+With one argument, this procedure returns the additive
+inverse of its argument, provided that integer object is a
+fixnum.
+
+An exception with condition type {\cf\&assertion} is raised if the
+mathematically correct result of this procedure is not a fixnum.
+
+\begin{scheme}
+(fx- (least-fixnum))  \xev  \exception{\&assertion}%
+\end{scheme}
+\end{entry}
+
+\begin{entry}{%
+\proto{fxdiv-and-mod}{ \vari{fx} \varii{fx}}{procedure}
+\proto{fxdiv}{ \vari{fx} \varii{fx}}{procedure}
+\proto{fxmod}{ \vari{fx} \varii{fx}}{procedure}
+\proto{fxdiv0-and-mod0}{ \vari{fx} \varii{fx}}{procedure}
+\proto{fxdiv0}{ \vari{fx} \varii{fx}}{procedure}
+\proto{fxmod0}{ \vari{fx} \varii{fx}}{procedure}}
+
+\domain{\varii{Fx} must be nonzero.}
+These procedures implement number-theoretic integer division and
+return the results of the corresponding mathematical operations
+specified in report section~\extref{report:integerdivision}{Integer division}.
+
+\begin{scheme}
+(fxdiv \vari{fx} \varii{fx})         \ev \(\vari{fx}~\mathrm{div}~\varii{fx}\)
+(fxmod \vari{fx} \varii{fx})         \ev \(\vari{fx}~\mathrm{mod}~\varii{fx}\)
+(fxdiv-and-mod \vari{fx} \varii{fx})     \lev \(\vari{fx}~\mathrm{div}~\varii{fx}, \vari{fx}~\mathrm{mod}~\varii{fx}\)\\\>\>; \textrm{two return values}
+(fxdiv0 \vari{fx} \varii{fx})        \ev \(\vari{fx}~\mathrm{div}\sb{0}~\varii{fx}\)
+(fxmod0 \vari{fx} \varii{fx})        \ev \(\vari{fx}~\mathrm{mod}\sb{0}~\varii{fx}\)
+(fxdiv0-and-mod0 \vari{fx} \varii{fx})   \lev \(\vari{fx} \vari{fx}~\mathrm{div}\sb{0}~\varii{fx}, \vari{fx}~\mathrm{mod}\sb{0}~\varii{fx}\)\\\>\>; \textrm{two return values}%
+\end{scheme}
+\end{entry}
+
+\begin{entry}{%
+\proto{fx+/carry}{ \vari{fx} \varii{fx} \variii{fx}}{procedure}}
+
+Returns the two fixnum results of the following computation:
+%
+\begin{scheme}
+(let* ((s (+ \vari{fx} \varii{fx} \variii{fx}))
+       (s0 (mod0 s (expt 2 (fixnum-width))))
+       (s1 (div0 s (expt 2 (fixnum-width)))))
+  (values s0 s1))%
+\end{scheme}
+\end{entry}
+
+\begin{entry}{%
+\proto{fx-/carry}{ \vari{fx} \varii{fx} \variii{fx}}{procedure}}
+
+Returns the two fixnum results of the following computation:
+%
+\begin{scheme}
+(let* ((d (- \vari{fx} \varii{fx} \variii{fx}))
+       (d0 (mod0 d (expt 2 (fixnum-width))))
+       (d1 (div0 d (expt 2 (fixnum-width)))))
+  (values d0 d1))%
+\end{scheme}
+\end{entry}
+
+\begin{entry}{%
+\proto{fx*/carry}{ \vari{fx} \varii{fx} \variii{fx}}{procedure}}
+
+Returns the two fixnum results of the following computation:
+\begin{scheme}
+(let* ((s (+ (* \vari{fx} \varii{fx}) \variii{fx}))
+       (s0 (mod0 s (expt 2 (fixnum-width))))
+       (s1 (div0 s (expt 2 (fixnum-width)))))
+  (values s0 s1))%
+\end{scheme}
+\end{entry}
+
+\begin{entry}{%
+\proto{fxnot}{ \var{fx}}{procedure}}
+
+Returns the unique fixnum that is congruent
+mod $2^w$ to the one's-complement of \var{fx}.
+\end{entry}
+
+\begin{entry}{%
+\proto{fxand}{ \vari{fx} \dotsfoo}{procedure}
+\proto{fxior}{ \vari{fx} \dotsfoo}{procedure}
+\proto{fxxor}{ \vari{fx} \dotsfoo}{procedure}}
+
+These procedures return the fixnum that is the bit-wise ``and'',
+``inclusive or'', or ``exclusive or'' of the two's complement
+representations of their arguments.  If they are passed only one
+argument, they return that argument.  If they are passed no arguments,
+they return the fixnum (either $-1$ or $0$) that acts as identity for the
+operation.
+\end{entry}
+
+\begin{entry}{%
+\proto{fxif}{ \vari{fx} \varii{fx} \variii{fx}}{procedure}}
+
+Returns the fixnum that is the bit-wise ``if'' of the two's complement
+representations of its arguments, i.e.\ for each bit, if it is 1 in
+\vari{fx}, the corresponding bit in \varii{fx} becomes the value of
+the corresponding bit in the result, and if it is 0, the corresponding
+bit in \variii{fx} becomes the corresponding bit in the value of the
+result.  This is the fixnum result of the following computation:
+\begin{scheme}
+(fxior (fxand \vari{fx} \varii{fx})
+       (fxand (fxnot \vari{fx}) \variii{fx}))%
+\end{scheme}
+\end{entry}
+
+\begin{entry}{%
+\proto{fxbit-count}{ \var{fx}}{procedure}}
+
+If \var{fx} is non-negative, this procedure returns the
+number of 1 bits in the two's complement representation of \var{fx}.
+Otherwise it returns the result of the following computation:
+%
+\begin{scheme}
+(fxnot (fxbit-count (fxnot \var{ei})))%
+\end{scheme}
+\end{entry}
+
+\begin{entry}{%
+\proto{fxlength}{ \var{fx}}{procedure}}
+
+Returns the number of bits needed to represent \var{fx} if it is
+positive, and the number of bits needed to represent {\cf (fxnot
+  \var{fx})} if it is negative, which is the fixnum result of the
+following computation:
+\begin{scheme}
+(do ((result 0 (+ result 1))
+     (bits (if (fxnegative? \var{fx})
+               (fxnot \var{fx})
+               \var{fx})
+           (fxarithmetic-shift-right bits 1)))
+    ((fxzero? bits)
+     result))%
+\end{scheme}
+\end{entry}
+
+\begin{entry}{%
+\proto{fxfirst-bit-set}{ \var{fx}}{procedure}}
+
+Returns the index of the least significant $1$ bit in
+the two's complement representation of \var{fx}.  If 
+\var{fx} is $0$, then $-1$ is returned.
+%
+\begin{scheme}
+(fxfirst-bit-set 0)        \ev  -1
+(fxfirst-bit-set 1)        \ev  0
+(fxfirst-bit-set -4)       \ev  2%
+\end{scheme}
+\end{entry}
+
+\begin{entry}{%
+\proto{fxbit-set?}{ \vari{fx} \varii{fx}}{procedure}}
+
+\domain{\varii{Fx} must be non-negative and less than {\cf
+    (fixnum-width)}.}  The {\cf fxbit-set?} procedure returns
+\schtrue{} if the \varii{fx}th bit is 1 in the two's complement
+representation of \vari{fx}, and \schfalse{} otherwise.  This is the
+fixnum result of the following computation:
+%
+\begin{scheme}
+(not
+  (fxzero?
+    (fxand \vari{fx}
+           (fxarithmetic-shift-left 1 \varii{fx}))))%
+\end{scheme}
+%
+\end{entry}
+
+\begin{entry}{%
+\proto{fxcopy-bit}{ \vari{fx} \varii{fx} \variii{fx}}{procedure}}
+
+\domain{\varii{Fx} must be non-negative and less than {\cf
+  (fixnum-width)}. \variii{Fx} must be 0 or
+1.}  The {\cf fxcopy-bit} procedure returns the result of replacing
+the \varii{fx}th bit of \vari{fx} by \variii{fx}, which is
+the result of the following computation:
+\begin{scheme}
+(let* ((mask (fxarithmetic-shift-left 1 \varii{fx})))
+  (fxif mask
+        (fxarithmetic-shift-left \variii{fx} \varii{fx})
+        \vari{fx}))%
+\end{scheme}
+%
+\end{entry}
+
+\begin{entry}{%
+\proto{fxbit-field}{ \vari{fx} \varii{fx} \variii{fx}}{procedure}}
+
+\domain{\varii{Fx} and \variii{fx} must be non-negative and less than
+  {\cf (fixnum-width)}.  Moreover, \varii{fx} must be less than or
+  equal to \variii{fx}.}  The {\cf fxbit-field} procedure returns the
+number represented by the bits at the positions from \varii{fx} (inclusive) to
+$\variii{fx}$ (exclusive), which is
+the fixnum result of the following computation:
+%
+\begin{scheme}
+(let* ((mask (fxnot
+              (fxarithmetic-shift-left -1 \variii{fx}))))
+  (fxarithmetic-shift-right (fxand \vari{fx} mask)
+                            \varii{fx}))%
+\end{scheme}
+%
+\end{entry}
+
+\begin{entry}{%
+\proto{fxcopy-bit-field}{ \vari{fx} \varii{fx} \variii{fx} \variv{fx}}{procedure}}
+
+\domain{\varii{Fx} and \variii{fx} must be non-negative and less than
+  {\cf (fixnum-width)}.  Moreover, \varii{fx} must be less than or
+  equal to \variii{fx}.}  The {\cf fxcopy-bit-field} procedure returns
+the result of replacing in \vari{fx} the bits at positions from
+\varii{fx} (inclusive) to $\variii{fx}$ (exclusive) by the corresponding bits in \variv{fx}, which
+is the fixnum result of the following computation:
+\begin{scheme}
+(let* ((to    \vari{fx})
+       (start \varii{fx})
+       (end   \variii{fx})
+       (from  \variv{fx})
+       (mask1 (fxarithmetic-shift-left -1 start))
+       (mask2 (fxnot
+               (fxarithmetic-shift-left -1 end)))
+       (mask (fxand mask1 mask2)))
+  (fxif mask
+        (fxarithmetic-shift-left from start)
+        to))%
+\end{scheme}
+\end{entry}
+
+\begin{entry}{%
+\proto{fxarithmetic-shift}{ \vari{fx} \varii{fx}}{procedure}}
+
+\domain{The absolute value of \varii{fx} must be less than 
+{\cf (fixnum-width)}.}  If
+%
+\begin{scheme}
+(floor (* \vari{fx} (expt 2 \varii{fx})))%
+\end{scheme}
+%
+is a fixnum, then that fixnum is returned.  Otherwise an exception
+with condition type {\cf\&implementation-\hp{}restriction} is
+raised.
+\end{entry}
+
+\begin{entry}{%
+\proto{fxarithmetic-shift-left}{ \vari{fx} \varii{fx}}{procedure}
+\proto{fxarithmetic-shift-right}{ \vari{fx} \varii{fx}}{procedure}}
+
+\domain{\varii{Fx} must be non-negative, and less than {\cf
+    (fixnum-width)}.}
+  The {\cf fxarithmetic-shift-left} procedure behaves the same as {\cf
+  fxarithmetic-shift}, and {\cf (fxarithmetic-shift-right \vari{fx}
+  \varii{fx})} behaves the same as {\cf (fxarithmetic-shift \vari{fx}
+  (fx- \varii{fx}))}.
+\end{entry}
+
+\begin{entry}{%
+\proto{fxrotate-bit-field}{ \vari{fx} \varii{fx} \variii{fx} \variv{fx}}{procedure}}
+
+\domain{\varii{Fx}, \variii{fx}, and \variv{fx} must be non-negative
+  and less than {\cf (fixnum-width)}.  \varii{Fx} must be less than or
+  equal to \variii{fx}. \variv{Fx} must be less than the difference
+between \variii{fx} and \varii{fx}.}  The {\cf fxrotate-bit-field}
+procedure returns the result of cyclically permuting in \vari{fx} the
+bits at positions from \varii{fx} (inclusive) to \variii{fx}
+(exclusive) by \variv{fx} bits
+towards the more significant bits, which is the result of the
+following computation:
+\begin{scheme}
+(let* ((n     \vari{fx})
+       (start \varii{fx})
+       (end   \variii{fx})
+       (count \variv{fx})
+       (width (fx- end start)))
+  (if (fxpositive? width)
+      (let* ((count (fxmod count width))
+             (field0
+               (fxbit-field n start end))
+             (field1
+               (fxarithmetic-shift-left
+                 field0 count))
+             (field2
+               (fxarithmetic-shift-right
+                 field0 (fx- width count)))
+             (field (fxior field1 field2)))
+        (fxcopy-bit-field n start end field))
+      n))%
+\end{scheme}
+
+\end{entry}
+
+\begin{entry}{%
+\proto{fxreverse-bit-field}{ \vari{fx} \varii{fx} \variii{fx}}{procedure}}
+
+\domain{\varii{Fx} and \variii{fx} must be non-negative and less than
+  {\cf (fixnum-width)}.  Moreover, \varii{fx} must be less than or
+  equal to \variii{fx}.}  The {\cf fxreverse-bit-field} procedure
+returns
+the fixnum obtained from \vari{fx} by reversing the
+order of the bits at positions from \varii{fx} (inclusive) to
+\variii{fx} (exclusive).
+\begin{scheme}
+(fxreverse-bit-field \sharpsign{}b1010010 1 4)    \lev  88 ; \sharpsign{}b1011000%
+\end{scheme}
+
+\end{entry}
+
+\section{Flonums}
+\label{flonumssection}
+
+This section describes the \defrsixlibrary{arithmetic flonums} library.
+
+This section uses \var{fl}, \vari{fl}, \varii{fl}, etc., as
+parameter names for arguments that must be flonums, and \var{ifl}
+as a name for arguments that 
+must be integer-valued flonums, i.e., flonums for which the
+{\cf integer-valued?} predicate returns true.
+
+\begin{entry}{%
+\proto{flonum?}{ obj}{procedure}}
+
+Returns \schtrue{} if \var{obj} is a flonum, \schfalse{} otherwise.
+\end{entry}
+
+\begin{entry}{%
+\proto{real->flonum}{ x}{procedure}}
+
+Returns the best flonum representation of
+\var{x}.
+
+The value returned is a flonum that is numerically closest to the
+argument.
+
+\begin{note}
+  If flonums are represented in binary floating point, then
+  implementations should break ties by preferring
+  the floating-point representation whose least significant bit is
+  zero.
+\end{note}
+\end{entry}
+
+\begin{entry}{%
+\proto{fl=?}{ \vari{fl} \varii{fl} \variii{fl} \dotsfoo}{procedure}
+\proto{fl<?}{ \vari{fl} \varii{fl} \variii{fl} \dotsfoo}{procedure}
+\proto{fl<=?}{ \vari{fl} \varii{fl} \variii{fl} \dotsfoo}{procedure}
+\proto{fl>?}{ \vari{fl} \varii{fl} \variii{fl} \dotsfoo}{procedure}
+\proto{fl>=?}{ \vari{fl} \varii{fl} \variii{fl} \dotsfoo}{procedure}}
+
+These procedures return \schtrue{} if their arguments are (respectively):
+equal, monotonically increasing, monotonically decreasing,
+monotonically nondecreasing, or monotonically nonincreasing,
+\schfalse{} otherwise.  These
+predicates must be transitive.
+
+\begin{scheme}
+(fl= +inf.0 +inf.0)           \ev  \schtrue{}
+(fl= -inf.0 +inf.0)           \ev  \schfalse{}
+(fl= -inf.0 -inf.0)           \ev  \schtrue{}
+(fl= 0.0 -0.0)                \ev  \schtrue{}
+(fl< 0.0 -0.0)                \ev  \schfalse{}
+(fl= +nan.0 \var{fl})               \ev  \schfalse{}
+(fl< +nan.0 \var{fl})               \ev  \schfalse{}%
+\end{scheme}
+\end{entry}
+
+\begin{entry}{%
+\proto{flinteger?}{ fl}{procedure}
+\proto{flzero?}{ fl}{procedure}
+\proto{flpositive?}{ fl}{procedure}
+\proto{flnegative?}{ fl}{procedure}
+\proto{flodd?}{ ifl}{procedure}
+\proto{fleven?}{ ifl}{procedure}
+\proto{flfinite?}{ fl}{procedure}
+\proto{flinfinite?}{ fl}{procedure}
+\proto{flnan?}{ fl}{procedure}}
+
+These numerical predicates test a flonum for a particular property,
+returning \schtrue{} or \schfalse{}.
+The {\cf flinteger?} procedure tests whether the number object is an integer,
+{\cf flzero?} tests whether
+it is {\cf fl=?} to zero, {\cf flpositive?} tests whether it is greater
+than zero, {\cf flnegative?} tests whether it is less
+than zero, {\cf flodd?} tests whether it is odd, 
+{\cf fleven?} tests whether it is even,
+{\cf flfinite?} tests whether it is not an infinity and not a NaN,
+{\cf flinfinite?} tests whether it is an infinity, and
+{\cf flnan?} tests whether it is a NaN.
+
+\begin{scheme}
+(flnegative? -0.0)   \ev \schfalse{}
+(flfinite? +inf.0)   \ev \schfalse{}
+(flfinite? 5.0)      \ev \schtrue{}
+(flinfinite? 5.0)    \ev \schfalse{}
+(flinfinite? +inf.0) \ev \schtrue{}%
+\end{scheme}
+
+\begin{note}
+{\cf (flnegative? -0.0)} must return \schfalse{},
+else it would lose the correspondence with
+{\cf (fl< -0.0 0.0)}, which is \schfalse{}
+according to IEEE 754~\cite{IEEE}.
+\end{note}
+\end{entry}
+
+\begin{entry}{%
+\proto{flmax}{ \vari{fl} \varii{fl} \dotsfoo}{procedure}
+\proto{flmin}{ \vari{fl} \varii{fl} \dotsfoo}{procedure}}
+
+These procedures return the maximum or minimum of their arguments.
+They always return a NaN when one or more of the arguments is a NaN.
+\end{entry}
+
+\begin{entry}{%
+\proto{fl+}{ \vari{fl} \dotsfoo}{procedure}
+\proto{fl*}{ \vari{fl} \dotsfoo}{procedure}}
+
+These procedures return the flonum sum or product of their flonum
+arguments.  In general, they should return the flonum that best
+approximates the mathematical sum or product.  (For implementations
+that represent flonums using IEEE binary floating point, the
+meaning of ``best'' is defined by the IEEE standards.)
+
+\begin{scheme}
+(fl+ +inf.0 -inf.0)      \ev  +nan.0
+(fl+ +nan.0 \var{fl})          \ev  +nan.0
+(fl* +nan.0 \var{fl})          \ev  +nan.0%
+\end{scheme}
+\end{entry}
+
+\begin{entry}{%
+\proto{fl-}{ \vari{fl} \varii{fl} \dotsfoo}{procedure}
+\rproto{fl-}{ fl}{procedure}
+\proto{fl/}{ \vari{fl} \varii{fl} \dotsfoo}{procedure}
+\rproto{fl/}{ fl}{procedure}}
+
+With two or more arguments, these procedures return the flonum
+difference or quotient of their flonum arguments, associating to the
+left.  With one argument, however, they return the additive or
+multiplicative flonum inverse of their argument.  In general, they
+should return the flonum that best approximates the mathematical
+difference or quotient.  (For implementations that represent flonums
+using IEEE binary floating point, the meaning of ``best'' is
+reasonably well-defined by the IEEE standards.)
+
+\begin{scheme}
+(fl- +inf.0 +inf.0)      \ev  +nan.0%
+\end{scheme}
+
+For undefined quotients, {\cf fl/} behaves as specified by the
+IEEE standards:
+
+\begin{scheme}
+(fl/ 1.0 0.0)  \ev +inf.0
+(fl/ -1.0 0.0) \ev -inf.0
+(fl/ 0.0 0.0)  \ev +nan.0%
+\end{scheme}
+\end{entry}
+
+\begin{entry}{%
+\proto{flabs}{ fl}{procedure}}
+
+Returns the absolute value of \var{fl}.
+\end{entry}
+
+\begin{entry}{%
+\proto{fldiv-and-mod}{ \vari{fl} \varii{fl}}{procedure}
+\proto{fldiv}{ \vari{fl} \varii{fl}}{procedure}
+\proto{flmod}{ \vari{fl} \varii{fl}}{procedure}
+\proto{fldiv0-and-mod0}{ \vari{fl} \varii{fl}}{procedure}
+\proto{fldiv0}{ \vari{fl} \varii{fl}}{procedure}
+\proto{flmod0}{ \vari{fl} \varii{fl}}{procedure}}
+
+These procedures implement number-theoretic integer division and
+return the results of the corresponding mathematical operations
+specified in report section~\extref{report:integerdivision}{Integer division}.  For zero divisors, these
+procedures may return a NaN or some unspecified flonum.
+
+\begin{scheme}
+(fldiv \vari{fl} \varii{fl})         \ev \(\vari{fl}~\mathrm{div}~\varii{fl}\)
+(flmod \vari{fl} \varii{fl})         \ev \(\vari{fl}~\mathrm{mod}~\varii{fl}\)
+(fldiv-and-mod \vari{fl} \varii{fl})     \lev \(\vari{fl}~\mathrm{div}~\varii{fl}, \vari{fl}~\mathrm{mod}~\varii{fl}\)\\\>\>; \textrm{two return values}
+(fldiv0 \vari{fl} \varii{fl})        \ev \(\vari{fl}~\mathrm{div}_0~\varii{fl}\)
+(flmod0 \vari{fl} \varii{fl})        \ev \(\vari{fl}~\mathrm{mod}_0~\varii{fl}\)
+(fldiv0-and-mod0 \vari{fl} \varii{fl})   \lev \(\vari{fl}~\mathrm{div}_0~\varii{fl}, \vari{fl}~\mathrm{mod}_0~\varii{fl}\)\\\>\>; \textrm{two return values}%
+\end{scheme}
+
+\end{entry}
+
+\begin{entry}{%
+\proto{flnumerator}{ fl}{procedure}
+\proto{fldenominator}{ fl}{procedure}}
+
+These procedures return the numerator or denominator of \var{fl}
+as a flonum; the result is computed as if \var{fl} was represented as
+a fraction in lowest terms.  The denominator is always positive.  The
+denominator of 0.0 is defined to be 1.0.
+%
+\begin{scheme}
+(flnumerator +inf.0)           \ev  +inf.0
+(flnumerator -inf.0)           \ev  -inf.0
+(fldenominator +inf.0)         \ev  1.0
+(fldenominator -inf.0)         \ev  1.0
+(flnumerator 0.75)             \ev  3.0 ; \textrm{probably}
+(fldenominator 0.75)           \ev  4.0 ; \textrm{probably}%
+\end{scheme}
+
+Implementations should implement following behavior:
+
+\begin{scheme}
+(flnumerator -0.0)             \ev -0.0%
+\end{scheme}
+\end{entry}
+
+\begin{entry}{%
+\proto{flfloor}{ fl}{procedure}
+\proto{flceiling}{ fl}{procedure}
+\proto{fltruncate}{ fl}{procedure}
+\proto{flround}{ fl}{procedure}}
+
+These procedures return integral flonums for flonum arguments that are
+not infinities or NaNs.  For such arguments, {\cf flfloor} returns the
+largest integral flonum not larger than \var{fl}.  The {\cf flceiling}
+procedure
+returns the smallest integral flonum not smaller than \var{fl}.
+The {\cf fltruncate} procedure returns the integral flonum closest to \var{fl} whose
+absolute value is not larger than the absolute value of \var{fl}.
+The {\cf flround} procedure returns the closest integral flonum to \var{fl},
+rounding to even when \var{fl} represents a number halfway between two integers.
+
+Although infinities and NaNs are not integer objects, these procedures return
+an infinity when given an infinity as an argument, and a NaN when
+given a NaN:
+
+\begin{scheme}
+(flfloor +inf.0)                       \ev  +inf.0
+(flceiling -inf.0)                     \ev  -inf.0
+(fltruncate +nan.0)                    \ev  +nan.0%
+\end{scheme}
+\end{entry}
+
+\begin{entry}{%
+\proto{flexp}{ fl}{procedure}
+\proto{fllog}{ fl}{procedure}
+\rproto{fllog}{ \vari{fl} \varii{fl}}{procedure}
+\proto{flsin}{ fl}{procedure}
+\proto{flcos}{ fl}{procedure}
+\proto{fltan}{ fl}{procedure}
+\proto{flasin}{ fl}{procedure}
+\proto{flacos}{ fl}{procedure}
+\proto{flatan}{ fl}{procedure}
+\rproto{flatan}{ \vari{fl} \varii{fl}}{procedure}}
+
+These procedures compute the usual transcendental functions.  
+The {\cf flexp} procedure computes the base-$e$ exponential of \var{fl}.
+The {\cf fllog} procedure with a single argument computes the natural logarithm of
+\var{fl} (not the base ten logarithm); {\cf (fllog \vari{fl}
+  \varii{fl})} computes the base-\varii{fl} logarithm of \vari{fl}.
+The {\cf flasin}, {\cf flacos}, and {\cf flatan} procedures compute arcsine,
+arccosine, and arctangent, respectively.  {\cf (flatan \vari{fl}
+  \varii{fl})} computes the arc tangent of \vari{fl}/\varii{fl}.
+
+See report
+section~\extref{report:transcendentalfunctions}{Transcendental functions} for the underlying
+mathematical operations.  In the event that these operations do not
+yield a real result for the given arguments, the result may be a NaN,
+or may be some unspecified flonum.
+
+Implementations that use IEEE binary floating-point arithmetic 
+should follow the relevant standards for these procedures.
+
+\begin{scheme}
+(flexp +inf.0)                \ev +inf.0
+(flexp -inf.0)                \ev 0.0
+(fllog +inf.0)                \ev +inf.0
+(fllog 0.0)                   \ev -inf.0
+(fllog -0.0)                  \ev \unspecified\\\>; \textrm{if -0.0 is distinguished}
+(fllog -inf.0)                \ev +nan.0
+(flatan -inf.0)               \lev -1.5707963267948965\\\>; \textrm{approximately}
+(flatan +inf.0)               \lev 1.5707963267948965\\\>; \textrm{approximately}%
+\end{scheme}
+\end{entry}
+
+\begin{entry}{%
+\proto{flsqrt}{ fl}{procedure}}
+
+Returns the principal square root of \var{fl}. For $-0.0$,
+{\cf flsqrt} should return $-0.0$; for other negative arguments,
+the result may be a NaN or some unspecified flonum.
+
+\begin{scheme}
+(flsqrt +inf.0)               \ev  +inf.0
+(flsqrt -0.0)                 \ev  -0.0%
+\end{scheme}
+\end{entry}
+
+\begin{entry}{%
+\proto{flexpt}{ \vari{fl} \varii{fl}}{procedure}}
+
+\domain{Either \vari{fl} should be non-negative, or, if \vari{fl} is
+  negative, \varii{fl} should be an integer object.}
+The {\cf flexpt} procedure returns \vari{fl} raised to the power \varii{fl}.  If \vari{fl} is
+negative and \varii{fl} is not an integer object, the result may be a
+NaN, or may be some unspecified flonum.  If \vari{fl} is zero, then
+the result is zero.
+\end{entry}
+
+\begin{entry}{%
+\ctproto{no-infinities}
+\proto{make-no-infinities-violation}{ obj}{procedure}
+\proto{no-infinities-violation?}{ obj}{procedure}
+\ctproto{no-nans}
+\proto{make-no-nans-violation}{ obj}{procedure}
+\proto{no-nans-violation?}{ obj}{procedure}}
+
+These condition types could be defined by the following code:
+
+\begin{scheme}
+(define-condition-type \&no-infinities
+    \&implementation-restriction
+  make-no-infinities-violation
+  no-infinities-violation?)
+
+(define-condition-type \&no-nans
+    \&implementation-restriction
+  make-no-nans-violation no-nans-violation?)%
+\end{scheme}
+
+These types describe that a program has executed an arithmetic
+operations that is specified to return an infinity or a NaN,
+respectively, on a Scheme implementation that is not able to represent
+the infinity or NaN.  (See report section~\extref{report:infinitiesnanssection}{Representability of infinities and NaNs}.)
+\end{entry}
+
+\begin{entry}{%
+\proto{fixnum->flonum}{ fx}{procedure}}
+
+Returns a flonum that is numerically closest to \var{fx}.
+
+\begin{note}
+The result of this procedure may not be
+numerically equal to \var{fx}, because the fixnum precision
+may be greater than the flonum precision.
+\end{note}
+\end{entry}
+
+\section{Exact bitwise arithmetic}
+\label{exactsection}
+
+This section describes the \defrsixlibrary{arithmetic bitwise}
+library.  The exact bitwise arithmetic provides generic operations on
+exact integer objects.  This section uses \var{ei}, \vari{ei}, \varii{ei}, etc.,
+as parameter names that must be exact integer objects.
+
+
+\begin{entry}{%
+\proto{bitwise-not}{ ei}{procedure}}
+
+Returns the exact integer object whose two's complement representation is the
+one's complement of the two's complement representation of \var{ei}.
+\end{entry}
+
+\begin{entry}{%
+\proto{bitwise-and}{ \vari{ei} \dotsfoo}{procedure}
+\proto{bitwise-ior}{ \vari{ei} \dotsfoo}{procedure}
+\proto{bitwise-xor}{ \vari{ei} \dotsfoo}{procedure}}
+
+These procedures return the exact integer object that is the bit-wise
+``and'', ``inclusive or'', or ``exclusive or'' of the two's complement
+representations of their arguments.  If they are passed only one
+argument, they return that argument.  If they are passed no arguments,
+they return the integer object (either $-1$ or $0$) that acts as identity for
+the operation.
+\end{entry}
+
+\begin{entry}{%
+\proto{bitwise-if}{ \vari{ei} \varii{ei} \variii{ei}}{procedure}}
+
+Returns the exact integer object that is the bit-wise ``if'' of the two's complement
+representations of its arguments, i.e.\ for each bit, if it is 1 in
+\vari{ei}, the corresponding bit in \varii{ei} becomes the value of
+the corresponding bit in the result, and if it is 0, the corresponding
+bit in \variii{ei} becomes the corresponding bit in the value of the
+result.
+This is the result of the following computation:
+\begin{scheme}
+(bitwise-ior (bitwise-and \vari{ei} \varii{ei})
+             (bitwise-and (bitwise-not \vari{ei}) \variii{ei}))%
+\end{scheme}
+\end{entry}
+
+\begin{entry}{%
+\proto{bitwise-bit-count}{ ei}{procedure}}
+ 
+If \var{ei} is non-negative, this procedure returns the number of
+1 bits in the two's complement representation of \var{ei}.
+Otherwise it returns the result of the following computation:
+%
+\begin{scheme}
+(bitwise-not (bitwise-bit-count (bitwise-not \var{ei})))%
+\end{scheme}
+\end{entry}
+
+\begin{entry}{%
+\proto{bitwise-length}{ ei}{procedure}}
+
+Returns the number of bits needed to represent \var{ei} if it is
+positive, and the number of bits needed to represent {\cf (bitwise-not
+  \var{ei})} if it is negative, which is the exact integer object that
+is the result of the following computation:
+\begin{scheme}
+(do ((result 0 (+ result 1))
+     (bits (if (negative? \var{ei})
+               (bitwise-not \var{ei})
+               \var{ei})
+           (bitwise-arithmetic-shift bits -1)))
+    ((zero? bits)
+     result))%
+\end{scheme}
+\end{entry}
+
+\begin{entry}{%
+\proto{bitwise-first-bit-set}{ ei}{procedure}}
+
+Returns the index of the least significant $1$
+bit in the two's complement representation of \var{ei}.
+If \var{ei} is $0$, then $-1$ is returned.
+\begin{scheme}
+(bitwise-first-bit-set 0)        \ev  -1
+(bitwise-first-bit-set 1)        \ev  0
+(bitwise-first-bit-set -4)       \ev  2%
+\end{scheme}
+\end{entry}
+
+\begin{entry}{%
+\proto{bitwise-bit-set?}{ \vari{ei} \varii{ei}}{procedure}}
+
+\domain{\varii{Ei} must be non-negative.}
+The {\cf bitwise-bit-set?} procedure returns
+\schtrue{} if the \varii{ei}th bit is 1 in the two's complement
+representation of \vari{ei}, and \schfalse{}
+otherwise.  This is the result of the following computation:
+\begin{scheme}
+(not (zero?
+       (bitwise-and
+         (bitwise-arithmetic-shift-left 1 \varii{ei})
+         \vari{ei})))%
+\end{scheme}
+\end{entry}
+
+\begin{entry}{%
+\proto{bitwise-copy-bit}{ \vari{ei} \varii{ei} \variii{ei}}{procedure}}
+
+\domain{\varii{Ei} must be non-negative, and \variii{ei}
+must be either $0$ or $1$.}
+The {\cf bitwise-copy-bit} procedure returns the result of replacing
+the \varii{ei}th bit of \vari{ei} by the \varii{ei}th bit of \variii{ei}, which is
+the result of the following computation:
+\begin{scheme}
+(let* ((mask (bitwise-arithmetic-shift-left 1 \varii{ei})))
+  (bitwise-if mask
+            (bitwise-arithmetic-shift-left \variii{ei} \varii{ei})
+            \vari{ei}))%
+\end{scheme}
+\end{entry}
+
+\begin{entry}{%
+\proto{bitwise-bit-field}{ \vari{ei} \varii{ei} \variii{ei}}{procedure}}
+
+\domain{\varii{Ei} and \variii{ei} must be non-negative, and
+  \varii{ei} must be less than or equal to \variii{ei}.}
+The {\cf bitwise-bit-field} procedure returns the
+number represented by the bits at the positions from \varii{ei}
+(inclusive) to $\variii{ei}$ (exclusive), which is
+the result of the following computation:
+%
+\begin{scheme}
+(let ((mask
+       (bitwise-not
+        (bitwise-arithmetic-shift-left -1 \variii{ei}))))
+  (bitwise-arithmetic-shift-right
+    (bitwise-and \vari{ei} mask)
+    \varii{ei}))%
+\end{scheme}
+\end{entry}
+
+\begin{entry}{%
+\proto{bitwise-copy-bit-field}{ \vari{ei} \varii{ei} \variii{ei} \variv{ei}}{procedure}}
+
+\domain{\varii{Ei} and \variii{ei} must be non-negative,
+and \varii{ei} must be less than or equal to \variii{ei}.}
+The {\cf bitwise-copy-bit-field} procedure returns
+the result of replacing in \vari{ei} the bits at positions from
+\varii{ei} (inclusive) to $\variii{ei}$ (exclusive) by the corresponding bits in \variv{ei}, which
+is the fixnum result of the following computation:
+%
+\begin{scheme}
+(let* ((to    \vari{ei})
+       (start \varii{ei})
+       (end   \variii{ei})
+       (from  \variv{ei})
+       (mask1
+         (bitwise-arithmetic-shift-left -1 start))
+       (mask2
+         (bitwise-not
+           (bitwise-arithmetic-shift-left -1 end)))
+       (mask (bitwise-and mask1 mask2)))
+  (bitwise-if mask
+              (bitwise-arithmetic-shift-left from
+                                             start)
+              to))%
+\end{scheme}
+\end{entry}
+
+\begin{entry} {%
+\proto{bitwise-arithmetic-shift}{ \vari{ei} \varii{ei}}{procedure}}
+
+Returns the result of the following computation:
+%
+\begin{scheme}
+(floor (* \vari{ei} (expt 2 \varii{ei})))%
+\end{scheme}
+
+Examples:
+%
+\begin{scheme}
+(bitwise-arithmetic-shift -6 -1) \lev -3
+(bitwise-arithmetic-shift -5 -1) \lev -3
+(bitwise-arithmetic-shift -4 -1) \lev -2
+(bitwise-arithmetic-shift -3 -1) \lev -2
+(bitwise-arithmetic-shift -2 -1) \lev -1
+(bitwise-arithmetic-shift -1 -1) \lev -1%
+\end{scheme}
+\end{entry}
+
+\begin{entry}{%
+\proto{bitwise-arithmetic-shift-left}{ \vari{ei} \varii{ei}}{procedure}
+\proto{bitwise-arithmetic-shift-right}{ \vari{ei} \varii{ei}}{procedure}}
+
+\domain{\varii{Ei} must be non-negative.}  The {\cf
+  bitwise-\hp{}arithmetic-\hp{}shift-\hp{}left} procedure returns the same result as {\cf
+  bitwise-arithmetic-shift}, and
+\begin{scheme}
+(bitwise-arithmetic-shift-right \vari{ei} \varii{ei})%
+\end{scheme}
+returns the same result as 
+\begin{scheme}
+(bitwise-arithmetic-shift \vari{ei} (- \varii{ei}))\textrm{.}%
+\end{scheme}
+\end{entry}
+
+\begin{entry}{%
+\proto{bitwise-rotate-bit-field}{ \vari{ei} \varii{ei} \variii{ei} \variv{ei}}{procedure}}
+
+\domain{\varii{Ei}, \variii{ei}, \variv{ei} must be non-negative, 
+\varii{ei} must be less than or equal to \variii{ei}, and
+\variv{ei} must be non-negative.}
+procedure returns the result of cyclically permuting in \vari{ei} the
+bits at positions from \varii{ei} (inclusive) to \variii{ei} (exclusive) by \variv{ei} bits
+towards the more significant bits, which is the result of the
+following computation:
+%
+\begin{scheme}
+(let* ((n     \vari{ei})
+       (start \varii{ei})
+       (end   \variii{ei})
+       (count \variv{ei})
+       (width (- end start)))
+  (if (positive? width)
+      (let* ((count (mod count width))
+             (field0
+               (bitwise-bit-field n start end))
+             (field1 (bitwise-arithmetic-shift-left
+                       field0 count))
+             (field2 (bitwise-arithmetic-shift-right
+                       field0
+                       (- width count)))
+             (field (bitwise-ior field1 field2)))
+        (bitwise-copy-bit-field n start end field))
+      n))%
+\end{scheme}
+\end{entry}
+
+\begin{entry}{%
+\proto{bitwise-reverse-bit-field}{ \vari{ei} \varii{ei} \variii{ei}}{procedure}}
+
+\domain{\varii{Ei} and \variii{ei} must be non-negative, and
+  \varii{ei} must be less than or equal to \variii{ei}.}  The {\cf bitwise-reverse-bit-field} procedure returns
+the result obtained from \vari{ei} by reversing the
+order of the bits at positions from \varii{ei} (inclusive) to
+\variii{ei} (exclusive).
+\begin{scheme}
+(bitwise-reverse-bit-field \sharpsign{}b1010010 1 4)   \lev  88 ; \sharpsign{}b1011000%
+\end{scheme}
+\end{entry}
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "r6rs-lib"
+%%% End: 

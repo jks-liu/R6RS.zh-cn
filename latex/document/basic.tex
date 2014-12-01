@@ -1,0 +1,389 @@
+%\vfill\eject
+\chapter{Semantic concepts}
+\label{basicchapter}
+
+\section{Programs and libraries}
+
+A Scheme program consists of a \textit{top-level program\index{top-level program}}
+together with a set of \textit{libraries\index{library}}, each
+of which defines a part of the program connected to the others through
+explicitly specified exports and imports.  A library consists of a set
+of export and import specifications and a body, which consists of
+definitions, and expressions.
+A top-level program is similar to a library, but
+has no export specifications.
+Chapters~\ref{librarychapter} and \ref{programchapter}
+describe the syntax and semantics of libraries and top-level programs,
+respectively. 
+Chapter~\ref{baselibrarychapter} describes a base
+library that defines many of the constructs traditionally associated with
+Scheme.
+A separate report~\cite{R6RS-libraries}
+describes the various \textit{standard libraries}\index{standard
+  library} provided by a Scheme system.
+
+The division between the base library and the other standard libraries is
+based on use, not on construction.  In particular, some facilities
+that are typically implemented as ``primitives'' by a compiler or the
+run-time system rather than in terms of other standard procedures
+ or syntactic forms are not part of the base library, but are defined in
+separate libraries.  Examples include the fixnums and flonums libraries,
+the exceptions and conditions libraries, and the libraries for
+records.
+
+\section{Variables, keywords, and regions}
+\label{specialformsection}
+\label{variablesection}
+
+Within the body of a library or top-level program,
+an identifier\index{identifier} may name a kind of syntax, or it may name
+a location where a value can be stored.  An identifier that names a kind
+of syntax is called a {\em keyword}\mainindex{keyword}, or {\em syntactic keyword}\mainindex{syntactic keyword},
+and is said to be {\em bound} to that kind of syntax (or, in the case of a
+syntactic abstraction, a {\em transformer} that translates the syntax into more
+primitive forms; see section~\ref{macrosection}).  An identifier that names a
+location is called a {\em variable}\mainindex{variable} and is said to be
+{\em bound} to that location.  
+At each point within a top-level program or a library, a specific, fixed set
+of identifiers is bound.  The set of these identifiers, the set of \textit{visible
+bindings}\mainindex{binding}, is
+known as the {\em environment} in effect at that point.
+
+Certain forms are used to create syntactic abstractions
+and to bind keywords to transformers for those new syntactic abstractions, while other
+forms create new locations and bind variables to those
+locations.  Collectively, these forms are called {\em binding
+  constructs}.\mainindex{binding construct}
+Some binding constructs take the form of
+\textit{definitions}\index{definition}, while others are
+expressions.
+With the exception of exported library bindings, a binding created
+by a definition is visible only within the body in which the
+definition appears, e.g., the body of a library, top-level program,
+or {\cf lambda} expression.
+Exported library bindings are also visible within the bodies of
+the libraries and top-level programs that import them (see
+chapter~\ref{librarychapter}).
+
+Expressions that bind variables include the {\cf lambda},
+{\cf let}, {\cf let*}, {\cf letrec}, {\cf letrec*}, {\cf let-values},
+and {\cf let*-values} forms from the base library (see
+sections~\ref{lambda}, \ref{letrec}).
+Of these, {\cf lambda} is the most fundamental.
+Variable definitions appearing within the body of 
+such an expression, or within the bodies of a library or top-level
+program, are treated as a set of
+{\cf letrec*} bindings.
+In addition, for library bodies, 
+the variables exported from the library can be referenced by
+importing libraries and top-level programs.
+
+Expressions that bind keywords include the {\cf
+  let-syntax} and {\cf letrec-syntax} forms (see
+section~\ref{bindsyntax}).  A {\cf define} form (see section~\ref{define}) is a
+definition that creates a variable binding (see 
+section~\ref{defines}), and a {\cf define-syntax} form is
+a definition that creates a keyword binding (see
+section~\ref{syntaxdefinitionsection}).
+
+\vest Scheme is a statically scoped language with
+block structure.  To each place in a top-level program or library body where an identifier is bound 
+there corresponds a \defining{region} of code within which
+the binding is visible.  The region is determined by the particular
+binding construct that establishes the binding; if the binding is
+established by a {\cf lambda} expression, for example, then its region
+is the entire {\cf lambda} expression.  Every mention of an identifier
+refers to the binding of the identifier that establishes the
+innermost of the regions containing the use.  If a use of an
+identifier appears in a place where none of the surrounding expressions
+contains a binding for the identifier, the use may refer to a
+binding established by a definition or import at the top of the
+enclosing library or top-level program
+(see chapter~\ref{librarychapter}).
+If there is no binding for the identifier,
+it is said to be \defining{unbound}.\mainindex{bound}
+
+\section{Exceptional situations}
+\label{exceptionalsituationsection}
+
+\mainindex{exceptional situation}A variety of exceptional situations
+are distinguished in this report, among them violations of syntax,
+violations of a procedure's specification, violations of
+implementation restrictions, and exceptional situations in the
+environment.  When an exceptional situation is detected by the
+implementation, an \textit{exception is raised}\mainindex{raise},
+which means that a special procedure called the \textit{current
+  exception handler} is called.  A program can also raise an
+exception, and override the current exception handler; see
+library section~\extref{lib:exceptionssection}{Exceptions}.
+
+When an exception is raised, an object is provided that
+describes the nature of the exceptional situation.  The report uses
+the condition system described in library section~\extref{lib:conditionssection}{Conditions} to
+describe exceptional situations, classifying them by condition types.
+
+Some exceptional situations allow continuing the program if the
+exception handler takes appropriate action.  The corresponding
+exceptions are called \textit{continuable}\index{continuable exception}.
+For most of the exceptional situations described in this report,
+portable programs cannot rely upon the exception being continuable
+at the place where the situation was detected.
+For those exceptions, the exception handler that is invoked by the
+exception should not return.
+In some cases, however, continuing is permissible, and the
+handler may return.  See library section~\extref{lib:exceptionssection}{Exceptions}.
+
+Implementations must raise an exception
+when they are unable to continue correct execution
+of a correct program due to some \defining{implementation restriction}.  For
+example, an implementation that does not support infinities
+must raise an exception with condition type
+{\cf\&implementation-restriction} when it evaluates an expression
+whose result would be an infinity.
+
+Some possible implementation restrictions such as the lack of
+representations for NaNs and infinities (see
+section~\ref{infinitiesnanssection}) are anticipated by this report,
+and implementations typically must raise an exception of the
+appropriate condition type if they encounter such a situation.
+
+This report uses the phrase ``an exception is raised'' synonymously
+with ``an exception must be raised''.
+This report uses the phrase ``an exception with condition type \var{t}''
+to indicate that the object provided with the
+exception is a condition object of the specified type.
+The phrase ``a continuable exception is raised'' indicates an
+exceptional situation that permits the exception handler to return.
+
+\section{Argument checking}
+\label{argumentcheckingsection}
+
+\mainindex{argument checking}
+Many procedures specified in this report or as part of a
+standard library restrict the arguments they accept.
+Typically, a procedure accepts only specific numbers and types of arguments.
+Many syntactic forms similarly restrict the values to which one or
+more of their subforms can evaluate.
+These restrictions imply responsibilities\mainindex{responsibility} for
+both the programmer and the implementation.
+Specifically, the programmer is responsible for ensuring
+that the values indeed adhere to the restrictions described
+in the specification.  The implementation must check
+that the restrictions in the specification are indeed met, to the
+extent that it is reasonable, possible, and necessary to allow the
+specified operation to complete successfully.  The implementation's
+responsibilities are specified in more detail in
+chapter~\ref{entryformatchapter} and throughout the report.
+
+Note that it is not always possible for an implementation to completely check
+the restrictions set forth in a specification.  For example, if an
+operation is specified to accept a procedure with specific properties,
+checking of these properties is undecidable in general.  Similarly,
+some operations accept both lists and procedures that are
+called by these operations.  Since lists can be mutated by the procedures
+through the \rsixlibrary{mutable-pairs} library (see library
+chapter~\extref{lib:pairmutationchapter}{Mutable pairs}), an argument that is a list
+when the operation starts may become a non-list during the execution of the operation.
+Also, the procedure might escape to a different continuation,
+preventing the operation from performing more checks.
+Requiring the operation to check that the argument is a list after
+each call to such a procedure would be impractical.  Furthermore, some
+operations that accept lists only need to traverse these lists
+partially to perform their function; requiring the implementation to
+traverse the remainder of the list to verify that all specified
+restrictions have been met might
+violate reasonable performance assumptions.  For these reasons, the
+programmer's obligations may exceed the checking obligations of the
+implementation.
+
+When an implementation detects a violation of a restriction for an
+argument, it must raise an exception with condition type
+{\cf\&assertion} in a way consistent with the safety of execution as
+described in section~\ref{safetysection}.
+
+\section{Syntax violations}
+
+The subforms of a special form usually need to obey certain syntactic
+restrictions.  As forms may be subject to macro expansion, which may
+not terminate, the question of whether they obey the specified
+restrictions is undecidable in general.
+
+When macro expansion terminates, however, implementations must detect
+violations of the syntax.  A \defining{syntax violation} is an error
+with respect to the syntax of library bodies, top-level bodies,
+or the ``\exprtype'' entries in the
+specification of the base library or the standard libraries.
+Moreover, attempting to assign to an immutable variable (i.e., the
+variables exported by a library; see
+section~\ref{importsareimmutablesection}) is also
+considered a syntax violation.
+
+If a top-level or library form in a program is not syntactically
+correct, then the implementation must raise an exception with
+condition type {\cf\&syntax}, and execution of that top-level program
+or library must not be allowed to begin.
+
+\section{Safety}
+\label{safetysection}
+
+The standard libraries whose exports are described by this document
+are said to be \defining{safe libraries}.  Libraries and top-level
+programs that import only from safe libraries are also said to be safe.
+
+As defined by this document, the Scheme programming language
+is safe in the following sense:
+The execution of a safe top-level program
+cannot go so badly wrong as to crash or to continue to
+execute while behaving in ways that are
+inconsistent with the semantics described in this document,
+unless an exception is raised.
+
+Violations of an implementation restriction must raise an
+exception with condition type {\cf\&implementation-\hp{}restriction},
+as must all
+violations and errors that would otherwise threaten system
+integrity in ways that might result in execution that is
+inconsistent with the semantics described in this document.
+
+The above safety properties are guaranteed only for top-level programs
+and libraries that are said to be safe.  In particular,
+implementations may provide access to unsafe libraries in ways that
+cannot guarantee safety.
+
+\section{Boolean values}
+\label{booleanvaluessection}
+
+Although there is a separate boolean type, any Scheme value can be
+used as a boolean value for the purpose of a conditional test.  In a
+conditional test, all values count as true in such a test except for
+\schfalse{}.  This report uses the word ``true'' to refer to any
+Scheme value except \schfalse{}, and the word ``false'' to refer to
+\schfalse{}. \mainindex{true} \mainindex{false}
+
+\section{Multiple return values}
+\label{multiplereturnvaluessection}
+
+A Scheme expression can evaluate to an arbitrary finite number of
+values.  These values are passed to the expression's continuation.
+
+Not all continuations accept any number of values. For example, a continuation that
+accepts the argument to a procedure call is guaranteed to accept
+exactly one value.  The effect of passing some other number of values
+to such a continuation is unspecified.  The {\cf call-with-values}
+procedure
+described in section~\ref{controlsection} makes it possible to create
+continuations that accept specified numbers of return values.
+If the number of
+return values passed to a continuation created by a call to
+{\cf call-with-values} is not accepted by its consumer
+that was passed in that call, then an exception is raised.
+A more complete description of the number of values accepted by
+different continuations and the consequences of passing an unexpected
+number of values is given in the description of the {\cf values}
+procedure in section~\ref{values}.
+
+A number of forms in the base library have sequences of expressions
+as subforms that are evaluated sequentially, with the return values of
+all but the last expression being discarded.  The continuations
+discarding these values accept any number of values.
+
+\section{Unspecified behavior}
+
+\vest If an expression is said to ``return unspecified values'',
+then the expression must evaluate without raising an exception, but
+the values returned depend on the implementation; this report
+explicitly does not say how many or what values should be returned.
+Programmers should not rely on a specific number of return values or
+the specific values themselves.
+\mainindex{unspecified behavior}\mainindex{unspecified values}
+
+
+\section{Storage model}
+\label{storagemodel}
+
+Variables and objects such as pairs, vectors, bytevectors, strings,
+hashtables, and records implicitly
+refer to locations\mainindex{location} or sequences of locations.  A string, for
+example, contains as many locations as there are characters in the string. 
+(These locations need not correspond to a full machine word.) A new value may be
+stored into one of these locations using the {\tt string-set!} procedure, but
+the string contains the same locations as before.
+
+An object fetched from a location, by a variable reference or by
+a procedure such as {\cf car}, {\cf vector-ref}, or {\cf string-ref}, is
+equivalent in the sense of \ide{eqv?} % and \ide{eq?} ??
+(section~\ref{equivalencesection})
+to the object last stored in the location before the fetch.
+
+Every location is marked to show whether it is in use.
+No variable or object ever refers to a location that is not in use.
+Whenever this report speaks of storage being allocated for a variable
+or object, what is meant is that an appropriate number of locations are
+chosen from the set of locations that are not in use, and the chosen
+locations are marked to indicate that they are now in use before the variable
+or object is made to refer to them.
+
+It is desirable for constants\index{constant} (i.e. the values of
+literal expressions) to reside in read-only memory.  To express this,
+it is convenient to imagine that every object that refers to locations
+is associated with a flag telling whether that object is
+mutable\index{mutable} or immutable\index{immutable}.  Literal
+constants, the strings returned by \ide{symbol->string}, records with
+no mutable fields, and other values explicitly designated as immutable
+are immutable objects, while all objects created by the other
+procedures listed in this report are mutable.  An attempt to store a
+new value into a location referred to by an immutable object
+should raise an exception with condition type {\cf\&assertion}.
+
+
+\section{Proper tail recursion}
+\label{proper tail recursion}
+
+Implementations of Scheme must be
+{\em properly tail-recursive}\mainindex{proper tail recursion}.
+Procedure calls that occur in certain syntactic
+contexts called \textit{tail contexts}\index{tail context} 
+are \textit{tail calls}\mainindex{tail call}.  A Scheme implementation is
+properly tail-recursive if it supports an unbounded number of active
+tail calls.  A call is {\em active} if the called procedure may still
+return.  Note that this includes regular returns as well as returns
+through continuations captured earlier by
+{\cf call-with-current-continuation} that are later invoked.
+In the absence of captured continuations, calls could
+return at most once and the active calls would be those that had not
+yet returned.
+A formal definition of proper tail recursion can be found
+in Clinger's paper~\cite{propertailrecursion}.  The rules for identifying tail calls
+in constructs from the \rsixlibrary{base} library are described in
+section~\ref{basetailcontextsection}.
+
+\section{Dynamic extent and the dynamic environment}
+\label{dynamicenvironmentsection}
+
+For a procedure call, the time between when it is initiated and when
+it returns is called its \defining{dynamic extent}.  In Scheme, {\cf
+  call-with-current-continuation}
+(section~\ref{call-with-current-continuation}) allows reentering a
+dynamic extent after its procedure call has returned.  Thus, the
+dynamic extent of a call may not be a single, connected time period.
+
+Some operations described in the report acquire information in
+addition to their explicit arguments from the \defining{dynamic
+  environment}.  For example, {\cf call-\hp{}with-\hp{}current-\hp{}continuation}
+accesses an implicit context established
+by {\cf dynamic-wind} (section~\ref{dynamic-wind}), and the {\cf
+  raise} procedure (library
+section~\extref{lib:exceptionssection}{Exceptions}) accesses the
+current exception handler.  The operations that modify the dynamic
+environment do so dynamically, for the dynamic extent of a call to a
+procedure like {\cf dynamic-wind} or {\cf with-exception-handler}.
+When such a call returns, the previous dynamic environment is
+restored.  The dynamic environment can be thought of as part of the
+dynamic extent of a call.  Consequently, it is captured by {\cf
+  call-with-current-continuation}, and restored by invoking the escape
+procedure it creates.
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "r6rs"
+%%% End: 

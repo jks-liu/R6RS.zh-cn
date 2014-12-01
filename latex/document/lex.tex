@@ -1,0 +1,812 @@
+% Lexical structure
+\hyphenation{white-space}
+%%\vfill\eject
+\chapter{Lexical syntax and datum syntax}
+\label{readsyntaxchapter}
+
+The syntax of Scheme code is organized in three levels:
+%
+\begin{enumerate}
+\item the \textit{lexical syntax} that describes how a program text is split
+  into a sequence of lexemes,
+\item the \textit{datum syntax}, formulated in terms of the lexical
+  syntax, that structures the lexeme sequence as a sequence of
+  \textit{syntactic data\mainindex{datum}\mainindex{syntactic
+      datum}}, where a syntactic datum is
+    a recursively structured entity,
+\item the \textit{program syntax} formulated in terms of the read
+  syntax, imposing further structure and assigning meaning to
+  syntactic data.
+\end{enumerate}
+%
+Syntactic data (also called \textit{external
+  representations\index{external representation}}) double
+as a notation for objects, and Scheme's \rsixlibrary{io ports} library
+(library section~\extref{lib:portsiosection}{Port I/O})
+provides the {\cf get-datum} and {\cf put-datum} procedures
+for reading and writing syntactic data, converting between their
+textual representation and the corresponding objects. 
+Each syntactic datum represents a corresponding \defining{datum value}.
+A syntactic datum can be used in a program to obtain the corresponding
+datum value using {\cf quote} (see section~\ref{quote}).
+
+Scheme source code consists of syntactic data and (non-significant) comments.
+Syntactic data in Scheme source code are called
+\textit{forms}\mainindex{form}.
+(A form nested inside another form is
+called a \defining{subform}.)
+Consequently, Scheme's syntax has the property that any sequence of
+characters that is a form is also a syntactic datum representing
+some object.  This can lead to confusion, since it may not be obvious
+out of context whether a given sequence of characters is intended to
+be a representation of objects or the text of a program.
+It is also a source of power, since it
+facilitates writing programs such as interpreters or compilers that
+treat programs as objects (or vice versa).
+
+A datum value may have several different external representations.
+For example, both ``{\tt \#e28.000}'' and
+``{\tt\#x1c}'' are syntactic data representing the exact integer
+object 28, and the syntactic data ``{\tt(8 13)}'', ``{\tt( 08 13 )}'', ``{\tt(8 .\
+  (13 .\ ()))}''
+all represent a list containing the exact integer objects 8 and 13. 
+Syntactic data that represent equal objects (in the sense of {\cf
+  equal?}; see section~\ref{equal?}) are always equivalent 
+as forms of a program.
+
+Because of the close correspondence between syntactic data and datum
+values, this report sometimes uses the term \defining{datum} for
+either a syntactic datum or a datum value when the exact meaning
+is apparent from the context.
+
+An implementation must not extend the lexical or datum syntax in
+any way, with one exception: it need not treat the syntax
+{\cf \sharpsign{}!\meta{identifier}}, for any \meta{identifier} (see
+section~\ref{identifiersection}) that is not {\cf r6rs}, as a syntax
+violation, and it may use specific {\cf \sharpsign{}!}-prefixed
+identifiers as flags indicating that subsequent input contains extensions
+to the standard lexical or datum syntax. 
+The syntax {\cf \sharpsign{}!r6rs} may be used to signify that
+the input afterward is written with the lexical syntax and
+datum syntax described by
+this report.
+{\cf \sharpsign{}!r6rs} is otherwise treated as a comment; see section~\ref{whitespaceandcomments}.
+
+\section{Notation}
+\label{BNF}
+
+The formal syntax for Scheme is written in an extended BNF.
+Non-terminals are written using angle brackets.  Case is insignificant
+for non-terminal names.
+
+All spaces in the grammar are for legibility.
+\meta{Empty} stands for the empty string.
+
+The following extensions to BNF are used to make the description more
+concise:  \arbno{\meta{thing}} means zero or more occurrences of
+\meta{thing}, and \atleastone{\meta{thing}} means at least one
+\meta{thing}.
+
+Some non-terminal names refer to the Unicode scalar values of the same
+name: \meta{character tabulation} (U+0009), \meta{linefeed} (U+000A),
+\meta{carriage return} (U+000D), \meta{line tabulation} (U+000B),
+\meta{form feed} (U+000C), \meta{carriage return} (U+000D),
+\meta{space} (U+0020), \meta{next line} (U+0085), \meta{line
+  separator} (U+2028), and \meta{paragraph separator} (U+2029).
+
+\section{Lexical syntax}
+\label{lexicalsyntaxsection}
+
+The lexical syntax determines how a character sequence is split into a
+sequence of lexemes\index{lexeme}, omitting non-significant portions
+such as comments and whitespace.  The character sequence is assumed to
+be text according to the Unicode standard~\cite{Unicode}.  Some of
+the lexemes, such as identifiers, representations of number objects, strings etc., of the lexical
+syntax are syntactic data in the datum syntax, and thus represent objects.
+Besides the formal account of the syntax, this section also describes
+what datum values are represented by these syntactic data.
+
+The lexical syntax, in the description of comments, contains
+a forward reference to \meta{datum}, which is described as part of the
+datum syntax.  Being comments, however, these \meta{datum}s do not play
+a significant role in the syntax.
+
+Case is significant except in representations of booleans, number objects, and
+in hexadecimal numbers specifying Unicode scalar values.  For example, {\cf \#x1A}
+and {\cf \#X1a} are equivalent.  The identifier {\cf Foo} is, however,
+distinct from the identifier {\cf FOO}.
+
+\subsection{Formal account}
+\label{lexicalgrammarsection}
+
+\meta{Interlexeme space} may occur on either side of any lexeme, but not
+within a lexeme.
+
+\hyper{Identifier}s, {\cf .}, \hyper{number}s, \hyper{character}s, and
+\hyper{boolean}s, must be terminated by a \meta{delimiter} or by the
+end of the input.
+
+The following two characters are reserved for future extensions to the
+language: {\tt \verb"{" \verb"}"}
+
+\begin{grammar}%
+\meta{lexeme} \: \meta{identifier} \| \meta{boolean} \| \meta{number}\index{identifier}
+\>  \| \meta{character} \| \meta{string}
+\>  \| ( \| ) \| \openbracket{} \| \closedbracket{} \| \sharpsign( \| \sharpsign{}vu8( | \singlequote{} \| \backquote{} \| , \| ,@ \| {\bf.}
+\>  \| \sharpsign\singlequote{} \| \sharpsign\backquote{} \| \sharpsign, \| \sharpsign,@
+\meta{delimiter} \: ( \| ) \| \openbracket{} \| \closedbracket{} \| " \| ; \| \sharpsign{}
+\>  \| \meta{whitespace}
+\meta{whitespace} \: \meta{character tabulation}
+\> \| \meta{linefeed} \| \meta{line tabulation} \| \meta{form feed}
+\> \| \meta{carriage return} \| \meta{next line}
+\> \| \meta{any character whose category is Zs, Zl, or Zp}
+\meta{line ending} \: \meta{linefeed} \| \meta{carriage return}
+\> \| \meta{carriage return} \meta{linefeed} \| \meta{next line}
+\> \| \meta{carriage return} \meta{next line} \| \meta{line separator}
+\meta{comment} \: ; \= $\langle$\rm all subsequent characters up to a
+                    \>\ \rm \meta{line ending} or \meta{paragraph separator}$\rangle$\index{comment}
+\qquad \= \| \meta{nested comment}
+\> \| \#; \meta{interlexeme space} \meta{datum}
+\> \| \#!r6rs
+\meta{nested comment} \: \#| \= \meta{comment text}
+\> \arbno{\meta{comment cont}} |\#
+\meta{comment text} \: \= $\langle$\rm character sequence not containing
+\>\ \rm {\tt \#|} or {\tt |\#}$\rangle$
+\meta{comment cont} \: \meta{nested comment} \meta{comment text}
+\meta{atmosphere} \: \meta{whitespace} \| \meta{comment}
+\meta{interlexeme space} \: \arbno{\meta{atmosphere}}%
+\end{grammar}
+
+\label{extendedalphas}
+\label{identifiersyntax}
+
+% This is a kludge, but \multicolumn doesn't work in tabbing environments.
+\setbox0\hbox{\cf\meta{variable} \goesto{} $\langle$}
+
+\begin{grammar}%
+\meta{identifier} \: \meta{initial} \arbno{\meta{subsequent}}
+ \>  \| \meta{peculiar identifier}
+\meta{initial} \: \meta{constituent} \| \meta{special initial}
+ \> \| \meta{inline hex escape}
+\meta{letter} \:  a \| b \| c \| ... \| z
+\> \| A \| B \| C \| ... \| Z
+\meta{constituent} \: \meta{letter}
+ \> \| $\langle${\rm any character whose Unicode scalar value is greater than}
+ \> \quad {\rm 127, and whose category is Lu, Ll, Lt, Lm, Lo, Mn,}
+ \> \quad {\rm Nl, No, Pd, Pc, Po, Sc, Sm, Sk, So, or Co}$\rangle$
+\meta{special initial} \: ! \| \$ \| \% \| \verb"&" \| * \| / \| : \| < \| =
+ \>  \| > \| ? \| \verb"^" \| \verb"_" \| \verb"~"
+\meta{subsequent} \: \meta{initial} \| \meta{digit}
+ \>  \| \meta{any character whose category is Nd, Mc, or Me}
+ \>  \| \meta{special subsequent}
+\meta{digit} \: 0 \| 1 \| 2 \| 3 \| 4 \| 5 \| 6 \| 7 \| 8 \| 9
+\meta{hex digit} \: \meta{digit}
+ \> \| a \| A \| b \| B \| c \| C \| d \| D \| e \| E \| f \| F
+\meta{special subsequent} \: + \| - \| .\ \| @
+\meta{inline hex escape} \: \backwhack{}x\meta{hex scalar value};
+\meta{hex scalar value} \: \atleastone{\meta{hex digit}}
+\meta{peculiar identifier} \: + \| - \| ... \| -> \arbno{\meta{subsequent}}
+\meta{boolean} \: \schtrue{} \| \#T \| \schfalse{} \| \#F
+\meta{character} \: \#\backwhack{}\meta{any character}
+ \>  \| \#\backwhack{}\meta{character name}
+ \>  \| \#\backwhack{}x\meta{hex scalar value}
+\meta{character name} \: nul \| alarm \| backspace \| tab
+\> \| linefeed \| newline \| vtab \| page \| return
+\> \| esc \| space \| delete
+\meta{string} \: " \arbno{\meta{string element}} "
+\meta{string element} \: \meta{any character other than \doublequote{} or \backwhack}
+ \> \| \backwhack{}a \| \backwhack{}b \| \backwhack{}t \| \backwhack{}n \| \backwhack{}v \| \backwhack{}f \| \backwhack{}r
+ \>  \| \backwhack\doublequote{} \| \backwhack\backwhack 
+ \>  \| \backwhack\meta{intraline whitespace}\meta{line ending}
+ \>  \hspace*{4em}\meta{intraline whitespace}
+ \>  \| \meta{inline hex escape}
+\meta{intraline whitespace} \: \meta{character tabulation}
+\> \| \meta{any character whose category is Zs}%
+\end{grammar}
+
+A \meta{hex scalar value} represents a Unicode scalar value
+between 0 and \sharpsign{}x10FFFF, excluding the range
+$\left[\sharpsign{}x\textrm{D800}, \sharpsign{}x\textrm{DFFF}\right]$.
+
+\label{numbersyntax}%
+The rules for \meta{num $R$}, \meta{complex $R$}, \meta{real
+$R$}, \meta{ureal $R$}, \meta{uinteger $R$}, and \meta{prefix $R$} below
+should be replicated for \hbox{$R = 2, 8, 10,$}
+and $16$.  There are no rules for \meta{decimal $2$}, \meta{decimal
+$8$}, and \meta{decimal $16$}, which means that number representations containing
+decimal points or exponents must be in decimal radix.
+
+\begin{grammar}%
+\meta{number} \: \meta{num $2$} \| \meta{num $8$}
+   \>  \| \meta{num $10$} \| \meta{num $16$}
+\meta{num $R$} \: \meta{prefix $R$} \meta{complex $R$}
+\meta{complex $R$} \: %
+         \meta{real $R$} %
+      \| \meta{real $R$} @ \meta{real $R$}
+   \> \| \meta{real $R$} + \meta{ureal $R$} i %
+      \| \meta{real $R$} - \meta{ureal $R$} i
+   \> \| \meta{real $R$} + \meta{naninf} i %
+      \| \meta{real $R$} - \meta{naninf} i
+   \> \| \meta{real $R$} + i %
+      \| \meta{real $R$} - i
+   \> \| + \meta{ureal $R$} i %
+      \| - \meta{ureal $R$} i 
+   \> \| + \meta{naninf} i %
+      \| - \meta{naninf} i
+   \> \| + i %
+      \| - i
+\meta{real $R$} \: \meta{sign} \meta{ureal $R$}
+  \> \| + \meta{naninf} \| - \meta{naninf}
+\meta{naninf} \: nan.0 \| inf.0
+\meta{ureal $R$} \: %
+         \meta{uinteger $R$}
+   \> \| \meta{uinteger $R$} / \meta{uinteger $R$}
+   \> \| \meta{decimal $R$} \meta{mantissa width}
+\meta{decimal $10$} \: %
+         \meta{uinteger $10$} \meta{suffix}
+   \> \| . \atleastone{\meta{digit $10$}} \meta{suffix}
+   \> \| \atleastone{\meta{digit $10$}} . \arbno{\meta{digit $10$}} \meta{suffix}
+   \> \| \atleastone{\meta{digit $10$}} . \meta{suffix}
+\meta{uinteger $R$} \: \atleastone{\meta{digit $R$}}
+\meta{prefix $R$} \: %
+         \meta{radix $R$} \meta{exactness}
+   \> \| \meta{exactness} \meta{radix $R$}
+\end{grammar}
+
+\begin{grammar}%
+\meta{suffix} \: \meta{empty} 
+   \> \| \meta{exponent marker} \meta{sign} \atleastone{\meta{digit $10$}}
+\meta{exponent marker} \: e \| E \| s \| S \| f \| F
+   \> \| d \| D \| l \| L
+\meta{mantissa width} \: \meta{empty}
+   \> \| | \atleastone{\meta{digit 10}}
+\meta{sign} \: \meta{empty}  \| + \|  -
+\meta{exactness} \: \meta{empty}
+   \> \| \#i\sharpindex{i} \| \#I \| \#e\sharpindex{e} \| \#E
+\meta{radix 2} \: \#b\sharpindex{b} \| \#B
+\meta{radix 8} \: \#o\sharpindex{o} \| \#O
+\meta{radix 10} \: \meta{empty} \| \#d \| \#D
+\meta{radix 16} \: \#x\sharpindex{x} \| \#X
+\meta{digit 2} \: 0 \| 1
+\meta{digit 8} \: 0 \| 1 \| 2 \| 3 \| 4 \| 5 \| 6 \| 7
+\meta{digit 10} \: \meta{digit}
+\meta{digit 16} \: \meta{hex digit}
+\end{grammar}
+
+\subsection{Line endings}
+\label{lineendings}
+
+Line endings are significant in Scheme in single-line comments (see
+section~\ref{whitespaceandcomments}) and within string literals.  In
+Scheme source code, any of the line endings in \meta{line ending}
+marks the end of a line.  Moreover, the two-character line endings
+\meta{carriage return} \meta{linefeed} and \meta{carriage return}
+\meta{next line} each count as a single line ending.
+
+In a string literal, a \hyper{line ending} not preceded by a {\cf\backwhack}
+stands for a linefeed character, which is the standard line-ending
+character of Scheme.
+
+\subsection{Whitespace and comments}
+\label{whitespaceandcomments}
+
+\defining{Whitespace} characters are spaces, linefeeds,
+carriage returns, character tabulations, form feeds, line tabulations,
+and any other character whose category is Zs, Zl, or Zp.
+Whitespace is used for improved readability and
+as necessary to separate lexemes from each other.  Whitespace may
+occur between any two lexemes,
+but not within a lexeme.  Whitespace may also occur inside a string,
+where it is significant.
+
+The lexical syntax includes several comment forms. In all cases,
+comments are invisible to Scheme, except that they act as delimiters,
+so, for example, a comment cannot appear in the middle of an
+identifier or representation of a number object.
+
+A semicolon ({\tt;}) indicates the start of a line
+comment.\mainindex{comment}\mainschindex{;} The comment continues to
+the end of the line on which the semicolon appears.
+
+Another way to indicate a comment is to prefix a \hyper{datum}
+(cf.\ section~\ref{datumsyntax}) with {\tt \#;}\sharpindex{;}, possibly with
+\meta{interlexeme space} before the \hyper{datum}.  The comment consists of
+the comment prefix {\tt \#;} and the \hyper{datum} together.  This
+notation is useful for ``commenting out'' sections of code.
+
+Block comments may be indicated with properly nested {\tt
+  \#|}\index{#"|@\texttt{\sharpsign\verticalbar}}\index{"|#@\texttt{\verticalbar\sharpsign}}
+and {\tt |\#} pairs.
+
+\begin{scheme}
+\#|
+   The FACT procedure computes the factorial
+   of a non-negative integer.
+|\#
+(define fact
+  (lambda (n)
+    ;; base case
+    (if (= n 0)
+        \#;(= n 1)
+        1       ; identity of *
+        (* n (fact (- n 1))))))%
+\end{scheme}
+
+The lexeme {\cf \sharpsign{}!r6rs}, which signifies that the program text
+that follows is written with the lexical and datum syntax described in this
+report, is also otherwise treated as a comment.
+
+\subsection{Identifiers}
+\label{identifiersection}
+
+Most identifiers\mainindex{identifier} allowed by other programming
+languages are also acceptable to Scheme.  In general,
+a sequence of letters, digits, and ``extended alphabetic
+characters'' is
+an identifier when it begins with a character that cannot begin a
+representation of a number object.
+In addition, \ide{+}, \ide{-}, and \ide{...} are identifiers, as is
+a sequence of letters, digits, and extended alphabetic
+characters that begins with the two-character sequence \ide{->}.
+Here are some examples of identifiers:
+
+\begin{scheme}
+lambda         q                soup
+list->vector   {+}                V17a
+<=             a34kTMNs         ->-
+the-word-recursion-has-many-meanings%
+\end{scheme}
+
+Extended alphabetic characters may be used within identifiers as if
+they were letters.  The following are extended alphabetic characters:
+
+\begin{scheme}
+!\ \$ \% \verb"&" * + - . / :\ < = > ? @ \verb"^" \verb"_" \verb"~" %
+\end{scheme}
+
+Moreover, all characters whose Unicode scalar values are greater than 127 and
+whose Unicode category is Lu, Ll, Lt, Lm, Lo, Mn, Mc, Me, Nd, Nl, No, Pd,
+Pc, Po, Sc, Sm, Sk, So, or Co can be used within identifiers.
+In addition, any character can be used within an identifier
+when specified via an \meta{inline hex escape}.  For example, the
+identifier \verb|H\x65;llo| is the same as the identifier
+\verb|Hello|, and the identifier \verb|\x3BB;| is the same as the
+identifier $\lambda$.
+
+Any identifier may be used as a variable\index{variable} or as a
+syntactic keyword\index{syntactic keyword} (see
+sections~\ref{variablesection} and~\ref{macrosection}) in a Scheme
+program.
+Any identifier may also be used as a syntactic datum, in which case it
+represents a \textit{symbol}\index{symbol} (see section~\ref{symbolsection}).
+
+\subsection{Booleans}
+
+The standard boolean objects for true and false have external representations
+\schtrue{} and \schfalse.\sharpindex{t}\sharpindex{f}
+
+\subsection{Characters}
+
+Characters are represented using the notation
+\sharpsign\backwhack\hyper{character}\index{#\@\texttt{\sharpsign\backwhack}} or
+\sharpsign\backwhack\hyper{character name} or
+\sharpsign\backwhack{}x\meta{hex scalar value}.
+
+For example:
+
+\texonly
+\newcommand{\extab}{\>}
+\begin{tabbing}
+{\cf\#\backwhack{}x0000000000}\=\kill
+\endtexonly
+\htmlonly
+\newcommand{\extab}{&}
+\begin{tabular}{ll}
+\endhtmlonly
+{\cf\#\backwhack{}a}          \extab \textrm{lower case letter a}\\
+{\cf\#\backwhack{}A}          \extab \textrm{upper case letter A}\\
+{\cf\#\backwhack{}(}          \extab \textrm{left parenthesis}\\
+{\cf\#\backwhack{}}           \extab \textrm{space character}\\
+{\cf\#\backwhack{}nul}        \extab \textrm{U+0000}\\
+{\cf\#\backwhack{}alarm}      \extab \textrm{U+0007}\\
+{\cf\#\backwhack{}backspace}  \extab \textrm{U+0008}\\
+{\cf\#\backwhack{}tab}        \extab \textrm{U+0009}\\
+{\cf\#\backwhack{}linefeed}   \extab \textrm{U+000A}\\
+{\cf\#\backwhack{}newline}   \extab \textrm{U+000A}\\
+{\cf\#\backwhack{}vtab}       \extab \textrm{U+000B}\\
+{\cf\#\backwhack{}page}       \extab \textrm{U+000C}\\
+{\cf\#\backwhack{}return}     \extab \textrm{U+000D}\\
+{\cf\#\backwhack{}esc}        \extab \textrm{U+001B}\\
+{\cf\#\backwhack{}space}      \extab \textrm{U+0020}\\
+ \extab preferred way to write a space\\
+{\cf\#\backwhack{}delete}     \extab \textrm{U+007F}\\[1ex]
+{\cf\#\backwhack{}xFF}        \extab \textrm{U+00FF}\\
+{\cf\#\backwhack{}x03BB}      \extab \textrm{U+03BB}\\
+{\cf\#\backwhack{}x00006587}  \extab \textrm{U+6587}\\
+{\cf\#\backwhack{}\(\lambda\)} \extab \textrm{U+03BB}\\[1ex]
+{\cf\#\backwhack{}x0001z}     \extab \exception{\&lexical}\\
+{\cf\#\backwhack{}\(\lambda\)x}         \extab \exception{\&lexical}\\
+{\cf\#\backwhack{}alarmx}     \extab \exception{\&lexical}\\
+{\cf\#\backwhack{}alarm x}    \extab \textrm{U+0007}\\
+ \extab followed by {\cf{}x}\\
+{\cf\#\backwhack{}Alarm}      \extab \exception{\&lexical}\\
+{\cf\#\backwhack{}alert}      \extab \exception{\&lexical}\\
+{\cf\#\backwhack{}xA}         \extab \textrm{U+000A}\\
+{\cf\#\backwhack{}xFF}        \extab \textrm{U+00FF}\\
+{\cf\#\backwhack{}xff}        \extab \textrm{U+00FF}\\
+{\cf\#\backwhack{}x ff}       \extab \textrm{U+0078}\\
+ \extab followed by another datum, {\cf{}ff}\\
+{\cf\#\backwhack{}x(ff)}      \extab \textrm{U+0078}\\
+ \extab followed by another datum,\\
+ \extab a parenthesized {\cf{}ff}\\
+{\cf\#\backwhack{}(x)}        \extab \exception{\&lexical}\\
+{\cf\#\backwhack{}(x}         \extab \exception{\&lexical}\\
+{\cf\#\backwhack{}((x)}       \extab \textrm{U+0028}\\
+ \extab followed by another datum,\\
+ \extab parenthesized {\cf{}x}\\
+{\cf\#\backwhack{}x00110000}  \extab \exception{\&lexical}\\
+ \extab out of range\\
+{\cf\#\backwhack{}x000000001} \extab \textrm{U+0001}  \\
+{\cf\#\backwhack{}xD800}      \extab \exception{\&lexical}\\
+ \extab in excluded range
+\htmlonly
+\end{tabular}
+\endhtmlonly
+\texonly
+\end{tabbing}
+\endtexonly
+
+(The notation \exception{\&lexical} means that the line in question is
+a lexical syntax violation.)
+
+Case is significant in \sharpsign\backwhack\hyper{character}, and in
+\sharpsign\backwhack{\rm$\langle$character name$\rangle$}, % \hyper doesn't allow a linebreak
+but not in {\cf\sharpsign\backwhack{}x}\meta{hex scalar value}.  
+A \meta{character} must be followed by a \meta{delimiter} or by the end of the input.
+This rule resolves various ambiguous cases involving named characters,
+requiring, for
+example, the sequence of characters ``{\tt\sharpsign\backwhack space}''
+to be interpreted as the space character rather than as
+the character ``{\tt\sharpsign\backwhack s}'' followed
+by the identifier ``{\tt pace}''.
+
+\begin{note}
+  The {\cf\sharpsign\backwhack{}newline} notation is retained for
+  backward compatibility.  Its use is deprecated;
+  {\cf\sharpsign\backwhack{}linefeed} should be used instead.
+\end{note}
+
+\subsection{Strings}
+
+\vest String are represented by sequences of characters enclosed within doublequotes
+({\cf "}).  Within a string literal, various escape
+sequences\mainindex{escape sequence} represent characters other than
+themselves.  Escape sequences always start with a backslash (\backwhack{}):
+
+\begin{itemize}
+\item{\cf\backwhack{}a} : alarm, U+0007
+\item{\cf\backwhack{}b} : backspace, U+0008 
+\item{\cf\backwhack{}t} : character tabulation, U+0009 
+\item{\cf\backwhack{}n} : linefeed, U+000A 
+\item{\cf\backwhack{}v} : line tabulation, U+000B 
+\item{\cf\backwhack{}f} : formfeed, U+000C 
+\item{\cf\backwhack{}r} : return, U+000D 
+\item{\cf\backwhack{}}\verb|"| : doublequote, U+0022 
+\item{\cf\backwhack{}\backwhack{}} : backslash, U+005C 
+\item{\cf\backwhack{}}\hyper{intraline whitespace}\hyper{line ending}\\\hspace*{2em}\hyper{intraline whitespace} : nothing
+\item{\cf\backwhack{}x\meta{hex scalar value};} : specified character (note the
+  terminating semi-colon).
+\end{itemize}
+
+These escape sequences are case-sensitive, except that the alphabetic
+digits of a \meta{hex scalar value} can be uppercase or lowercase.
+
+Any other character in a string after a backslash is a syntax violation. Except
+for a line ending, any
+character outside of an escape sequence and not a doublequote stands
+for itself in the string literal. For example the single-character
+string literal {\tt "$\lambda$"} (doublequote, a lower case lambda, doublequote)
+represents the same string as {\tt "\backwhack{}x03bb;"}.
+A line ending that does not follow a backslash stands for a linefeed character.
+
+Examples:
+
+\texonly
+\begin{tabbing}
+{\cf "\backwhack{}x0000000000;"} \=\kill
+\endtexonly
+\htmlonly
+\begin{tabular}{ll}
+\endhtmlonly
+{\cf "abc"} \extab  \textrm{U+0061, U+0062, U+0063}\\
+{\cf "\backwhack{}x41;bc"} \extab  {\cf "Abc"} ; \textrm{U+0041, U+0062, U+0063}\\
+{\cf "\backwhack{}x41; bc"} \extab {\cf "A bc"}\\
+ \extab U+0041, U+0020, U+0062, U+0063\\
+{\cf "\backwhack{}x41bc;"} \extab  \textrm{U+41BC}\\
+{\cf "\backwhack{}x41"} \extab \exception{\&lexical}\\
+{\cf "\backwhack{}x;"} \extab \exception{\&lexical}\\
+{\cf "\backwhack{}x41bx;"} \extab \exception{\&lexical}\\
+{\cf "\backwhack{}x00000041;"} \extab  {\cf "A"} ; \textrm{U+0041}\\
+{\cf "\backwhack{}x0010FFFF;"} \extab \textrm{U+10FFFF}\\
+{\cf "\backwhack{}x00110000;"} \extab  \exception{\&lexical}\\
+ \extab out of range\\
+{\cf "\backwhack{}x000000001;"} \extab \textrm{U+0001}\\
+{\cf "\backwhack{}xD800;"} \extab \exception{\&lexical}\\
+ \extab in excluded range\\
+{\cf "A}\\
+{\cf bc"} \extab \textrm{U+0041, U+000A, U+0062, U+0063}\\
+ \extab if no space occurs after the {\cf{}A}
+\htmlonly
+\end{tabular}
+\endhtmlonly
+\texonly
+\end{tabbing}
+\endtexonly
+  
+\subsection{Numbers}
+\label{numbernotations}
+
+The syntax of external representations for number objects is described
+formally by the \meta{number} rule in the formal grammar.
+Case is not significant in external representations of number objects.
+
+A representation of a number object may be written in binary, octal, decimal, or
+hexadecimal by the use of a radix prefix.  The radix prefixes are {\cf
+\#b}\sharpindex{b} (binary), {\cf \#o}\sharpindex{o} (octal), {\cf
+\#d}\sharpindex{d} (decimal), and {\cf \#x}\sharpindex{x} (hexadecimal).  With
+no radix prefix, a representation of a number object is assumed to be expressed in decimal.
+
+A representation of a number object may be specified to be either exact or
+inexact by a prefix.  The prefixes are {\cf \#e}\sharpindex{e}
+for exact, and {\cf \#i}\sharpindex{i} for inexact.  An exactness
+prefix may appear before or after any radix prefix that is used.  If
+the representation of a number object has no exactness prefix, the
+constant is
+inexact if it contains a decimal point, an
+exponent, or
+a nonempty mantissa width;
+otherwise it is exact.
+
+In systems with inexact number objects
+of varying precisions, it may be useful to specify
+the precision of a constant.  For this purpose, representations of
+number objects
+may be written with an exponent marker that indicates the
+desired precision of the inexact
+representation.  The letters {\cf s}, {\cf f},
+{\cf d}, and {\cf l} specify the use of \var{short}, \var{single},
+\var{double}, and \var{long} precision, respectively.  (When fewer
+than four internal
+inexact
+representations exist, the four size
+specifications are mapped onto those available.  For example, an
+implementation with two internal representations may map short and
+single together and long and double together.)  In addition, the
+exponent marker {\cf e} specifies the default precision for the
+implementation.  The default precision has at least as much precision
+as \var{double}, but
+implementations may wish to allow this default to be set by the user.
+
+\begin{scheme}
+3.1415926535898F0 
+       {\rm{}Round to single, perhaps} 3.141593
+0.6L0
+       {\rm{}Extend to long, perhaps} .600000000000000%
+\end{scheme}
+
+A representation of a number object with nonempty mantissa width,
+{\cf \var{x}|\var{p}}, represents the best binary
+floating-point approximation of \var{x} using a \var{p}-bit significand. 
+For example, {\cf 1.1|53} is a
+representation of the best approximation of 1.1 in IEEE double
+precision.
+If \var{x} is an external representation of an inexact real number object
+that contains no vertical bar, then its numerical value should be computed
+as though it had a mantissa width of 53 or more.
+
+Implementations that use binary floating-point representations
+of real number objects should represent {\cf \var{x}|\var{p}}
+using a \var{p}-bit significand if practical, or by a greater
+precision if a \var{p}-bit significand is not practical, or
+by the largest available precision if \var{p} or more bits
+of significand are not practical within the implementation.
+
+\begin{note}
+The precision of a significand should not be confused with the
+number of bits used to represent the significand.  In the IEEE
+floating-point standards, for example, the significand's most
+significant bit is implicit in single and double precision but
+is explicit in extended precision.  Whether that bit is implicit
+or explicit does not affect the mathematical precision.
+In implementations that use binary floating point, the default
+precision can be calculated by calling the following procedure:
+
+\begin{scheme}
+(define (precision)
+  (do ((n 0 (+ n 1))
+       (x 1.0 (/ x 2.0)))
+    ((= 1.0 (+ 1.0 x)) n)))
+\end{scheme}
+\end{note}      
+
+\begin{note}
+When the underlying floating-point representation is IEEE double
+precision, the {\cf |\var{p}} suffix should not always be omitted:
+Denormalized floating-point numbers have diminished precision,
+and therefore their external representations should
+carry a {\cf |\var{p}} suffix with the actual width of the
+significand.
+\end{note}
+
+The literals {\cf +inf.0} and {\cf -inf.0} represent positive and
+negative infinity, respectively.  The {\cf +nan.0}
+literal represents the NaN that is the result of {\cf (/ 0.0 0.0)},
+and may represent other NaNs as well.
+
+If \var{x} is an external representation of an inexact real number
+object and
+contains no vertical bar and no exponent marker
+other than {\cf e}, the inexact real number object it represents is a flonum
+(see library section~\extref{lib:flonumssection}{Flonums}).
+Some or all of the other external representations of
+inexact real number objects may also represent flonums, but that is not required by
+this report.
+
+\section{Datum syntax}
+\label{datumsyntaxsection}
+
+The datum syntax describes the syntax of
+syntactic data\mainindex{syntactic datum} in terms of a sequence of
+\meta{lexeme}s, as defined in the lexical syntax.
+
+Syntactic data include the lexeme data described in the
+previous section as well as the following constructs for forming
+compound data:
+%
+\begin{itemize}
+\item pairs and lists, enclosed by \verb|( )| or \verb|[ ]| (see
+  section~\ref{pairlistsyntax})
+\item vectors (see section~\ref{vectorsyntax})
+\item bytevectors (see section~\ref{bytevectorsyntax})
+\end{itemize}
+
+\subsection{Formal account}
+\label{datumsyntax}
+
+The following grammar describes the syntax of syntactic data in terms
+of various kinds of lexemes defined in the grammar in
+section~\ref{lexicalsyntaxsection}:
+
+\begin{grammar}%
+\meta{datum} \: \meta{lexeme datum}
+\>  \| \meta{compound datum}
+\meta{lexeme datum} \: \meta{boolean} \| \meta{number}
+\>  \| \meta{character} \| \meta{string} \|  \meta{symbol}
+\meta{symbol} \: \meta{identifier}
+\meta{compound datum} \: \meta{list} \| \meta{vector} \| \meta{bytevector}
+\meta{list} \: (\arbno{\meta{datum}}) \| [\arbno{\meta{datum}}]
+\>    \| (\atleastone{\meta{datum}} .\ \meta{datum}) \| [\atleastone{\meta{datum}} .\ \meta{datum}]
+\>    \| \meta{abbreviation}
+\meta{abbreviation} \: \meta{abbrev prefix} \meta{datum}
+\meta{abbrev prefix} \: ' \| ` \| , \| ,@
+\>    \| \#' | \#` | \#, | \#,@
+\meta{vector} \: \#(\arbno{\meta{datum}})
+\meta{bytevector} \: \#vu8(\arbno{\meta{u8}})
+\meta{u8} \: $\langle${\rm any \meta{number} representing an exact}
+ \>\>\quad\quad {\rm integer in $\{0, \ldots, 255\}$}$\rangle$%
+\end{grammar}
+
+\subsection{Pairs and lists}
+\label{pairlistsyntax}
+
+List and pair data, representing pairs and lists of values
+(see section~\ref{listsection}) are represented using parentheses or brackets.
+Matching pairs of brackets that occur in the rules of \meta{list} are
+equivalent to matching pairs of parentheses.
+
+The most general notation for Scheme pairs as syntactic data is
+the ``dotted'' notation \hbox{\cf (\hyperi{datum} .\ \hyperii{datum})} where
+\hyperi{datum} is the representation of the value of the car field and
+\hyperii{datum} is the representation of the value of the
+cdr field.  For example {\cf (4 .\ 5)} is a pair whose car is 4 and whose
+cdr is 5.
+
+A more streamlined notation can be used for lists: the elements of the
+list are simply enclosed in parentheses and separated by spaces.  The
+empty list\index{empty list} is represented by {\tt()} .  For example,
+
+\begin{scheme}
+(a b c d e)%
+\end{scheme}
+
+and
+
+\begin{scheme}
+(a . (b . (c . (d . (e . ())))))%
+\end{scheme}
+
+are equivalent notations for a list of symbols.
+
+The general rule is that, if a dot is followed by an open parenthesis,
+the dot, open parenthesis, and matching closing parenthesis
+can be omitted in the external representation.
+
+The sequence of characters ``{\cf (4 .\ 5)}'' is the external representation of a
+pair, not an expression that evaluates to a pair.
+Similarly, the sequence of characters ``{\tt(+ 2 6)}'' is {\em not} an
+external representation of the integer 8, even though it {\em is} an
+expression (in the language of the \rsixlibrary{base} library)
+evaluating to the integer 8; rather, it is a
+syntactic datum representing a three-element list, the elements of which
+are the symbol {\tt +} and the integers 2 and 6.
+
+\subsection{Vectors}
+\label{vectorsyntax}
+
+Vector data, representing vectors of objects (see
+section~\ref{vectorsection}), are represented using the notation
+{\tt\#(\hyper{datum} \dotsfoo)}.  For example, a vector of length 3
+containing the number object for zero in element 0, the list {\cf(2 2 2 2)} in
+element 1, and the string {\cf "Anna"} in element 2 can be represented as
+follows:
+
+\begin{scheme}
+\#(0 (2 2 2 2) "Anna")%
+\end{scheme}
+
+This is the external representation of a vector, not an
+expression that evaluates to a vector.
+
+\subsection{Bytevectors}
+\label{bytevectorsyntax}
+
+Bytevector data, representing bytevectors (see
+library chapter~\extref{lib:bytevectorschapter}{Bytevectors}), are represented using the notation
+{\tt\#vu8(\hyper{u8} \dotsfoo)}, where the \hyper{u8}s represent the octets of
+the bytevector.  For example, a bytevector of length 3 containing the
+octets 2, 24, and 123 can be represented as follows:
+
+\begin{scheme}
+\#vu8(2 24 123)%
+\end{scheme}
+
+This is the external representation of a bytevector, and also an
+expression that evaluates to a bytevector.
+
+\subsection{Abbreviations}\unsection
+\label{abbreviationsection}
+
+\begin{entry}{%
+\pproto{\singlequote\hyper{datum}}{}
+\pproto{\backquote\hyper{datum}}{}
+\pproto{,\hyper{datum}}{}
+\pproto{,\atsign\hyper{datum}}{}
+\pproto{\#'\hyper{datum}}{}
+\pproto{\#\backquote\hyper{datum}}{}
+\pproto{\#,\hyper{datum}}{}
+\pproto{\#,@\hyper{datum}}{}
+}
+
+Each of these is an abbreviation:
+\\\quad\schindex{'}\singlequote\hyper{datum}
+for {\cf (quote \hyper{datum})},
+\\\quad\schindex{`}\backquote\hyper{datum}
+for {\cf (quasiquote \hyper{datum})},
+\\\quad\schindex{,}{\cf,}\hyper{datum}
+for {\cf (unquote \hyper{datum})},
+\\\quad\index{,@\texttt{,\atsign}}{\cf,}\atsign\hyper{datum}
+for {\cf (unquote-splicing \hyper{datum})},
+\\\quad\sharpindex{'}{\cf\#'}\hyper{datum}
+for {\cf (syntax \hyper{datum})},
+\\\quad\sharpindex{`}{\cf\#`}\hyper{datum}
+for {\cf (quasisyntax \hyper{datum})},
+\\\quad\sharpindex{,}{\cf\#,}\hyper{datum}
+for {\cf (unsyntax \hyper{datum})}, and
+\\\quad\index{#,@\texttt{\#,\atsign}}{\cf\#,@}\hyper{datum}
+for {\cf (unsyntax-splicing \hyper{datum})}.
+\end{entry}
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "r6rs"
+%%% End: 

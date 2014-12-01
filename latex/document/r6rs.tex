@@ -1,0 +1,160 @@
+\documentclass[twoside,twocolumn]{algol60}
+%\documentclass[twoside]{algol60}
+
+
+\pagestyle{headings}
+\showboxdepth=0
+\makeindex
+\input{commands}
+\input{semantics-commands}
+
+\texonly
+\externaldocument[lib:]{r6rs-lib}
+\endtexonly
+
+\def\headertitle{Revised$^{\rnrsrevision}$ Scheme}
+\def\TZPtitle{Revised^\rnrsrevision{} Report on the Algorithmic Language Scheme}
+
+\begin{document}
+
+\thispagestyle{empty}
+
+\topnewpage[{
+\begin{center}   {\huge\bf
+        Revised{\Huge$^{\mathbf{\htmlonly\tiny\endhtmlonly{}\rnrsrevision}}$} Report on the Algorithmic Language \\
+                              \vskip 3pt
+                                Scheme}
+
+\vskip 1ex
+$$
+\begin{tabular}{l@{\extracolsep{.5in}}lll}
+\multicolumn{4}{c}{M\authorsc{ICHAEL} S\authorsc{PERBER}}
+\\
+\multicolumn{4}{c}{R.\ K\authorsc{ENT} D\authorsc{YBVIG},
+  M\authorsc{ATTHEW} F\authorsc{LATT},
+  A\authorsc{NTON} \authorsc{VAN} S\authorsc{TRAATEN}}
+\\
+\multicolumn{4}{c}{(\textit{Editors})} \\
+\multicolumn{4}{c}{
+  R\authorsc{ICHARD} K\authorsc{ELSEY}, W\authorsc{ILLIAM} C\authorsc{LINGER},
+  J\authorsc{ONATHAN} R\authorsc{EES}} \\
+\multicolumn{4}{c}{(\textit{Editors, Revised\itspace{}$^5$ Report on the
+    Algorithmic Language Scheme})} \\
+\multicolumn{4}{c}{
+  R\authorsc{OBERT} B\authorsc{RUCE} F\authorsc{INDLER}, J\authorsc{ACOB} M\authorsc{ATTHEWS}} \\
+\multicolumn{4}{c}{(\textit{Authors, formal semantics})} \\[1ex]
+\multicolumn{4}{c}{\bf \rnrsrevisiondate}
+\end{tabular}
+$$
+
+
+
+\end{center}
+
+\chapter*{Summary}
+\medskip
+
+{\parskip 1ex
+The report gives a defining description of the programming language
+Scheme.  Scheme is a statically scoped and properly tail-recursive
+dialect of the Lisp programming language invented by Guy Lewis
+Steele~Jr.\ and Gerald Jay~Sussman.  It was designed to have an
+exceptionally clear and simple semantics and few different ways to
+form expressions.  A wide variety of programming paradigms, including
+functional, imperative, and message passing styles, find convenient
+expression in Scheme.
+
+This report is accompanied by a report describing standard
+libraries~\cite{R6RS-libraries}; references to this document are
+identified by designations such as ``library section'' or ``library
+chapter''.  It is also accompanied by a report containing
+non-normative appendices~\cite{R6RS-appendices}.  A fourth report gives
+some historical background and rationales for many aspects of the
+language and its libraries~\cite{R6RS-rationale}.
+
+\medskip
+
+The individuals listed above are not the sole authors of the text of
+the report.  Over the years, the following individuals were involved
+in discussions contributing to the design of the Scheme language, and
+were listed as authors of prior reports:
+
+Hal Abelson, Norman Adams, David Bartley, Gary Brooks, William
+Clinger, R.\ Kent Dybvig, Daniel Friedman, Robert Halstead, Chris
+Hanson, Christopher Haynes, Eugene Kohlbecker, Don Oxley, Kent Pitman,
+Jonathan Rees, Guillermo Rozas, Guy L.\ Steele Jr., Gerald Jay Sussman, and
+Mitchell Wand.
+
+In order to highlight recent contributions, they are not listed as
+authors of this version of the report.  However, their contribution
+and service is gratefully acknowledged.
+
+\medskip
+
+We intend this report to belong to the entire Scheme community, and so
+we grant permission to copy it in whole or in part without fee.  In
+particular, we encourage implementors of Scheme to use this report as
+a starting point for manuals and other documentation, modifying it as
+necessary.
+}
+
+\bigskip
+
+\input{status}
+}]
+
+\texonly\clearpage\endtexonly
+
+\chapter*{Contents}
+\addvspace{3.5pt}                  % don't shrink this gap
+\renewcommand{\tocshrink}{-4.0pt}  % value determined experimentally
+{
+\tableofcontents
+}
+
+\vfill
+\eject
+
+
+\input{intro}   \par
+\vskip 2ex
+\clearchaptergroupstar{Description of the language} %\unskip\vskip -2ex
+\input{struct}  \par
+\input{mustard} \par
+\input{numbers} \par
+\input{lex}     \par
+\input{basic}   \par
+\input{entry} \par
+\input{library} \par
+\input{programs} \par
+\input{syntax} \par
+\input{expansion} \par
+\input{base}    \par
+\clearchaptergroupstar{Appendices}
+\appendix
+\chapter{Formal semantics}
+\label{formalsemanticschapter}
+\input{semantics} \par
+\input{derived} \par
+\input{repository} \par
+\input{example} \par
+\input{changes} \par
+\newpage
+\renewcommand{\bibname}{References}
+
+\bibliographystyle{plain}
+\bibliography{abbrevs,rrs}
+
+\vfill\eject
+
+
+\newcommand{\indexheading}{Alphabetic index of definitions of
+  concepts, keywords, and procedures}
+\texonly
+\newcommand{\indexintro}{The index includes entries from the library
+  document; the entries are marked with ``(library)''.}
+\endtexonly
+
+\printindex
+
+\end{document}

@@ -1,0 +1,306 @@
+% r6rs.t2p
+% based on:
+% tex2page macro file for r5rs.tex
+% Dorai Sitaram
+% 20 Feb 2001
+% last change 2005-05-01
+
+\evalh{(!definitely-latex)}
+
+\evalh{(set! *ghostscript-options* (string-append " -r144x144 " *ghostscript-options*))}
+
+\htmlcolophon{dont-credit-tex2page}
+
+\def\bibname{References}
+
+\date{}
+
+\htmlmathstyle{no-in-text-image no-display-image}
+
+\leftdisplays
+
+\TIIPobeyspacestrictly=1
+
+\let\TIIPbrORIG\TIIPbr
+
+\newcount\obeylinesstart
+
+\def\TIIPbr{\obeylinesstart=0\TIIPbrORIG}
+
+\def\sqrt#1{(#1)^{1/2}}
+
+\def\linebreak{\evalh{(get-bracketed-text-if-any)}}
+
+\def\:{ }
+
+\let\scriptstyle\relax
+\let\small\relax
+
+\def\cal#1{\csname cal#1\endcsname}
+
+\let\tabularORIG\tabular
+
+\def\tabular{%
+\let\tabularNext\tabularORIG
+\ifnum\sectiondnumber{0}=7
+\let\tabularNext\IMGtabular
+\fi
+\tabularNext}
+
+\let\setbox\TIIPcomment
+
+\let\tableofcontentsORIG=\tableofcontents
+
+\def\tableofcontents{%
+\evalh{(set! *tex-format* 'tex)}%
+\tableofcontentsORIG
+\evalh{(set! *tex-format* 'latex)}}
+
+% the image preamble
+
+\imgpreamble
+
+{\catcode`\^^M=13 \gdef\myobeycr{\catcode`\^^M=13 \def^^M{\\}}%
+\gdef\restorecr{\catcode`\^^M=5 }}
+
+\newcommand{\meta}[1]{{\noindent\hbox{\rm$\langle$#1$\rangle$}}}
+\let\hyper=\meta
+
+\newcommand{\hyperi}[1]{\hyper{#1$_1$}}
+\newcommand{\hyperii}[1]{\hyper{#1$_2$}}
+\newcommand{\hyperiii}[1]{\hyper{#1$_3$}}
+\newcommand{\hyperj}[1]{\hyper{#1$_i$}}
+\newcommand{\hypern}[1]{\hyper{#1$_n$}}
+\newcommand{\var}[1]{\textnormal{\textit{#1}}}
+\newcommand{\vari}[1]{\var{#1$_1$}}
+\newcommand{\varii}[1]{\var{#1$_2$}}
+\newcommand{\variii}[1]{\var{#1$_3$}}
+\newcommand{\variv}[1]{\var{#1$_4$}}
+\newcommand{\varj}[1]{\var{#1$_j$}}
+\newcommand{\varn}[1]{\var{#1$_n$}}
+
+\newcommand{\vr}[1]{{$#1$\/}}  % Careful, is \/ always the right thing?
+\newcommand{\vri}[1]{\vr{#1_1}}
+\newcommand{\vrii}[1]{\vr{#1_2}}
+\newcommand{\vriii}[1]{\vr{#1_3}}
+\newcommand{\vriv}[1]{\vr{#1_4}}
+\newcommand{\vrv}[1]{\vr{#1_5}}
+\newcommand{\vrj}[1]{\vr{#1_j}}
+\newcommand{\vrn}[1]{\vr{#1_n}}
+
+
+\newenvironment{grammar}{
+  \def\:{\goesto{}}
+  \def\|{$\vert$}
+  \cf \myobeycr
+  \begin{tabbing}
+    %\qquad\quad \= 
+    \qquad \= $\vert$ \= \kill
+  }{\unskip\end{tabbing}}
+
+\newcommand{\imgdef}[2]{\def#1#2}
+\input{semantics-commands.tex}
+
+\newcommand{\sembrack}[1]{[\![#1]\!]}
+\newcommand{\fun}[1]{\hbox{\it #1}}
+\newenvironment{semfun}{\begin{tabbing}$}{$\end{tabbing}}
+\newcommand\LOC{{\tt{}L}}
+\newcommand\NAT{{\tt{}N}}
+\newcommand\TRU{{\tt{}T}}
+\newcommand\SYM{{\tt{}Q}}
+\newcommand\CHR{{\tt{}H}}
+\newcommand\NUM{{\tt{}R}}
+\newcommand\FUN{{\tt{}F}}
+\newcommand\EXP{{\tt{}E}}
+\newcommand\STV{{\tt{}E}}
+\newcommand\STO{{\tt{}S}}
+\newcommand\ENV{{\tt{}U}}
+\newcommand\ANS{{\tt{}A}}
+\newcommand\ERR{{\tt{}X}}
+\newcommand\EC{{\tt{}K}}
+\newcommand\CC{{\tt{}C}}
+\newcommand\MSC{{\tt{}M}}
+\newcommand\PAI{\hbox{\EXP$_{\rm p}$}}
+\newcommand\VEC{\hbox{\EXP$_{\rm v}$}}
+\newcommand\STR{\hbox{\EXP$_{\rm s}$}}
+
+\newcommand\elt{\downarrow}
+\newcommand\drop{\dagger}
+
+\def\P{\hbox{\rm P}}
+\def\I{\hbox{\rm I}}
+\def\Ksem{\hbox{$\cal K$}}
+\def\Esem{\hbox{$\cal E$}}
+
+\def\K{\hbox{\rm K}}
+\def\I{\hbox{\rm I}}
+\def\E{\hbox{\rm E}}
+\def\C{\hbox{$\Gamma$}}
+\def\Con{\hbox{\rm Con}}
+\def\Ide{\hbox{\rm Ide}}
+\def\Exp{\hbox{\rm Exp}}
+\def\Com{\hbox{\rm Com}}
+\def\|{$\vert$}
+
+\def\Ksem{\hbox{$\cal K$}}
+\def\Esem{\hbox{$\cal E$}}
+\def\Csem{\hbox{$\cal C$}}
+
+\newcommand{\wrong}[1]{\fun{wrong }\hbox{\rm``#1''}}
+\newcommand{\go}[1]{\hbox{\hspace*{#1em}}}
+
+\newcommand{\arbno}[1]{#1\hbox{\rm*}}  
+\newcommand{\atleastone}[1]{#1\hbox{$^+$}}
+\newcommand{\goesto}{$\longrightarrow$}
+
+\newcommand{\sharpfoo}[1]{{\tt\##1}}
+\newcommand{\schfalse}{\sharpfoo{f}}
+\newcommand{\schtrue}{\sharpfoo{t}}
+
+\newcommand{\singlequote}{{\tt'}}  %\char19
+\newcommand{\doublequote}{{\tt"}}
+\newcommand{\backquote}{{\tt\char18}}
+\newcommand{\backwhack}{{\tt\char`\\}}
+\newcommand{\atsign}{{\tt\char`\@}}
+\newcommand{\sharpsign}{{\tt\#}}
+\newcommand{\verticalbar}{{\tt|}}
+
+
+
+\newcommand{\ide}[1]{{\frenchspacing\tt{#1}}}
+\def\elem{\hbox{\raise.13ex\hbox{$\scriptstyle\in$}}}
+\let\cf\tt
+
+\newcommand{\dotsfoo}{$\ldots\,$}
+
+\setbox0=\hbox{\tt\Exp{} \goesto{}}  %\tt for spacing
+\setbox1=\hbox to 1\wd0{\hfil \|}
+
+
+\def\todo#1{}
+
+\let\latexdocument\document
+\def\document{\latexdocument\textwidth 663pt\textwidth 523pt\oddsidemargin -1in\evensidemargin -1in}
+
+\endimgpreamble
+
+% imgdef's
+
+\imgdef\vdots{$\vdots$}
+\imgdef\sigma{$\sigma$}
+\imgdef\pi{$\pi$}
+\imgdef\in{$\in$}
+\imgdef\calK{$\cal K$}
+\imgdef\calE{$\cal E$}
+\imgdef\calS{$\cal S$}
+\imgdef\downarrow{$\downarrow$}
+\imgdef\neq{$\neq$}
+
+
+\let\documentORIG\document
+
+% post preamble 
+
+\def\document{\documentORIG
+
+\TIIPobeyspacestrictly=0
+
+\def\semfun{\TIIPlatexenvasimage{semfun}}
+
+\renewenvironment{grammar}{%
+%\def\>{\qquad}%
+\def\>{\ifnum\obeylinesstart=0\qquad\obeylinesstart=1\else~~~\fi}%
+\def\:{\goesto{}}%
+\def\|{$\vert$}%
+\def\={}%
+\TIIPobeylinestrictly=1%
+\cf\obeylines}{}
+
+\let\grammarORIG\grammar
+
+\def\grammar{%
+\let\grammarNext\grammarORIG
+\ifnum\sectiondnumber{0}=7
+\ifnum\sectiondnumber{1}>1
+\def\grammarNext{\TIIPlatexenvasimage{grammar}}\fi\fi
+\grammarNext}
+
+%####
+%\def\topnewpage[{\evalh{
+% (get-group)
+%(ignorespaces)
+%(when (char=? (snoop-actual-char) #\])
+%(get-actual-char))}}
+
+\maketitle
+
+% kludge to swallow ill-located date info
+
+\def\hfil##1{\gdef\hfil{\qquad\qquad\qquad}}
+
+% kludge for \copy0 in sec 2.3
+
+\def\copy0{\verb+[ ] { } |+}
+
+
+\let\ide\texttt % but why?
+
+\let\PRIMeject\eject
+
+\let\eject\relax
+
+
+\newcount\clearchapterstarcount
+
+\def\clearchapterstar{
+\global\advance\clearchapterstarcount by 1
+\ifnum\clearchapterstarcount=2 
+\let\Next\gobblegroup
+\else
+\def\Next{\chapter*}\fi
+\Next}
+
+\def\backquote{{\tt`}}
+
+\def\hyper##1{<##1>} %but why?
+
+\renewenvironment{entry}[1]{\par##1}{\par}
+
+\def\pproto##1##2{\leftline{{\tt{}##1}\enspace\enspace{##2}}}
+
+\def\proto##1##2##3{\pproto{(\mainschindex{##1}##1{\it{}##2\/})}{##3}}
+\def\rproto##1##2##3{\proto{##1}{##2}{##3}}
+
+\renewenvironment{scheme}{\def\ev{\qquad\evalsto}%
+\TIIPobeyspacestrictly=1 %
+\def\lev{\break\qquad\qquad\evalsto}%
+\def\unspecified{{\it{}unspecified}}%
+\def\theunspecified{{\em{}unspecified}}
+\def\scherror{{\it{}error}}%
+\tt\obeywhitespace}{\par}
+
+\renewenvironment{schemenoindent}{\def\ev{\qquad\evalsto}%
+\TIIPobeyspacestrictly=1 %
+\def\lev{\par~~\evalsto}%
+\def\unspecified{{\it{}unspecified}}%
+\def\theunspecified{{\em{}unspecified}}
+\def\scherror{{\it{}error}}%
+\tt\obeywhitespace}{\par}
+
+\let\dotsfoo\dots
+
+\let\cf\tt
+
+\renewenvironment{rationale}{\begin{quotation}{\em Rationale:\enspace}}%
+{\end{quotation}}
+
+\renewenvironment{note}{\begin{quotation}{\em Note:\enspace}}%
+{\end{quotation}}
+
+\def\meta##1{<##1>}
+
+\let\hyper\meta
+
+\def\newenvironment##1##2##3{}
+
+}

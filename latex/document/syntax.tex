@@ -1,0 +1,188 @@
+\chapter{Primitive syntax}
+
+After the {\cf import} form within a {\cf library} form or a top-level
+program, the forms
+that constitute the body of the library or the top-level program
+depend on the libraries that are
+imported. In particular, imported syntactic keywords determine 
+the available syntactic abstractions and whether each form is a 
+definition or expression. A few form types are
+always available independent of imported libraries, however,
+including constant literals, variable references, procedure calls,
+ and macro uses.
+
+\section{Primitive expression types}
+\label{primitiveexpressionsection}
+
+The entries in this section all describe expressions, which may occur
+in the place of \hyper{expression} syntactic variables.  See
+also section~\ref{expressionsection}.
+
+\subsection*{Constant literals}\unsection
+
+\begin{entry}{%
+\pproto{\hyper{number}}{\exprtype}
+\pproto{\hyper{boolean}}{\exprtype}
+\pproto{\hyper{character}}{\exprtype}
+\pproto{\hyper{string}}{\exprtype}
+\pproto{\hyper{bytevector}}{\exprtype}}\mainindex{literal}
+
+An expression consisting of a representation of a number object, a
+boolean, a character, a string, or a bytevector, evaluates ``to
+itself''.
+
+\begin{scheme}
+145932     \ev  145932
+\schtrue   \ev  \schtrue
+"abc"      \ev  "abc"
+\#vu8(2 24 123) \ev \#vu8(2 24 123)%
+\end{scheme}
+
+As noted in section~\ref{storagemodel}, the value of a literal
+expression is immutable.
+\end{entry}
+
+\subsection*{Variable references}\unsection
+\begin{entry}{%
+\pproto{\hyper{variable}}{\exprtype}}
+
+An expression consisting of a variable\index{variable}
+(section~\ref{variablesection}) is a variable reference if it is not a
+macro use (see below).  The value of
+the variable reference is the value stored in the location to which the
+variable is bound.  It is a syntax violation to reference
+an unbound\index{unbound} variable.
+
+The following example examples assumes the base library
+has been imported:
+%
+\begin{scheme}
+(define x 28)
+x   \ev  28%
+\end{scheme}
+\end{entry}
+
+\subsection*{Procedure calls}\unsection
+
+\begin{entry}{%
+\pproto{(\hyper{operator} \hyperi{operand} \dotsfoo)}{\exprtype}}
+
+A procedure call consists of expressions for the procedure to be
+called and the arguments to be passed to it, with enclosing
+parentheses.  A form in an expression context is a procedure call if
+\hyper{operator} is not an identifier bound as a syntactic keyword
+(see section~\ref{macrosection} below).
+
+When a procedure call is evaluated, the operator and operand
+expressions are evaluated (in an unspecified order) and the resulting
+procedure is passed the resulting
+arguments.\mainindex{call}\mainindex{procedure call}
+
+The following examples assume the \rsixlibrary{base} library
+has been imported:
+%
+\begin{scheme}%
+(+ 3 4)                          \ev  7
+((if \schfalse + *) 3 4)         \ev  12%
+\end{scheme}
+%
+If the value of \hyper{operator} is not a procedure, an exception with
+condition type {\cf\&assertion} is raised.  Also, if \hyper{operator}
+does not accept as many arguments as there are \hyper{operand}s, an
+exception with condition type {\cf\&assertion} is raised.
+
+\begin{note} In contrast to other dialects of Lisp, the order of
+evaluation is unspecified, and the operator expression and the operand
+expressions are always evaluated with the same evaluation rules.
+
+Although the order of evaluation is otherwise unspecified, the effect of
+any concurrent evaluation of the operator and operand expressions is
+constrained to be consistent with some sequential order of evaluation.
+The order of evaluation may be chosen differently for each procedure call.
+\end{note}
+
+\begin{note} In many dialects of Lisp, the form {\tt
+()} is a legitimate expression.  In Scheme, expressions written as
+list/pair forms must have at
+least one subexpression, so {\tt ()} is not a syntactically valid
+expression.
+\end{note}
+
+\end{entry}
+
+\section{Macros}
+\label{macrosection}
+
+Libraries and top-level programs can define and use new kinds of derived expressions and
+definitions called {\em syntactic abstractions} or
+{\em macros}.\mainindex{syntactic abstraction}\mainindex{macro}
+A syntactic abstraction is created by binding a keyword to a
+{\em macro transformer} or, simply, {\em transformer}.
+\index{macro transformer}\index{transformer}
+The transformer determines
+how a use of the macro (called a \defining{macro use})
+is transcribed into a more primitive form.
+
+Most macro uses have the form:
+\begin{scheme}
+(\hyper{keyword} \hyper{datum} \dotsfoo)%
+\end{scheme}%
+where \hyper{keyword} is an identifier that uniquely determines the
+kind of form.  This identifier is called the {\em syntactic
+keyword}\index{syntactic keyword}, or simply {\em
+keyword}\index{keyword}, of the macro\index{macro keyword}.
+The number of \hyper{datum}s and the syntax
+of each depends on the syntactic abstraction.
+
+Macro uses can also take the form of improper lists, singleton
+identifiers, or {\cf set!} forms, where the second subform of the
+{\cf set!} is the keyword (see section~\ref{identifier-syntax})
+library section~\extref{lib:make-variable-transformer}{{\cf make-variable-transformer}}):
+\begin{scheme}
+(\hyper{keyword} \hyper{datum} \dotsfoo . \hyper{datum})
+\hyper{keyword}
+(set! \hyper{keyword} \hyper{datum})%
+\end{scheme}
+
+The {\cf define-syntax}, {\cf let-syntax} and {\cf letrec-syntax}
+forms, described in sections~\ref{define-syntax} and \ref{let-syntax},
+create bindings for keywords, associate them with macro transformers,
+and control the scope within which they are visible.
+
+The {\cf syntax-rules} and {\cf identifier-syntax} forms, described in
+section~\ref{syntaxrulessection}, create transformers via a pattern
+language.  Moreover, the {\cf syntax-case} form, described in library
+chapter~\extref{lib:syntaxcasechapter}{{\cf syntax-case}}, 
+allows creating transformers via arbitrary Scheme code.
+
+Keywords occupy the same name space as variables.
+That is, within the same
+scope, an identifier can be bound as a variable or keyword, or neither, but
+not both, and local bindings of either kind may shadow other bindings of
+either kind.
+
+Macros defined using {\cf syntax-rules} and {\cf identifier-\hp{}syntax}
+are ``hygienic'' and ``referentially transparent'' and thus preserve
+Scheme's lexical scoping~\cite{Kohlbecker86,
+  hygienic,Bawden88,macrosthatwork,syntacticabstraction}:
+\mainindex{hygienic} \mainindex{referentially transparent}
+
+\begin{itemize}
+\item If a macro transformer inserts a binding for an identifier
+(variable or keyword) not appearing in the macro use, the identifier is in effect renamed
+throughout its scope to avoid conflicts with other identifiers.
+
+\item If a macro transformer inserts a free reference to an
+identifier, the reference refers to the binding that was visible
+where the transformer was specified, regardless of any local
+bindings that may surround the use of the macro.
+\end{itemize}
+
+Macros defined using the {\cf syntax-case} facility are also
+hygienic unless {\cf datum\coerce{}syntax}
+(see library section~\extref{lib:conversionssection}{Syntax-object and datum conversions}) is used.
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "r6rs"
+%%% End: 

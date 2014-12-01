@@ -1,0 +1,127 @@
+changes between R5.96RS and R5.97RS:
+
+Editorial changes:
+
+- significantly revised the description of the syntactic record layer
+- revised the description of constructor descriptors in the procedural record layer
+- clarified description of the respective roles of the syntactic record layer
+- provided human-language descriptions of many bitwise procedures
+- an introductory section on `call-with-current-continuation' was
+  added to the overview chapter
+- a diagram showing the standard condition hierarchy was added
+- reworded port-position to avoid implication that textual port that
+  supports port-position must also support set-port-position!
+- ports created by open-string-input-port now "should" support
+  port-position and set-port-position! (was "implementation dependent")
+- the non-normative appendix on file-system mapping was alided
+
+Substantive changes:
+
+- specified tail contexts for ` guard', `when', `unless', 
+  `case-lambda', and `syntax-case'
+- added `parent-rtd' clause to `define-record-type-descriptor' form
+- changed implementation responsibilities for transformer expressions
+  so that they should only be checked for non-transformer-ness
+- weakened the equivalence for `put-datum' / `get-datum'
+- the response to Formal comment #9
+  (concerning \<line ending><intraline whitespace>) was properly
+  implemented
+- the specification of representations of inexact real number objects that
+  contain no vertical bar was adjusted
+
+changes between R5.95RS and R5.96RS:
+
+Substantive changes:
+
+- made encoding and decoding exceptions non-continuable, and removed
+  the protocol exception handlers could use to address the
+  decoding/encoding error
+- made `replace' the default error-handling mode of transcoders
+- included # in the set of delimiters
+- removed empty delimiter
+- removed # in place of digits from number representations
+- changed "must" on prohibiting multiple versions of the same library
+  to "should"
+- added (library <library reference>) to <import spec> to resolve
+  ambiguity
+- made #!fold-case and #!no-fold-case operate at the lexeme level
+  rather than the level of syntactic datums
+- pluralized library names where applicable
+- specified enumeration syntax to only look at the name of the
+  argument, not its binding
+
+Editorial changes:
+
+- revised the specification of `dynamic-wind'; added definition of
+  "dynamic extent"
+- revised the specification of generic arithmetic
+- reorganized chapter on "Semantic concepts" and "Notation and
+  terminology" into a separate chapter "Requirement levels", an expanded
+  chapter "Semantic concepts" and a new chapter "Entry format"
+- removed uses of "denote"
+- moved "primitive syntax" into its own chapter
+- added non-normative appendix non suggested use of square brackets
+- added note in non-normative appendix on implementations that allow
+  multiple versions of the same library to coexist
+- removed (6) from (rnrs ...) library imports in the examples
+- added non-normative appendix on use of library versions
+- renamed "meaningless flonum" to "unspecified flonum"
+- auxiliary identifiers such as ... and _ now have their own entries
+- clarify `put-datum / get-datum' invariance
+
+changes between R5.94RS and R5.95RS:
+
+Editorial changes:
+
+- added a separate rationale document
+- moved background section and rationale paragraphs to rationale document
+- removed a superfluous production <string element> -> <newline>
+- clarified that `inexact' may return infinite number for finite argument
+- clarified that `string->number' can't raise an exception
+- clarified that `set-port-position!', for textual ports, is only
+  guaranteed to work on positions *from the same port*
+- noted that `equal?' and `equal-hash' must always terminate
+- revised the terminology describing numbers
+
+Substantive changes:
+
+- textual ports must no longer have an associated transcoder
+- reverted the semantics of `eqv?' to the state of R5.92RS, except
+  for procedures, which continue to carry *no* location tag
+- extended `flexpt' for negative fl1 if fl2 is an integer
+- (exit #f) now means an abnormal exit
+- renamed (rnrs i/o ...) libraries to (rnrs io ...)
+- renamed `&i/o-file-exists-not' to `&i/o-does-not-exist'
+- reinstated #\newline
+- `utf16->string' and `utf32->string' were extended according to
+  http://lists.r6rs.org/pipermail/r6rs-discuss/2007-May/002399.html
+- a bogus `obj' argument from `make-assertion-violation' was removed
+
+changes between R5.93RS and R5.94RS:
+
+- added report with non-normative appendices
+
+Editorial changes:
+
+- added reference for "endianness"
+- fixed ordering issue with `letrec' and `letrec*' specifications
+- synchronized descriptions of levels of exported identifiers
+- replaced "datums" by "data"
+- miscellaneous changes and typo fixes
+- revised description on "entry format" and "argument and subform checking"
+- clarified description of `eq?' and `eqv?'
+- deleted mention of "implementation-specific declarations"
+- improved description of `apply'
+- made the example `defun' macro actually look like `defun'
+- added more complete acknowledgements to the front page of the report
+- properly referenced `identifier-syntax' in section on macro uses
+- noted that #\newline has been removed
+- various miscellaneous changes and corrections
+
+Substantive changes:
+
+- (belatedly) deleted `real->single' and `real->double' (Formal comment #122)
+- (belatedly) change `flmin' and `flmax' to always return an inexact
+  NaN when one or more of the arguments is a NaN (Formal comment #230)
+- (belatedly) make bytevectors self-evaluating (Formal comment #154)
+- (belatedly) add `make-custom-textual-input/output-port' (Formal comment #225)

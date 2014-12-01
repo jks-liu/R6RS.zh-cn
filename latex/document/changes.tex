@@ -1,0 +1,174 @@
+\chapter{Language changes}
+\label{languagechangesappendix}
+
+This chapter describes most of the changes that have been made to
+Scheme since the ``Revised$^5$ Report''~\cite{R5RS} was published:
+
+\begin{itemize}
+\item Scheme source code now uses the Unicode character set.
+  Specifically, the character set that can be used for identifiers has
+  been greatly expanded.
+\item Identifiers can now start with the characters {\cf ->}.
+\item Identifiers and symbol literals are now case-sensitive.
+\item Identifiers and representations of characters, booleans,
+  number objects, and {\cf .} must be explicitly delimited.
+\item {\cf \sharpsign} is now a delimiter.
+\item Bytevector literal syntax has been added.
+\item Matched square brackets can be used synonymously with parentheses.
+\item The read-syntax abbreviations {\cf \sharpsign{}'} (for {\cf
+    syntax}), {\cf \sharpsign\backquote} (for {\cf quasisyntax}), {\cf
+    \sharpsign{},} (for {\cf unsyntax}), and {\cf \sharpsign{},@}
+  (for {\cf unsyntax-splicing} have been added; see section~\ref{abbreviationsection}.)
+\item {\cf \sharpsign} can no longer be used in place of digits in number
+  representations.
+\item The external representation of number objects can now include a
+  mantissa width.
+\item Literals for NaNs and infinities were added.
+\item String and character literals can now use a variety of escape
+  sequences.
+\item Block and datum comments have been added.
+\item The {\cf \sharpsign{}!r6rs} comment for marking report-compliant
+  lexical syntax has been added.
+\item Characters are now specified to correspond to Unicode scalar
+  values.
+\item Many of the procedures and syntactic forms of the language are
+  now part of the \rsixlibrary{base} library.  Some procedures and
+  syntactic forms have been moved to other libraries; see figure~\ref{r5rsmovedfigure}.
+
+  \begin{figure*}[tb]
+    \centering
+    \small
+    \begin{tabular}[t]{ll}
+      identifier & moved to \\\hline
+      {\cf assoc} & \rsixlibrary{lists} \\
+      {\cf assv} & \rsixlibrary{lists} \\
+      {\cf assq} & \rsixlibrary{lists} \\
+      {\cf call-with-input-file} & \rsixlibrary{io simple} \\
+      {\cf call-with-output-file} & \rsixlibrary{io simple} \\
+      {\cf char-upcase} & \rsixlibrary{unicode} \\
+      {\cf char-downcase} & \rsixlibrary{unicode} \\
+      {\cf char-ci=?} & \rsixlibrary{unicode} \\
+      {\cf char-ci<?} & \rsixlibrary{unicode} \\
+      {\cf char-ci>?} & \rsixlibrary{unicode} \\
+      {\cf char-ci<=?} & \rsixlibrary{unicode} \\
+      {\cf char-ci>=?} & \rsixlibrary{unicode} \\
+      {\cf char-alphabetic?} & \rsixlibrary{unicode} \\
+      {\cf char-numeric?} & \rsixlibrary{unicode} \\
+      {\cf char-whitespace?} & \rsixlibrary{unicode} \\
+      {\cf char-upper-case?} & \rsixlibrary{unicode} \\
+      {\cf char-lower-case?} & \rsixlibrary{unicode} \\
+      {\cf close-input-port} & \rsixlibrary{io simple} \\
+      {\cf close-output-port} & \rsixlibrary{io simple} \\
+      {\cf current-input-port} & \rsixlibrary{io simple} \\
+      {\cf current-output-port} & \rsixlibrary{io simple} \\
+      {\cf display} & \rsixlibrary{io simple} \\
+      {\cf do} & \rsixlibrary{control} \\
+      {\cf eof-object?} & \rsixlibrary{io simple} \\
+      {\cf eval} & \rsixlibrary{eval} \\
+      {\cf delay} & \rsixlibrary{r5rs}\\
+      {\cf exact->inexact} & \rsixlibrary{r5rs}\\
+      {\cf force} & \rsixlibrary{r5rs}
+\htmlonly \\ \endhtmlonly
+\texonly
+    \end{tabular}
+    \qquad
+    \begin{tabular}[t]{ll}
+      identifier & moved to \\\hline
+\endtexonly
+      {\cf inexact->exact} & \rsixlibrary{r5rs}\\
+      {\cf member} & \rsixlibrary{lists} \\
+      {\cf memv} & \rsixlibrary{lists} \\
+      {\cf memq} & \rsixlibrary{lists} \\
+      {\cf modulo} & \rsixlibrary{r5rs} \\
+      {\cf newline} & \rsixlibrary{io simple} \\
+      {\cf null-environment} & \rsixlibrary{r5rs} \\
+      {\cf open-input-file} & \rsixlibrary{io simple} \\
+      {\cf open-output-file} & \rsixlibrary{io simple} \\
+      {\cf peek-char} & \rsixlibrary{io simple} \\
+      {\cf quotient} & \rsixlibrary{r5rs} \\
+      {\cf read} & \rsixlibrary{io simple} \\
+      {\cf read-char} & \rsixlibrary{io simple} \\
+      {\cf remainder} & \rsixlibrary{r5rs} \\
+      {\cf scheme-report-environment} & \rsixlibrary{r5rs} \\
+      {\cf set-car!} & \rsixlibrary{mutable-pairs} \\
+      {\cf set-cdr!} & \rsixlibrary{mutable-pairs} \\
+      {\cf string-ci=?} & \rsixlibrary{unicode} \\
+      {\cf string-ci<?} & \rsixlibrary{unicode} \\
+      {\cf string-ci>?} & \rsixlibrary{unicode} \\
+      {\cf string-ci<=?} & \rsixlibrary{unicode} \\
+      {\cf string-ci>=?} & \rsixlibrary{unicode} \\
+      {\cf string-set!} & \rsixlibrary{mutable-strings} \\
+      {\cf string-fill!} & \rsixlibrary{mutable-strings} \\
+      {\cf with-input-from-file} & \rsixlibrary{io simple} \\
+      {\cf with-output-to-file} & \rsixlibrary{io simple} \\
+      {\cf write} & \rsixlibrary{io simple} \\
+      {\cf write-char} & \rsixlibrary{io simple}
+    \end{tabular}
+    \caption{Identifiers moved to libraries}
+    \label{r5rsmovedfigure}
+  \end{figure*}
+\item The base language has the following new procedures and syntactic
+  forms: {\cf letrec*}, {\cf let-values}, {\cf let*-\hp{}values}, {\cf
+    real-valued?}, {\cf rational-valued?}, {\cf integer-valued?}, {\cf
+    exact}, {\cf inexact}, {\cf finite?}, {\cf infinite?}, {\cf nan?},
+  {\cf div}, {\cf mod}, {\cf
+    div-and-mod}, {\cf div0}, {\cf mod0}, {\cf div0-and-mod0}, {\cf
+    exact-integer-sqrt}, {\cf boolean=?}, {\cf symbol=?}, {\cf
+    string-for-each}, {\cf vector-map}, {\cf vector-\hp{}for-\hp{}each}, {\cf
+    error}, {\cf assertion-violation}, {\cf assert}, {\cf call/cc},
+  {\cf identifier-syntax}.
+\item The following procedures have been removed: {\cf
+    char-\hp{}ready?}, {\cf transcript-on}, {\cf transcript-off},
+  {\cf load}.
+\item The case-insensitive string comparisons ({\cf string-\hp{}ci=?}, {\cf
+    string-\hp{}ci<?}, {\cf string-ci>?}, {\cf string-ci<=?}, {\cf
+    string-ci>=?}) operate on the case-folded versions of the strings
+  rather than as the simple lexicographic ordering induced by the
+  corresponding character comparison procedures.
+\item Libraries have been added to the language.
+\item A number of standard libraries are described in a separate
+  report~\cite{R6RS-libraries}.
+\item Many situations that ``were an error'' now have defined or
+  constrained behavior.  In particular, many are now specified in
+  terms of the exception system.
+\item The full numerical tower is now required.
+\item The semantics for the transcendental functions has been
+  specified more fully.
+\item The semantics of {\cf expt} for zero bases has been refined.
+\item In {\cf syntax-rules} forms, a {\cf\_} may be used in place of
+  the keyword.
+\item The {\cf let-syntax} and {\cf letrec-syntax} no longer introduce a
+  new environment for their bodies.
+\item For implementations that support NaNs or infinities,
+  many arithmetic operations have been specified on
+  these values consistently with IEEE~754.
+\item For implementations that support a distinct -0.0, the semantics
+  of many arithmetic operations with regard to -0.0 has been specified
+  consistently with IEEE~754.
+\item Scheme's real number objects now have an exact zero as their imaginary part.
+\item The specification of {\cf quasiquote} has been extended.  Nested
+  quasiquotations work correctly now, and {\cf unquote} and {\cf
+    unquote-splicing} have been extended to several operands.
+\item Procedures now may or may not refer to
+  locations.  Consequently, {\cf eqv?} is now unspecified in a few
+  cases where it was specified before.
+\item The mutability of the values of {\cf quasiquote} structures has
+  been specified to some degree.
+\item The dynamic environment of the \var{before} and \var{after}
+  procedures of {\cf dynamic-wind} is now specified.
+\item Various expressions that have only side effects are now allowed
+  to return an arbitrary number of values.
+\item The order and semantics for macro expansion has been more fully
+  specified.
+\item Internal definitions are now defined in terms of {\cf letrec*}.
+\item The old notion of program structure and Scheme's top-level
+  environment has been replaced by top-level programs and libraries.
+\item The denotational semantics has been replaced by an operational
+  semantics based on an earlier semantics for the language of the
+  ``Revised$^5$ Report''~\cite{R5RS,mf:scheme-op-sem}.
+\end{itemize}
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "r6rs"
+%%% End: 

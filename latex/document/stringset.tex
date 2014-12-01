@@ -1,0 +1,46 @@
+\chapter{Mutable strings}
+\label{stringmutationchapter}
+
+The {\cf string-set!} procedure provided by the \defrsixlibrary{mutable-strings}
+library allows mutating the characters of a string in-place.
+
+\begin{entry}{%
+\proto{string-set!}{ string k char}{procedure}}
+
+\domain{%\var{string} must be a string, 
+\vr{K} must be a valid index of \var{string}%, and \var{char} must be a character
+.}
+The {\cf string-set!} procedure stores \var{char} in element \vr{k} of \var{string}
+and returns \unspecifiedreturn.  % <!>
+
+Passing an immutable string to {\cf string-set!} should cause an exception
+with condition type {\cf\&assertion} to be raised.
+\begin{scheme}
+(define (f) (make-string 3 \sharpsign\backwhack{}*))
+(define (g) "***")
+(string-set! (f) 0 \sharpsign\backwhack{}?)  \ev  \theunspecified
+(string-set! (g) 0 \sharpsign\backwhack{}?)  \ev  \unspecified
+             ; \textrm{should raise \exception{\&assertion}}
+(string-set! (symbol->string 'immutable)
+             0
+             \sharpsign\backwhack{}?)  \ev  \unspecified
+             ; \textrm{should raise \exception{\&assertion}}%
+\end{scheme}
+
+\begin{note}
+  Implementors should make {\cf string-set!} run in constant
+  time.
+\end{note}
+\end{entry}
+
+\begin{entry}{%
+\proto{string-fill!}{ string char}{procedure}}
+
+Stores \var{char} in every element of the given \var{string} and returns \unspecifiedreturn.  % <!>
+
+\end{entry}
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "r6rs-lib"
+%%% End: 

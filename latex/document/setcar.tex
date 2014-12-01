@@ -1,0 +1,51 @@
+\chapter{Mutable pairs}
+\label{pairmutationchapter}
+
+The procedures provided by the \defrsixlibrary{mutable-pairs} library
+allow new values to be assigned to the car and cdr fields of
+previously allocated pairs.  
+
+\begin{entry}{%
+\proto{set-car!}{ pair obj}{procedure}}
+
+Stores \var{obj} in the car field of \var{pair}.
+The {\cf set-car!} procedure returns \unspecifiedreturn.
+
+\begin{scheme}
+(define (f) (list 'not-a-constant-list))
+(define (g) '(constant-list))
+(set-car! (f) 3)             \ev  \theunspecified
+(set-car! (g) 3)             \ev  \unspecified\\\>; \textrm{should raise} \exception{\&assertion}
+\end{scheme}
+
+If an immutable pair is passed to {\cf set-car!}, an exception
+with condition type {\cf\&assertion} should be raised.
+\end{entry}
+
+
+\begin{entry}{%
+\proto{set-cdr!}{ pair obj}{procedure}}
+
+Stores \var{obj} in the cdr field of \var{pair}.
+The {\cf set-cdr!} procedure returns \unspecifiedreturn.
+
+
+If an immutable pair is passed to {\cf set-cdr!}, an exception
+with condition type {\cf\&assertion} should be raised.
+
+\begin{scheme}
+(let ((x (list 'a 'b 'c 'a))
+      (y (list 'a 'b 'c 'a 'b 'c 'a)))
+  (set-cdr! (list-tail x 2) x)
+  (set-cdr! (list-tail y 5) y)
+  (list
+   (equal? x x)
+   (equal? x y)
+   (equal? (list x y 'a) (list y x 'b)))) \lev  (\schtrue{} \schtrue{} \schfalse{})
+\end{scheme}
+\end{entry}
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "r6rs-lib"
+%%% End: 

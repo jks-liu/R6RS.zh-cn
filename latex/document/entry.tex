@@ -1,0 +1,274 @@
+%\vfill\eject
+\chapter{Entry format}
+\label{entryformatchapter}
+
+The chapters that describe bindings in the base library and the standard
+libraries are organized
+into entries.  Each entry describes one language feature or a group of
+related features, where a feature is either a syntactic construct or a
+built-in procedure.  An entry begins with one or more header lines of the form
+
+\noindent\pproto{\var{template}}{\var{category}}\unpenalty
+
+The \var{category} defines the kind of binding described by the entry,
+typically either ``\exprtype'' or ``procedure''.
+An entry may specify various restrictions on subforms or arguments.
+For background on this, see section~\ref{argumentcheckingsection}.
+
+\section{Syntax entries}
+
+If \var{category} is ``\exprtype'', the entry describes a 
+special syntactic construct, and the template gives the syntax of the
+forms of the construct.  
+The template is written in a notation similar to a right-hand
+side of the BNF rules in chapter~\ref{readsyntaxchapter}, and describes
+the set of forms equivalent to the forms matching the
+template as syntactic data.  Some ``\exprtype'' entries carry a
+suffix ({\cf expand}), specifying that the syntactic keyword of the
+construct is exported with level
+$1$.  Otherwise, the syntactic keyword is exported with level $0$; see
+section~\ref{phasessection}.
+
+Components of the form described by a template are designated
+by syntactic variables, which are written using angle brackets, for
+example, \hyper{expression}, \hyper{variable}.  Case is insignificant
+in syntactic variables.  Syntactic variables
+stand for other forms, or
+sequences of them.  A syntactic variable may refer to a non-terminal
+in the grammar for syntactic data (see section~\ref{datumsyntax}),
+in which case only forms matching
+that non-terminal are permissible in that position.
+For example, \hyper{identifier} stands for a form which must be an
+identifier.
+Also,
+\hyper{expression} stands for any form which is a
+syntactically valid expression.  Other non-terminals that are used in
+templates are defined as part of the specification.
+
+The notation
+\begin{tabbing}
+\qquad \hyperi{thing} $\ldots$
+\end{tabbing}
+indicates zero or more occurrences of a \hyper{thing}, and
+\begin{tabbing}
+\qquad \hyperi{thing} \hyperii{thing} $\ldots$
+\end{tabbing}
+indicates one or more occurrences of a \hyper{thing}.
+
+It is the programmer's responsibility to ensure that each component of
+a form has the shape specified by a template.  Descriptions of syntax
+may express other restrictions on the components of a form.
+Typically, such a restriction is formulated as a phrase of the form
+``\hyper{x} must be\mainindex{must be} a \ldots''.  Again, these
+specify the programmer's responsibility.  It is the implementation's
+responsibility to check that these restrictions are satisfied, as long
+as the macro transformers involved in expanding the form terminate.
+If the implementation detects that a component does not meet the
+restriction, an exception with condition type {\cf\&syntax} is raised.
+
+\section{Procedure entries}
+
+If \var{category} is ``procedure'', then the entry describes a procedure, and
+the header line gives a template for a call to the procedure.  Parameter
+names in the template are \var{italicized}.  Thus the header line
+
+\noindent\pproto{(vector-ref \var{vector} \var{k})}{procedure}\unpenalty
+
+indicates that the built-in procedure {\tt vector-ref} takes
+two arguments, a vector \var{vector} and an exact non-negative integer
+object \var{k} (see below).  The header lines
+
+\noindent%
+\pproto{(make-vector \var{k})}{procedure}
+\pproto{(make-vector \var{k} \var{fill})}{procedure}\unpenalty
+
+indicate that the {\tt make-vector} procedure takes
+either one or two arguments.  The parameter names are
+case-insensitive: \var{Vector} is the same as \var{vector}.
+
+As with syntax templates, an ellipsis \dotsfoo{} at the end of a header
+line, as in
+
+\noindent\pproto{(= \vari{z} \varii{z} \variii{z} \dotsfoo)}{procedure}\unpenalty
+
+indicates that the procedure takes arbitrarily many arguments of the
+same type as specified for the last parameter name.  In this case,
+{\cf =} accepts two or more arguments that must all be complex
+number objects.
+
+\label{typeconventions}
+A procedure that detects an argument that it is not specified to
+handle must raise an exception with condition type
+{\cf\&assertion}.  Also, the argument specifications are exhaustive: if the
+number of arguments provided in a procedure call does not match 
+any number of arguments accepted by the procedure, an exception with
+condition type {\cf\&assertion} must be raised.
+
+For succinctness, the report follows the convention
+that if a parameter name is also the name of a type, then the corresponding argument must be of the named type.
+For example, the header line for {\tt vector-ref} given above dictates that the
+first argument to {\tt vector-ref} must be a vector.  The following naming
+conventions imply type restrictions:
+
+\texonly\begin{center}\endtexonly
+  \begin{tabular}{ll}
+    \var{obj}&any object\\
+    \var{z}&complex number object\\
+    \var{x}&real number object\\
+    \var{y}&real number object\\
+    \var{q}&rational number object\\
+    \var{n}&integer object\\
+    \var{k}&exact non-negative integer object\\
+    \var{bool}&boolean (\schfalse{} or \schtrue{})\\
+    \var{octet}&exact integer object in $\{0, \ldots, 255\}$\\
+    \var{byte}&exact integer object in $\{-128, \ldots, 127\}$\\
+    \var{char}&character (see section~\ref{charactersection})\\
+    \var{pair}&pair (see section~\ref{listsection})\\
+    \var{vector}&vector (see section~\ref{vectorsection})\\
+    \var{string}&string (see section~\ref{stringsection})\\
+    \var{condition}&condition (see library section~\extref{lib:conditionssection}{Conditions})\\
+    \var{bytevector}&bytevector (see library chapter~\extref{lib:bytevectorschapter}{Bytevectors})\\
+    \var{proc}&procedure (see section~\ref{proceduressection})
+  \end{tabular}
+\texonly\end{center}\endtexonly
+
+Other type restrictions are expressed through parameter-naming
+conventions that are described in specific chapters.  For example,
+library chapter~\extref{lib:numberchapter}{Arithmetic} uses a number of special
+parameter variables for the various subsets of the numbers.
+
+With the listed type restrictions, it is the programmer's responsibility to
+ensure that the corresponding argument is of the specified type.
+It is the implementation's responsibility to check for
+that type.
+
+A parameter called \var{list} means that it is the
+programmer's responsibility to pass an argument that is a list (see
+section~\ref{listsection}).  It is the implementation's responsibility
+to check that the argument is appropriately structured for the
+operation to perform its function, to the extent that this is possible
+and reasonable.  The implementation must at least check that the
+argument is either an empty list or a pair.
+
+Descriptions of procedures may express other restrictions on the
+arguments of a procedure.  Typically, such a restriction is formulated
+as a phrase of the form ``\var{x} must be a \ldots'' (or otherwise
+using the word ``must'').
+
+\section{Implementation responsibilities}
+
+In addition to the restrictions implied by naming conventions, an
+entry may list additional explicit restrictions.
+These explicit restrictions usually describe both the
+programmer's responsibilities, who must ensure that the subforms of a
+form are appropriate, or that an appropriate
+argument is passed, and the implementation's responsibilities, which
+must check that subform adheres to the specified restrictions (if
+macro expansion terminates), or if the argument is appropriate.  A description
+may explicitly list the implementation's responsibilities for some
+arguments or subforms in a paragraph labeled ``\textit{Implementation
+  responsibilities}''.  In this case, the responsibilities specified
+for these subforms or arguments in the rest of the description are only for the
+programmer.  A paragraph describing implementation responsibility does not
+affect the implementation's responsibilities for checking subforms or arguments not
+mentioned in the paragraph.
+
+\section{Other kinds of entries}
+
+If \var{category} is something other than ``syntax'' and
+``procedure'', then the entry describes a non-procedural value, and
+the \var{category} describes the type of that value.  The header line
+
+\noindent\rvproto{\&who}{condition type}\\
+indicates that {\cf\&who} is a condition type.  The header line
+
+\noindent\rvproto{unquote}{auxiliary syntax}\\
+indicates that {\cf unquote} is a syntax binding that may occur
+only as part of specific surrounding expressions.  Any use as an
+independent syntactic construct or identifier is a syntax violation.
+As with ``\exprtype'' entries, some ``auxiliary syntax'' entries  carry a
+suffix ({\cf expand}), specifying that the syntactic keyword of the
+construct is exported with level $1$.
+\section{Equivalent entries}
+
+The description of an entry occasionally states that it is \textit{the
+  same} as another entry.  This means that both entries are
+equivalent.  Specifically, it means that if both entries have the same
+name and are thus exported from different libraries, the entries from
+both libraries can be imported under the same name without conflict.
+
+\section{Evaluation examples}
+
+The symbol ``\evalsto'' used in program examples can be read
+``evaluates to''.  For example,
+
+\begin{scheme}
+(* 5 8)      \ev  40%
+\end{scheme}
+
+means that the expression {\tt(* 5 8)} evaluates to the object {\tt 40}.
+Or, more precisely:  the expression given by the sequence of characters
+``{\tt(* 5 8)}'' evaluates, in an environment that imports the relevant library, to an object
+that may be represented externally by the sequence of characters ``{\tt
+40}''.  See section~\ref{datumsyntaxsection} for a discussion of external
+representations of objects.
+
+The ``\evalsto'' symbol is also used when the evaluation of an
+expression causes a violation.  For example,
+
+\begin{scheme}
+(integer->char \sharpsign{}xD800) \xev \exception{\&assertion}%
+\end{scheme}
+%
+means that the evaluation of the expression {\cf (integer->char
+  \sharpsign{}xD800)} must raise an exception with condition type
+{\cf\&assertion}.
+
+Moreover, the ``\evalsto'' symbol is also used to explicitly say that
+the value of an expression in unspecified.  For example:
+%
+\begin{scheme}
+(eqv? "" "")             \ev  \unspecified%
+\end{scheme}
+
+Mostly, examples merely illustrate the behavior specified in the
+entry.  In some cases, however, they disambiguate otherwise ambiguous
+specifications and are thus normative.  Note that, in some cases,
+specifically in the case of inexact number objects, the return value is only
+specified conditionally or approximately.  For example:
+%
+\begin{scheme}
+(atan -inf.0)                  \lev -1.5707963267948965 ; \textrm{approximately}%
+\end{scheme}
+
+\section{Naming conventions}
+
+By convention, the names of procedures that store values into previously
+allocated locations (see section~\ref{storagemodel}) usually end in
+``\ide{!}''.
+
+By convention, ``\ide{->}'' appears within the names of procedures that
+take an object of one type and return an analogous object of another type.
+For example, {\cf list->vector} takes a list and returns a vector whose
+elements are the same as those of the list.
+
+By convention, the names of predicates---procedures that always return
+a boolean value---end in ``\ide{?}'' when the name contains any
+letters; otherwise, the predicate's name does not end with a question
+mark.
+
+By convention, the components of compound names are separated by ``\ide{-}''
+In particular, prefixes that are actual words or can be pronounced as
+though they were actual words are followed by a hyphen, except when
+the first character following the hyphen would be something other than
+a letter, in which case the hyphen is omitted.  Short,
+unpronounceable prefixes (``\ide{fx}'' and ``\ide{fl}'') are not
+followed by a hyphen.
+
+By convention, the names of condition types start with
+``{\cf\&}''\index{&@\texttt{\&}}.
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "r6rs"
+%%% End: 

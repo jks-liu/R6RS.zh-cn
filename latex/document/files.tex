@@ -1,0 +1,32 @@
+\chapter{File system}
+\label{filesystemchapter}
+
+This chapter describes the \defrsixlibrary{files} library for
+operations on the file system.  This library, in addition to the
+procedures described here, also exports the I/O condition types
+described in section~\ref{iocondsection}.
+
+\begin{entry}{%
+\proto{file-exists?}{ filename}{procedure}}
+
+\domain{\var{Filename} must be a file name (see
+  section~\ref{filenamesection}).}  The {\cf file-exists?} procedure
+returns \schtrue{} if the named file exists at the time the procedure
+is called, \schfalse{} otherwise.
+\end{entry}
+
+\begin{entry}{%
+\proto{delete-file}{ filename}{procedure}}
+
+\domain{\var{Filename} must be a file name (see
+  section~\ref{filenamesection}).}  The {\cf delete-file} procedure
+deletes the named file if it exists and can be deleted, and returns
+\unspecifiedreturn.  If the file does not exist or cannot be deleted,
+an exception with condition type {\cf\&i/o-filename} is raised.
+\end{entry}
+
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "r6rs-lib"
+%%% End: 

@@ -1,0 +1,235 @@
+\chapter{R$^5$RS compatibility}
+\label{r5rscompatchapter}
+
+The features described in this chapter are exported from the
+\defrsixlibrary{r5rs} library and provide some functionality of the
+preceding revision of this report~\cite{R5RS} that was omitted from
+the main part of the current report.
+
+\begin{entry}{%
+\proto{exact->inexact}{ z}{procedure}
+\proto{inexact->exact}{ z}{procedure}}
+
+These are the same as the {\cf inexact} and {\cf exact}
+procedures; see report section~\extref{report:inexact}{Generic conversions}.
+\end{entry}
+
+\begin{entry}{%
+\proto{quotient}{ \vari{n} \varii{n}}{procedure}
+\proto{remainder}{ \vari{n} \varii{n}}{procedure}
+\proto{modulo}{ \vari{n} \varii{n}}{procedure}}
+
+These procedures implement number-theoretic (integer)
+division.  \varii{N} must be non-zero.  All three procedures
+return integer objects.  If \vari{n}/\varii{n} is an integer object:
+\begin{scheme}
+    (quotient \vari{n} \varii{n})   \ev \vari{n}/\varii{n}
+    (remainder \vari{n} \varii{n})  \ev 0
+    (modulo \vari{n} \varii{n})     \ev 0
+\end{scheme}
+If \vari{n}/\varii{n} is not an integer object:
+\begin{scheme}
+    (quotient \vari{n} \varii{n})   \ev \var{n$_q$}
+    (remainder \vari{n} \varii{n})  \ev \var{n$_r$}
+    (modulo \vari{n} \varii{n})     \ev \var{n$_m$}
+\end{scheme}
+where \var{n$_q$} is $\vari{n}/\varii{n}$ rounded towards zero,
+$0 < |\var{n$_r$}| < |\varii{n}|$, $0 < |\var{n$_m$}| < |\varii{n}|$,
+\var{n$_r$} and \var{n$_m$} differ from \vari{n} by a multiple of \varii{n},
+\var{n$_r$} has the same sign as \vari{n}, and
+\var{n$_m$} has the same sign as \varii{n}.
+
+Consequently, for integer objects \vari{n} and \varii{n} with
+\varii{n} not equal to 0,
+\begin{scheme}
+     (= \vari{n} (+ (* \varii{n} (quotient \vari{n} \varii{n}))
+           (remainder \vari{n} \varii{n})))
+                                 \ev  \schtrue%
+\end{scheme}
+provided all number object involved in that computation are exact.
+
+\begin{scheme}
+(modulo 13 4)           \ev  1
+(remainder 13 4)        \ev  1
+
+(modulo -13 4)          \ev  3
+(remainder -13 4)       \ev  -1
+
+(modulo 13 -4)          \ev  -3
+(remainder 13 -4)       \ev  1
+
+(modulo -13 -4)         \ev  -1
+(remainder -13 -4)      \ev  -1
+
+(remainder -13 -4.0)    \ev  -1.0%
+\end{scheme}
+
+\begin{note}
+  These procedures could be defined in terms of {\cf div} and {\cf
+    mod} (see report section~\extref{report:div}{Arithmetic operations}) as follows (without checking of the
+  argument types):
+\begin{scheme}
+(define (sign n)
+  (cond
+    ((negative? n) -1)
+    ((positive? n) 1)
+    (else 0)))
+
+(define (quotient n1 n2)
+  (* (sign n1) (sign n2) (div (abs n1) (abs n2))))
+
+(define (remainder n1 n2)
+  (* (sign n1) (mod (abs n1) (abs n2))))
+
+(define (modulo n1 n2)
+  (* (sign n2) (mod (* (sign n2) n1) (abs n2))))
+\end{scheme}
+\end{note}
+\end{entry}
+
+\begin{entry}{%
+\proto{delay}{ \hyper{expression}}{\exprtype}}
+
+The {\cf delay} construct is used together with the procedure \ide{force} to
+implement \defining{lazy evaluation} or \defining{call by need}.
+{\tt(delay~\hyper{expression})} returns an object called a
+\defining{promise} which at some point in the future may be asked (by
+the {\cf force} procedure) to evaluate
+\hyper{expression}, and deliver the resulting value.
+The effect of \hyper{expression} returning multiple values
+is unspecified.
+
+\end{entry}
+
+\begin{entry}{%
+\proto{force}{ promise}{procedure}}
+
+{\var{Promise} must be a promise.}
+The {\cf force} procedure forces the value of \var{promise}.  If no value has been computed for
+the promise, then a value is computed and returned.  The value of the
+promise is cached (or ``memoized'') so that if it is forced a second
+time, the previously computed value is returned.
+
+\begin{scheme}
+(force (delay (+ 1 2)))   \ev  3
+(let ((p (delay (+ 1 2))))
+  (list (force p) (force p)))  
+                               \ev  (3 3)
+
+(define a-stream
+  (letrec ((next
+            (lambda (n)
+              (cons n (delay (next (+ n 1)))))))
+    (next 0)))
+(define head car)
+(define tail
+  (lambda (stream) (force (cdr stream))))
+
+(head (tail (tail a-stream)))  
+                               \ev  2%
+\end{scheme}
+
+Promises are mainly intended for programs written in
+functional style.  The following examples should not be considered to
+illustrate good programming style, but they illustrate the property that
+only one value is computed for a promise, no matter how many times it is
+forced.
+
+\begin{scheme}
+(define count 0)
+(define p
+  (delay (begin (set! count (+ count 1))
+                (if (> count x)
+                    count
+                    (force p)))))
+(define x 5)
+p                     \ev  {\it{}a promise}
+(force p)             \ev  6
+p                     \ev  {\it{}a promise, still}
+(begin (set! x 10)
+       (force p))     \ev  6%
+\end{scheme}
+
+Here is a possible implementation of {\cf delay} and {\cf force}.
+Promises are implemented here as procedures of no arguments,
+and {\cf force} simply calls its argument:
+
+\begin{scheme}
+(define force
+  (lambda (object)
+    (object)))%
+\end{scheme}
+
+The expression
+
+\begin{scheme}
+(delay \hyper{expression})%
+\end{scheme}
+
+has the same meaning as the procedure call
+
+\begin{scheme}
+(make-promise (lambda () \hyper{expression}))%
+\end{scheme}
+
+as follows
+
+\begin{scheme}
+(define-syntax delay
+  (syntax-rules ()
+    ((delay expression)
+     (make-promise (lambda () expression))))),%
+\end{scheme}
+
+where {\cf make-promise} is defined as follows:
+
+\begin{scheme}
+(define make-promise
+  (lambda (proc)
+    (let ((result-ready? \schfalse)
+          (result \schfalse))
+      (lambda ()
+        (if result-ready?
+            result
+            (let ((x (proc)))
+              (if result-ready?
+                  result
+                  (begin (set! result-ready? \schtrue)
+                         (set! result x)
+                         result))))))))%
+\end{scheme}
+\end{entry}
+
+\begin{entry}{%
+\proto{null-environment}{ n}{procedure}}
+
+\domain{\var{N} must be the exact integer object 5.}  The {\cf
+  null-environment} procedure returns an
+environment specifier suitable for use with {\cf eval} (see
+chapter~\ref{evalchapter}) representing an environment that is empty except
+for the (syntactic) bindings for all keywords described in
+the previous revision of this report~\cite{R5RS}, including bindings
+for {\cf =>}, {\cf ...}, {\cf else}, and {\cf\_} that are the same as those in
+the \rsixlibrary{base} library.
+\end{entry}
+
+\begin{entry}{%
+\proto{scheme-report-environment}{ n}{procedure}}
+
+\domain{\var{N} must be the exact integer object 5.}  The {\cf scheme-report-environment} procedure returns
+an environment specifier for an environment that is empty except for
+the bindings for the identifiers described in the previous
+revision of this report~\cite{R5RS}, omitting {\cf load}, {\cf
+  interaction-environment}, {\cf
+  transcript-on}, {\cf transcript-off}, and {\cf char-ready?}.  The
+variable bindings have as values the procedures of the same names described in
+this report, and the keyword bindings, including
+{\cf =>}, {\cf ...}, {\cf else}, and {\cf\_} are the same as those described
+in this report.
+\end{entry}
+
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "r6rs-lib"
+%%% End: 
