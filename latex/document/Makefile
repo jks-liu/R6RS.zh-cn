@@ -1,5 +1,5 @@
-LATEX = latex
-# LATEX = pdflatex
+# LATEX = latex
+LATEX = pdflatex
 BIBTEX = bibtex
 MAKEINDEX = makeindex
 SCHEME = scheme48 -a batch
@@ -131,9 +131,9 @@ r6-fig-grammar-parti.tex: tex-translate.ss ../model/r6rs.scm
 firstrun: $(COMMON_TEX_FILES) $(REPORT_TEX_FILES) $(LIB_TEX_FILES) $(RATIONALE_TEX_FILES)
 	$(MZSCHEME) -qu tex-translate.ss
 	$(LATEX) r6rs
-	$(LATEX) r6rs-lib
-	$(LATEX) r6rs-app
-	$(LATEX) r6rs-rationale
+#	$(LATEX) r6rs-lib
+#	$(LATEX) r6rs-app
+#	$(LATEX) r6rs-rationale
 	touch firstrun
 
 secondrun: firstrun r6rs.bbl r6rs-lib.bbl r6rs-app.bbl r6rs-rationale.bbl
@@ -142,9 +142,9 @@ secondrun: firstrun r6rs.bbl r6rs-lib.bbl r6rs-app.bbl r6rs-rationale.bbl
 	$(MAKEINDEX) -s r6rs.mst -c r6rs-lib.idx
 	$(MAKEINDEX) -s r6rs.mst -c r6rs-rationale.idx
 	$(LATEX) r6rs
-	$(LATEX) r6rs-lib
-	$(LATEX) r6rs-app
-	$(LATEX) r6rs-rationale
+#	$(LATEX) r6rs-lib
+#	$(LATEX) r6rs-app
+#	$(LATEX) r6rs-rationale
 	touch secondrun
 
 thirdrun: secondrun
@@ -153,9 +153,9 @@ thirdrun: secondrun
 	$(MAKEINDEX) -s r6rs.mst -c r6rs-lib.idx
 	$(MAKEINDEX) -s r6rs.mst -c r6rs-rationale.idx
 	$(LATEX) r6rs
-	$(LATEX) r6rs-lib
-	$(LATEX) r6rs-app
-	$(LATEX) r6rs-rationale
+#	$(LATEX) r6rs-lib
+#	$(LATEX) r6rs-app
+#	$(LATEX) r6rs-rationale
 	touch thirdrun
 
 html:	r6rs-html r6rs-lib-html r6rs-app-html r6rs-rationale-html
