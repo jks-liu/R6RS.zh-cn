@@ -12,18 +12,21 @@
 \externaldocument[lib:]{r6rs-lib}
 \endtexonly
 
-\def\headertitle{Revised$^{\rnrsrevision}$ Scheme}
-\def\TZPtitle{Revised^\rnrsrevision{} Report on the Algorithmic Language Scheme}
+\usepackage[utf8]{inputenc}
+\usepackage{CJKutf8}
+
+\def\headertitle{Scheme第$^{\rnrsrevision}$次修订简体中文翻译}
+\def\TZPtitle{算法语言Scheme修订^\rnrsrevision{}报告}
 
 \begin{document}
+\begin{CJK*}{UTF8}{gbsn}
 
 \thispagestyle{empty}
 
 \topnewpage[{
 \begin{center}   {\huge\bf
-        Revised{\Huge$^{\mathbf{\htmlonly\tiny\endhtmlonly{}\rnrsrevision}}$} Report on the Algorithmic Language \\
-                              \vskip 3pt
-                                Scheme}
+    算法语言Scheme修订
+    {\Huge$^{\mathbf{\htmlonly\tiny\endhtmlonly{}\rnrsrevision}}$}报告}
 
 \vskip 1ex
 $$
@@ -34,15 +37,14 @@ $$
   M\authorsc{ATTHEW} F\authorsc{LATT},
   A\authorsc{NTON} \authorsc{VAN} S\authorsc{TRAATEN}}
 \\
-\multicolumn{4}{c}{(\textit{Editors})} \\
+\multicolumn{4}{c}{(\textit{编辑})} \\
 \multicolumn{4}{c}{
   R\authorsc{ICHARD} K\authorsc{ELSEY}, W\authorsc{ILLIAM} C\authorsc{LINGER},
   J\authorsc{ONATHAN} R\authorsc{EES}} \\
-\multicolumn{4}{c}{(\textit{Editors, Revised\itspace{}$^5$ Report on the
-    Algorithmic Language Scheme})} \\
+\multicolumn{4}{c}{(\textit{编辑，算法语言Scheme修订\itspace{}$^5$报告})} \\
 \multicolumn{4}{c}{
   R\authorsc{OBERT} B\authorsc{RUCE} F\authorsc{INDLER}, J\authorsc{ACOB} M\authorsc{ATTHEWS}} \\
-\multicolumn{4}{c}{(\textit{Authors, formal semantics})} \\[1ex]
+\multicolumn{4}{c}{(\textit{作者，形式语义})} \\[1ex]
 \multicolumn{4}{c}{\bf \rnrsrevisiondate}
 \end{tabular}
 $$
@@ -157,4 +159,5 @@ necessary.
 
 \printindex
 
+\clearpage\end{CJK*}                              % if you are typesetting your resume in Chinese using CJK; the \clearpage is required for fancyhdr to work correctly with CJK, though it kills the page numbering by making \lastpage undefined
 \end{document}
