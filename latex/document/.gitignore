@@ -31,6 +31,6 @@
 *.ist
 
 # files
-document/*run
-document/r6-fig-*.tex
-document/auto/*
+*run
+r6-fig-*.tex
+auto/*
