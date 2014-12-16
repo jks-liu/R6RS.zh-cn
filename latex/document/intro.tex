@@ -1,35 +1,12 @@
-\clearextrapart{Introduction}
+\clearextrapart{概述}
 
 \label{historysection}
 
-Programming languages should be designed not by piling feature on top of
-feature, but by removing the weaknesses and restrictions that make additional
-features appear necessary.  Scheme demonstrates that a very small number
-of rules for forming expressions, with no restrictions on how they are
-composed, suffice to form a practical and efficient programming language
-that is flexible enough to support most of the major programming
-paradigms in use today.
+程序设计语言的设计不应该是特征的堆砌，而应消除那些需要依赖于多余特征的弱点和局限。Scheme语言证明，极少的表达式构造规则和不加限制的表达式复合方式可以构造出实用而高效的程序设计语言，其灵活性足以支持今天的大部分主流编程模型。
 
-Scheme
-was one of the first programming languages to incorporate first-class
-procedures as in the lambda calculus, thereby proving the usefulness of
-static scope rules and block structure in a dynamically typed language.
-Scheme was the first major dialect of Lisp to distinguish procedures
-from lambda expressions and symbols, to use a single lexical
-environment for all variables, and to evaluate the operator position
-of a procedure call in the same way as an operand position.  By relying
-entirely on procedure calls to express iteration, Scheme emphasized the
-fact that tail-recursive procedure calls are essentially gotos that
-pass arguments.  Scheme was the first widely used programming language to
-embrace first-class escape procedures, from which all previously known
-sequential control structures can be synthesized.  A subsequent
-version of Scheme introduced the concept of exact and inexact number objects,
-an extension of Common Lisp's generic arithmetic.
-More recently, Scheme became the first programming language to support
-hygienic macros, which permit the syntax of a block-structured language
-to be extended in a consistent and reliable manner.
+Scheme是最早的像在lambda演算里一样提供了第一级过程的程序设计语言之一，并由此在动态类型的语言中提供了有用的静态作用域规则和块结构的特征。在Lisp的主要方言中，Scheme第一次使过程有别于lambda表达式和符号，为所有变量使用单一的词法环境，在确定运算符的位置时采用与确定运算对象位置一样的方式。Scheme完全依赖过程调用来表示迭代，并以此强调，尾递归过程调用在本质上就是传递参数的goto。Scheme是第一种被广泛使用的，采纳第一级逃逸过程（escape procedure）的程序设计语言，通过第一级逃逸过程可以合成所有已知的顺序控制结构。Scheme的后续版本引入了精确和非精确数的概念，这是CommonLisp语言通用算术功能的扩展。最近，Scheme成为了第一种支持卫生宏（hygienic macro）的程序设计语言，该机制允许我们以一种一致和可靠的方式扩展块结构语言的语法。
 
-\subsection*{Guiding principles}
+\subsection*{指导原则}
 
 To help guide the standardization effort, the editors have adopted a
 set of principles, presented below.
@@ -44,20 +21,20 @@ in this report is intended to:
 \item derive its power from simplicity, a small number of generally
   useful core syntactic forms and procedures, and no unnecessary
   restrictions on how they are composed;
-  
+
 \item allow programs to define new procedures and new hygienic
   syntactic forms;
-  
+
 \item support the representation of program source code as data;
-  
+
 \item make procedure calls powerful enough to express any form of
   sequential control, and allow programs to perform non-local control
   operations without the use of global program transformations;
-  
+
 \item allow interesting, purely functional programs to run indefinitely
   without terminating or running out of memory on finite-memory
   machines;
-  
+
 \item allow educators to use the language to teach programming
   effectively, at various levels and with a variety of pedagogical
   approaches; and
@@ -73,12 +50,12 @@ In addition, this report is intended to:
   and libraries, e.g., implementations of Scheme Requests for
   Implementation, that run without
   modification in a variety of Scheme implementations;
-  
+
 \item support procedural, syntactic, and data abstraction more fully
   by allowing programs to define hygiene-bending and hygiene-breaking
   syntactic abstractions and new unique datatypes along with
   procedures and hygienic macros in any scope;
-  
+
 \item allow programmers to rely on a level of automatic run-time type
   and bounds checking sufficient to ensure type safety; and
 
@@ -116,7 +93,7 @@ thank Alan Bawden, John Cowan, Sebastian Egner, Aubrey Jaffer, Shiro
 Kawai, Bradley Lucier, and Andr\'e van Tonder for contributing insights on
 language design.  Marc Feeley, Martin Gasbichler, Aubrey Jaffer, Lars T Hansen,
 Richard Kelsey, Olin Shivers, and Andr\'e van Tonder wrote SRFIs that
-served as direct input to the report.  Marcus Crestani, David Frese, 
+served as direct input to the report.  Marcus Crestani, David Frese,
 Aziz Ghuloum, Arthur A.\ Gleckler, Eric Knauel, Jonathan Rees, and Andr\'e
 van Tonder thoroughly proofread early versions of the report.
 
@@ -172,7 +149,7 @@ University work was provided by NSF grants NCS 83-04567 and NCS
 83-03325.
 
 
-%%% Local Variables: 
+%%% Local Variables:
 %%% mode: latex
 %%% TeX-master: "r6rs"
-%%% End: 
+%%% End:
