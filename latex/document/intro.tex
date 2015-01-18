@@ -8,145 +8,72 @@ Scheme是最早的像在lambda演算里一样提供了第一级过程的程序�
 
 \subsection*{指导原则}
 
-To help guide the standardization effort, the editors have adopted a
-set of principles, presented below.
-Like the Scheme language defined in \rrs{5}~\cite{R5RS}, the language described
-in this report is intended to:
+为帮助指导标准化的工作，编辑采纳了如下的一系列原则。正如\rrs{5}~\cite{R5RS}定义的Scheme语言，本报告描述的语言致力于：
+
 
 \begin{itemize}
-\item allow programmers to read each other's code, and allow
-  development of portable programs that can be executed in any
-  conforming implementation of Scheme;
+\item 允许程序员互相阅读别人的代码，允许能被任何符合标准的Scheme实现执
+  行的可移植程序的开发；
 
-\item derive its power from simplicity, a small number of generally
-  useful core syntactic forms and procedures, and no unnecessary
-  restrictions on how they are composed;
+\item 得益于它简单的力量，只有少量有用的核心形式和过程，并且在它们如何
+  组合方面没有不必要的限制；
 
-\item allow programs to define new procedures and new hygienic
-  syntactic forms;
+\item 允许程序定义新的过程和新的语法形式；
 
-\item support the representation of program source code as data;
+\item 支持以数据的形式呈现程序源代码；
 
-\item make procedure calls powerful enough to express any form of
-  sequential control, and allow programs to perform non-local control
-  operations without the use of global program transformations;
+\item 使过程调用足够强大以表达任意形式的顺序控制，也允许在不使用全局程
+  序变换的情况下执行非本地控制操作；
 
-\item allow interesting, purely functional programs to run indefinitely
-  without terminating or running out of memory on finite-memory
-  machines;
+\item 允许有趣的纯函数式程序无限期运行而不被中断且在有限内存的机器上不
+  会内存不足；
 
-\item allow educators to use the language to teach programming
-  effectively, at various levels and with a variety of pedagogical
-  approaches; and
+\item 允许教育工作者在各个层次用各种教育方法使用本语言去有效地进行编程
+  教学；并
 
-\item allow researchers to use the language to explore the design,
-  implementation, and semantics of programming languages.
+\item 允许研究工作者使用这门语言去探索编程语言的设计，实现和语义。
 \end{itemize}
 
-In addition, this report is intended to:
+此外，本报告致力于：
 
 \begin{itemize}
-\item allow programmers to create and distribute substantial programs
-  and libraries, e.g., implementations of Scheme Requests for
-  Implementation, that run without
-  modification in a variety of Scheme implementations;
 
-\item support procedural, syntactic, and data abstraction more fully
-  by allowing programs to define hygiene-bending and hygiene-breaking
-  syntactic abstractions and new unique datatypes along with
-  procedures and hygienic macros in any scope;
+\item 允许程序员创建和分发大量的程序和库，比如：Scheme要求的在不修改的情况下在各个Scheme实现中运行的实现；
 
-\item allow programmers to rely on a level of automatic run-time type
-  and bounds checking sufficient to ensure type safety; and
+\item 通过任意作用域的过程和卫生宏以及允许程序定义卫生弯曲（hygiene-bending）和卫生破坏（hygiene-breaking）的语法抽象和新的独特的数据类型来更全面地支持程序，语法和数据抽象；
 
-\item allow implementations to generate efficient code, without
-  requiring programmers to use implementation-specific operators or
-  declarations.
+\item 允许程序员在一定程度上依赖足够确保类型安全的自动的运行时类型和边界检查；且
+
+\item 允许实现在不要求程序员使用实现定义的运算符和声明的情况下生成高效的代码。
 \end{itemize}
 
-While it was possible to write portable programs in Scheme as
-described in \rrs{5}, and indeed portable Scheme programs were written
-prior to this report, many Scheme programs were not, primarily because
-of the lack of substantial standardized libraries and the
-proliferation of implementation-specific language additions.
+尽管在\rrs{5}表述的Scheme中编写可移植的程序是可能的，且在这篇报告之前也确实有可移植的程序被写出，但是许多Scheme程序是不可移植的，这主要是因为标准库的缺乏和繁多的实现定义的语言扩展。
 
-In general, Scheme should include building blocks that allow a wide
-variety of libraries to be written, include commonly used user-level
-features to enhance portability and readability of library and
-application code, and exclude features that are less commonly used and
-easily implemented in separate libraries.
+通常，Scheme应当包含能够编写各种库程序的积木，包括以提高库和用户程序的
+可移植性（portability）和可读性（readability）为目的的常用的用户层特性，
+并排除可以在单独库中轻松实现的不常用的特性。
 
-The language described in this report is intended to also be backward
-compatible with programs written in Scheme as described in \rrs{5} to
-the extent possible without compromising the above principles and
-future viability of the language.  With respect to future viability,
-the editors have operated under the assumption that many more Scheme
-programs will be written in the future than exist in the present, so
-the future programs are those with which we should be most concerned.
+本报告描述的语言同样致力于在不违背上述原则和语言未来发展的情况下尽可能与用\rrs{5}表述的Scheme编写的程序反向兼容。
 
-\subsection*{Acknowledgements}
+\subsection*{致谢}
 
-Many people contributed significant help to this revision of the
-report.  Specifically, we thank Aziz Ghuloum and Andr\'e van Tonder for
-contributing reference implementations of the library system.  We
-thank Alan Bawden, John Cowan, Sebastian Egner, Aubrey Jaffer, Shiro
-Kawai, Bradley Lucier, and Andr\'e van Tonder for contributing insights on
-language design.  Marc Feeley, Martin Gasbichler, Aubrey Jaffer, Lars T Hansen,
-Richard Kelsey, Olin Shivers, and Andr\'e van Tonder wrote SRFIs that
-served as direct input to the report.  Marcus Crestani, David Frese,
-Aziz Ghuloum, Arthur A.\ Gleckler, Eric Knauel, Jonathan Rees, and Andr\'e
-van Tonder thoroughly proofread early versions of the report.
+许多人对本版本的报告做出了有意义的贡献。我们尤其感谢Aziz Ghuloum和André van Tonder贡献的库系统的参考实现。我们感谢Alan Bawden，John Cowan，Sebastian Egner，Aubrey Jaffer，Shiro Kawai，Bradley Lucier和André van Tonder在语言设计上的洞察力。Marc Feeley，Martin Gasbichler，Aubrey Jaffer，Lars T Hansen，Richard Kelsey，Olin Shivers和André van Tonder编写了用于本报告文本直接录入的SRFIs。Marcus Crestani，David Frese，Aziz Ghuloum，Arthur A. Gleckler，Eric Knauel，Jonathan Rees和André van Tonder细致彻底地校对了本报告的早期版本。
 
-We would also like to thank the following people for their
-help in creating this report: Lauri Alanko,
-Eli Barzilay, Alan Bawden, Brian C.\ Barnes, Per Bothner, Trent Buck,
-Thomas Bushnell, Taylor Campbell, Ludovic Court\`es, Pascal Costanza,
-John Cowan, Ray Dillinger, Jed Davis, J.A.\ ``Biep'' Durieux, Carl Eastlund,
-Sebastian Egner, Tom Emerson, Marc Feeley, Matthias Felleisen, Andy
-Freeman, Ken Friedenbach, Martin Gasbichler, Arthur A.\ Gleckler, Aziz
-Ghuloum, Dave Gurnell, Lars T Hansen, Ben Harris, Sven Hartrumpf, Dave
-Herman, Nils M.\ Holm, Stanislav Ievlev, James Jackson, Aubrey Jaffer,
-Shiro Kawai, Alexander Kjeldaas, Eric Knauel, Michael Lenaghan, Felix Klock,
-Donovan Kolbly, Marcin Kowalczyk, Thomas Lord, Bradley Lucier, Paulo
-J.\ Matos, Dan Muresan, Ryan Newton, Jason Orendorff, Erich Rast, Jeff
-Read, Jonathan Rees, Jorgen Sch\"afer, Paul Schlie, Manuel Serrano,
-Olin Shivers, Jonathan Shapiro, Jens Axel S\o{}gaard, Jay Sulzberger,
-Pinku Surana, Mikael Tillenius, Sam Tobin-Hochstadt, David Van Horn,
-Andr\'e van Tonder, Reinder Verlinde, Alan Watson, Andrew Wilcox, Jon
-Wilson, Lynn Winebarger, Keith Wright, and Chongkai Zhu.
+我们同样感谢下面这些人对本报告的帮助： Lauri Alanko，Eli Barzilay，Alan Bawden，Brian C. Barnes，Per Bothner，Trent Buck，Thomas Bushnell，Taylor Campbell，Ludovic Courtès，Pascal Costanza，John Cowan，Ray Dillinger，Jed Davis，J.A. “Biep” Durieux，Carl Eastlund，Sebastian Egner，Tom Emerson，Marc Feeley，Matthias Felleisen，Andy Freeman，Ken Friedenbach，Martin Gasbichler，Arthur A. Gleckler，Aziz Ghuloum，Dave Gurnell，Lars T Hansen，Ben Harris，Sven Hartrumpf，Dave Herman，Nils M. Holm，Stanislav Ievlev，James Jackson，Aubrey Jaffer，Shiro Kawai，Alexander Kjeldaas，Eric Knauel，Michael Lenaghan，Felix Klock，Donovan Kolbly，Marcin Kowalczyk，Thomas Lord，Bradley Lucier，Paulo J. Matos，Dan Muresan，Ryan Newton，Jason Orendorff，Erich Rast，Jeff Read，Jonathan Rees，Jorgen Schäfer，Paul Schlie，Manuel Serrano，Olin Shivers，Jonathan Shapiro，Jens Axel Søgaard，Jay Sulzberger，Pinku Surana，Mikael Tillenius，Sam Tobin-Hochstadt，David Van Horn，André van Tonder，Reinder Verlinde，Alan Watson，Andrew Wilcox，Jon Wilson，Lynn Winebarger，Keith Wright和Chongkai Zhu。
 
-We would like to thank the following people for their help in creating
-the previous revisions of this report: Alan Bawden, Michael
-Blair, George Carrette, Andy Cromarty, Pavel Curtis, Jeff Dalton, Olivier Danvy,
-Ken Dickey, Bruce Duba, Marc Feeley,
-Andy Freeman, Richard Gabriel, Yekta G\"ursel, Ken Haase, Robert
-Hieb, Paul Hudak, Morry Katz, Chris Lindblad, Mark Meyer, Jim Miller, Jim Philbin,
-John Ramsdell, Mike Shaff, Jonathan Shapiro, Julie Sussman,
-Perry Wagle, Daniel Weise, Henry Wu, and Ozan Yigit.
+我们同样感谢下面这些人对本报告以前版本的帮助： Alan Bawden，Michael Blair，George Carrette，Andy Cromarty，Pavel Curtis，Jeff Dalton，Olivier Danvy，Ken Dickey，Bruce Duba，Marc Feeley，Andy Freeman，Richard Gabriel，Yekta Gürsel，Ken Haase，Robert Hieb，Paul Hudak，Morry Katz，Chris Lindblad，Mark Meyer，Jim Miller，Jim Philbin，John Ramsdell，Mike Shaff，Jonathan Shapiro，Julie Sussman，Perry Wagle，Daniel Weise，Henry Wu和Ozan Yigit。
 
-We thank Carol Fessenden, Daniel
-Friedman, and Christopher Haynes for permission to use text from the Scheme 311
-version 4 reference manual.  We thank Texas Instruments, Inc.~for permission to
-use text from the {\em TI Scheme Language Reference Manual}~\cite{TImanual85}.
-We gladly acknowledge the influence of manuals for MIT Scheme~\cite{MITScheme},
-T~\cite{Rees84}, Scheme 84~\cite{Scheme84}, Common Lisp~\cite{CLtL},
-Chez Scheme~\cite{csug7}, PLT~Scheme~\cite{mzscheme352},
-and Algol 60~\cite{Naur63}.
+我们感谢Carol Fessenden，Daniel Friedman和Christopher Haynes，他们允许
+我们使用Scheme 311第4版参考手册的内容。我们感谢德州仪器公司（Texas
+Instruments, Inc.）允许我们使用《TI Scheme语言参考手册》（{\em TI
+  Scheme Language Reference Manual}）~\cite{TImanual85}的内容。我们衷
+心感谢MIT Scheme~\cite{MITScheme}，T~\cite{Rees84}，Scheme
+84~\cite{Scheme84}，Common Lisp~\cite{CLtL}，Chez Scheme~\cite{csug7}，
+PLT~Scheme~\cite{mzscheme352}和Algol 60~\cite{Naur63}的手册对本报告的影响。
 
-\vest We also thank Betty Dexter for the extreme effort she put into
-setting this report in \TeX, and Donald Knuth for designing the program
-that caused her troubles.
+\vest{}我们也感谢Betty Dexter，她在将本报告设为\TeX{}格式的工作中做出了杰出的贡献；感谢高德纳（Donald Knuth），他设计的程序给Betty添了不少麻烦。
 
-\vest The Artificial Intelligence Laboratory of the
-Massachusetts Institute of Technology, the Computer Science
-Department of Indiana University, the Computer and Information
-Sciences Department of the University of Oregon, and the NEC Research
-Institute supported the preparation of this report.  Support for the MIT
-work was provided in part by
-the Advanced Research Projects Agency of the Department of Defense under Office
-of Naval Research contract N00014-80-C-0505.  Support for the Indiana
-University work was provided by NSF grants NCS 83-04567 and NCS
-83-03325.
+\vest The Artificial Intelligence Laboratory of the Massachusetts Institute of Technology, the Computer Science Department of Indiana University, the Computer and Information Sciences Department of the University of Oregon和the NEC Research Institute支持了本报告的预备工作。The Advanced Research Projects Agency of the Department of Defense根据Office of Naval Research的N00014-80-C-0505号合同为MIT的工作提供了部分支持。NSF的NCS 83-04567和NCS 83-03325号基金为Indiana University的工作提供了支持。
 
 
 %%% Local Variables:
