@@ -67,17 +67,17 @@ $$
 \newcommand{\gclose}{\!\!{}^{\scriptscriptstyle\rceil}}
 $$
 
-<center><font size="4">M</font>ICHAEL <font size="4">S</font>PERBER</center>  
-<center><font size="4">R. K</font>ENT <font size="4">D</font>YBVIG, <font size="4">M</font>ATTHEW <font size="4">F</font>LATT, <font size="4">A</font>NTON <font size="4">V</font>AN <font size="4">S</font>TRAATEN</center>  
-<center>(编辑)</center>  
-<center><font size="4">R</font>ICHARD <font size="4">K</font>ELSEY, <font size="4">W</font>ILLIAM <font size="4">C</font>LINGER, <font size="4">J</font>ONATHAN <font size="4">R</font>EES</center>  
-<center>(编辑, 算法语言Scheme修订<sup>5</sup>报告)</center>  
-<center><font size="4">R</font>OBERT <font size="4">B</font>RUCE <font size="4">F</font>INDLER, <font size="4">J</font>ACOB <font size="4">M</font>ATTHEWS</center>  
-<center>(编辑, 形式语义)</center>  
+<center><font size="4">M</font>ICHAEL <font size="4">S</font>PERBER</center>
+<center><font size="4">R. K</font>ENT <font size="4">D</font>YBVIG, <font size="4">M</font>ATTHEW <font size="4">F</font>LATT, <font size="4">A</font>NTON <font size="4">V</font>AN <font size="4">S</font>TRAATEN</center>
+<center>(编辑)</center>
+<center><font size="4">R</font>ICHARD <font size="4">K</font>ELSEY, <font size="4">W</font>ILLIAM <font size="4">C</font>LINGER, <font size="4">J</font>ONATHAN <font size="4">R</font>EES</center>
+<center>(编辑，算法语言Scheme修订<sup>5</sup>报告)</center>
+<center><font size="4">R</font>OBERT <font size="4">B</font>RUCE <font size="4">F</font>INDLER, <font size="4">J</font>ACOB <font size="4">M</font>ATTHEWS</center>
+<center>(作者，形式语义)</center>
 **<center>2007年09月26日</center>**
 
 [<center>在GitHub联系译者</center>](https://github.com/jks-liu/R6RS.zh-cn)
-<center>最后修改于2014年09月29日</center>
+<center>最后修改于2014年01月18日</center>
 
 # 摘要 <!-- SUMMARY -->
 
@@ -87,7 +87,7 @@ $$
 
 上面列到的人不是这篇报告文字的唯一作者。多年来，下面这些人也参与到Scheme语言设计的讨论中，我们也将他们列为之前报告的作者：
 
-Hal Abelson, Norman Adams, David Bartley, Gary Brooks, William Clinger, R. Kent Dybvig, Daniel Friedman, Robert Halstead, Chris Hanson, Christopher Haynes, Eugene Kohlbecker, Don Oxley, Kent Pitman, Jonathan Rees, Guillermo Rozas, Guy L. Steele Jr., Gerald Jay Sussman和Mitchell Wand。
+Hal Abelson，Norman Adams，David Bartley，Gary Brooks，William Clinger，R. Kent Dybvig，Daniel Friedman，Robert Halstead，Chris Hanson，Christopher Haynes，Eugene Kohlbecker，Don Oxley，Kent Pitman，Jonathan Rees，Guillermo Rozas，Guy L. Steele Jr.，Gerald Jay Sussman和Mitchell Wand。
 
 为了突出最近的贡献，他们没有被列为本篇报告的作者。然而，他们的贡献和服务应被确认。
 
@@ -132,13 +132,13 @@ Scheme是最早的像在lambda演算里一样提供了第一级过程的程序�
 
 **<font size="4">致谢</font>**
 
-许多人对本版本的报告做出了有意义的贡献。我们尤其感谢Aziz Ghuloum和André van Tonder贡献的库系统的参考实现。我们感谢Alan Bawden, John Cowan, Sebastian Egner, Aubrey Jaffer, Shiro Kawai, Bradley Lucier和André van Tonder在语言设计上的洞察力。Marc Feeley, Martin Gasbichler, Aubrey Jaffer, Lars T Hansen, Richard Kelsey, Olin Shivers和André van Tonder编写了用于本报告文本直接录入的SRFIs。Marcus Crestani, David Frese, Aziz Ghuloum, Arthur A. Gleckler, Eric Knauel, Jonathan Rees和André van Tonder细致彻底地校对了本报告的早期版本。
+许多人对本版本的报告做出了有意义的贡献。我们尤其感谢Aziz Ghuloum和André van Tonder贡献的库系统的参考实现。我们感谢Alan Bawden，John Cowan，Sebastian Egner，Aubrey Jaffer，Shiro Kawai，Bradley Lucier和André van Tonder在语言设计上的洞察力。Marc Feeley，Martin Gasbichler，Aubrey Jaffer，Lars T Hansen，Richard Kelsey，Olin Shivers和André van Tonder编写了用于本报告文本直接录入的SRFIs。Marcus Crestani，David Frese，Aziz Ghuloum，Arthur A. Gleckler，Eric Knauel，Jonathan Rees和André van Tonder细致彻底地校对了本报告的早期版本。
 
-我们同样感谢下面这些人对本报告的帮助： Lauri Alanko, Eli Barzilay, Alan Bawden, Brian C. Barnes, Per Bothner, Trent Buck, Thomas Bushnell, Taylor Campbell, Ludovic Courtès, Pascal Costanza, John Cowan, Ray Dillinger, Jed Davis, J.A. “Biep” Durieux, Carl Eastlund, Sebastian Egner, Tom Emerson, Marc Feeley, Matthias Felleisen, Andy Freeman, Ken Friedenbach, Martin Gasbichler, Arthur A. Gleckler, Aziz Ghuloum, Dave Gurnell, Lars T Hansen, Ben Harris, Sven Hartrumpf, Dave Herman, Nils M. Holm, Stanislav Ievlev, James Jackson, Aubrey Jaffer, Shiro Kawai, Alexander Kjeldaas, Eric Knauel, Michael Lenaghan, Felix Klock, Donovan Kolbly, Marcin Kowalczyk, Thomas Lord, Bradley Lucier, Paulo J. Matos, Dan Muresan, Ryan Newton, Jason Orendorff, Erich Rast, Jeff Read, Jonathan Rees, Jorgen Schäfer, Paul Schlie, Manuel Serrano, Olin Shivers, Jonathan Shapiro, Jens Axel Søgaard, Jay Sulzberger, Pinku Surana, Mikael Tillenius, Sam Tobin-Hochstadt, David Van Horn, André van Tonder, Reinder Verlinde, Alan Watson, Andrew Wilcox, Jon Wilson, Lynn Winebarger, Keith Wright和Chongkai Zhu。
+我们同样感谢下面这些人对本报告的帮助： Lauri Alanko，Eli Barzilay，Alan Bawden，Brian C. Barnes，Per Bothner，Trent Buck，Thomas Bushnell，Taylor Campbell，Ludovic Courtès，Pascal Costanza，John Cowan，Ray Dillinger，Jed Davis，J.A. “Biep” Durieux，Carl Eastlund，Sebastian Egner，Tom Emerson，Marc Feeley，Matthias Felleisen，Andy Freeman，Ken Friedenbach，Martin Gasbichler，Arthur A. Gleckler，Aziz Ghuloum，Dave Gurnell，Lars T Hansen，Ben Harris，Sven Hartrumpf，Dave Herman，Nils M. Holm，Stanislav Ievlev，James Jackson，Aubrey Jaffer，Shiro Kawai，Alexander Kjeldaas，Eric Knauel，Michael Lenaghan，Felix Klock，Donovan Kolbly，Marcin Kowalczyk，Thomas Lord，Bradley Lucier，Paulo J. Matos，Dan Muresan，Ryan Newton，Jason Orendorff，Erich Rast，Jeff Read，Jonathan Rees，Jorgen Schäfer，Paul Schlie，Manuel Serrano，Olin Shivers，Jonathan Shapiro，Jens Axel Søgaard，Jay Sulzberger，Pinku Surana，Mikael Tillenius，Sam Tobin-Hochstadt，David Van Horn，André van Tonder，Reinder Verlinde，Alan Watson，Andrew Wilcox，Jon Wilson，Lynn Winebarger，Keith Wright和Chongkai Zhu。
 
-我们同样感谢下面这些人对本报告以前版本的帮助： Alan Bawden, Michael Blair, George Carrette, Andy Cromarty, Pavel Curtis, Jeff Dalton, Olivier Danvy, Ken Dickey, Bruce Duba, Marc Feeley, Andy Freeman, Richard Gabriel, Yekta Gürsel, Ken Haase, Robert Hieb, Paul Hudak, Morry Katz, Chris Lindblad, Mark Meyer, Jim Miller, Jim Philbin, John Ramsdell, Mike Shaff, Jonathan Shapiro, Julie Sussman, Perry Wagle, Daniel Weise, Henry Wu和Ozan Yigit。
+我们同样感谢下面这些人对本报告以前版本的帮助： Alan Bawden，Michael Blair，George Carrette，Andy Cromarty，Pavel Curtis，Jeff Dalton，Olivier Danvy，Ken Dickey，Bruce Duba，Marc Feeley，Andy Freeman，Richard Gabriel，Yekta Gürsel，Ken Haase，Robert Hieb，Paul Hudak，Morry Katz，Chris Lindblad，Mark Meyer，Jim Miller，Jim Philbin，John Ramsdell，Mike Shaff，Jonathan Shapiro，Julie Sussman，Perry Wagle，Daniel Weise，Henry Wu和Ozan Yigit。
 
-我们感谢Carol Fessenden, Daniel Friedman和Christopher Haynes，他们允许我们使用Scheme 311第4版参考手册的内容。我们感谢德州仪器公司（Texas Instruments, Inc.）允许我们使用《TI Scheme语言参考手册》（*TI Scheme Language Reference Manual*）[^26]的内容。我们衷心感谢MIT Scheme[^20], T[^21], Scheme 84[^12], Common Lisp[^25], Chez Scheme[^8], PLT Scheme[^11]和Algol 60[^1]的手册对本报告的影响。
+我们感谢Carol Fessenden，Daniel Friedman和Christopher Haynes，他们允许我们使用Scheme 311第4版参考手册的内容。我们感谢德州仪器公司（Texas Instruments, Inc.）允许我们使用《TI Scheme语言参考手册》（*TI Scheme Language Reference Manual*）[^26]的内容。我们衷心感谢MIT Scheme[^20], T[^21], Scheme 84[^12], Common Lisp[^25], Chez Scheme[^8], PLT Scheme[^11]和Algol 60[^1]的手册对本报告的影响。
 
 我们也感谢Betty Dexter，她在将本报告设为\\\(\\TeX\\\)格式的工作中做出了杰出的贡献；感谢高德纳（Donald Knuth），他设计的程序给Betty添了不少麻烦。
 
@@ -390,7 +390,7 @@ Scheme对象的一个子集叫做*数据值*。这些包括布尔，数据对象
 
 ~~~ scheme
 '(+ 23 42) ‌⇒ (+ 23 42)
-'(define (f x) (+ x 42)) 
+'(define (f x) (+ x 42))
 ‌‌              ⇒ (define (f x) (+ x 42))
 ~~~
 
@@ -412,7 +412,7 @@ Scheme对象的一个子集叫做*数据值*。这些包括布尔，数据对象
 (+ 1 (call-with-current-continuation
        (lambda (escape)
 
-         (+ 2 (escape 3))))) 
+         (+ 2 (escape 3)))))
             ‌‌⇒ 4
 ~~~
 
@@ -482,10 +482,10 @@ Scheme代码可以被组织在叫做*库*的组件中。每个库包含定义和
 
 数字可以被组织在一个子集的塔中，在这个塔中，每一层是上一层的子集：
 
-      number  
-      complex  
-      real  
-      rational  
+      number
+      complex
+      real
+      rational
       integer
 
 比如，5是一个整数。因此，5也是一个有理数，实数和复数。为5建模的数字对象也一样。
@@ -760,48 +760,48 @@ the-word-recursion-has-many-meanings
 
 | `#\a` |           小写字母a
 | `#\A` |           大写字母A
-| `#\(` |           做小括号  
-| `#\ ` |           空格  
-| `#\nul` |         U+0000  
-| `#\alarm` |       U+0007  
-| `#\backspace` |   U+0008  
-| `#\tab` |         U+0009  
-| `#\linefeed` |    U+000A  
-| `#\newline` |     U+000A  
-| `#\vtab` |        U+000B  
-| `#\page` |        U+000C  
-| `#\return` |      U+000D  
-| `#\esc` |         U+001B  
-| `#\space` |       U+0020  
-| |                 表示一个空格时优先使用这种方法  
-| `#\delete` |      U+007F  
-| `#\xFF` |         U+00FF  
-| `#\x03BB` |       U+03BB  
-| `#\x00006587` |   U+6587  
-| `#\λ` |           U+03BB  
+| `#\(` |           做小括号
+| `#\ ` |           空格
+| `#\nul` |         U+0000
+| `#\alarm` |       U+0007
+| `#\backspace` |   U+0008
+| `#\tab` |         U+0009
+| `#\linefeed` |    U+000A
+| `#\newline` |     U+000A
+| `#\vtab` |        U+000B
+| `#\page` |        U+000C
+| `#\return` |      U+000D
+| `#\esc` |         U+001B
+| `#\space` |       U+0020
+| |                 表示一个空格时优先使用这种方法
+| `#\delete` |      U+007F
+| `#\xFF` |         U+00FF
+| `#\x03BB` |       U+03BB
+| `#\x00006587` |   U+6587
+| `#\λ` |           U+03BB
 | `#\x0001z` |      `词法`*异常*（`&lexical` *exception*）
 | `#\λx` |          `词法`*异常*
 | `#\alarmx` |      `词法`*异常*
-| `#\alarm x` |     U+0007  
+| `#\alarm x` |     U+0007
 | |                 跟着`x`
 | `#\Alarm` |       `词法`*异常*
 | `#\alert` |       `词法`*异常*
-| `#\xA` |          U+000A  
-| `#\xFF` |         U+00FF  
-| `#\xff` |         U+00FF  
-| `#\x ff` |        U+0078  
-| |                 跟着另外一个数据，`ff` 
-| `#\x(ff)` |       U+0078  
-| |                 跟着另外一个数据， 
-| |                 一个被括号括着的`ff` 
+| `#\xA` |          U+000A
+| `#\xFF` |         U+00FF
+| `#\xff` |         U+00FF
+| `#\x ff` |        U+0078
+| |                 跟着另外一个数据，`ff`
+| `#\x(ff)` |       U+0078
+| |                 跟着另外一个数据，
+| |                 一个被括号括着的`ff`
 | `#\(x)` |         `词法`*异常*
 | `#\(x` |          `词法`*异常*
-| `#\((x)` |        U+0028  
-| |                 跟着另外一个数据， 
-| |                 一个被括号括着的`x` 
+| `#\((x)` |        U+0028
+| |                 跟着另外一个数据，
+| |                 一个被括号括着的`x`
 | `#\x00110000` |   `词法`*异常*
 | |                 超出范围
-| `#\x000000001` |  U+0001  
+| `#\x000000001` |  U+0001
 | `#\xD800` |       `词法`*异常*
 | |                 在被排除的范围内
 
@@ -837,7 +837,7 @@ the-word-recursion-has-many-meanings
 
 | "abc" | U+0061, U+0062, U+0063
 | "\x41;bc" | "Abc" ; U+0041, U+0062, U+0063
-| "\x41; bc" | "A bc" 
+| "\x41; bc" | "A bc"
 | |U+0041, U+0020, U+0062, U+0063
 | "\x41bc;" | U+41BC
 | "\x41" |  `词法`*异常*
@@ -865,7 +865,7 @@ the-word-recursion-has-many-meanings
 在一个非精确数可以有不同精度的系统中，指定一个常数的精度可能是有用的。如果这样的话，数字对象的表示可以用一个指示非精确数预期精度的指数标记写成。字母`s`, `f`, `d`和`l`分别表示使用*short*，*single*，*double*和*long*精度。（当内部非精确表示少于四种时，这四个精度定义被映射到当前可用的定义。例如，只有两种内部表示的实现可以将short和single映射为一种精度，将long和double映射为一种）。另外，指数标记`e`指明了Scheme实现的缺省精度。缺省精度应达到或超过*double*的精度，但Scheme实现也许会希望用户可设置此缺省精度。
 
 ~~~ scheme
-3.1415926535898F0 
+3.1415926535898F0
        舍入到single, 大概是3.141593
 0.6L0
        扩展到long, 大概是.600000000000000
@@ -881,7 +881,7 @@ the-word-recursion-has-many-meanings
 <pre><code>(define (precision)
   (do ((n 0 (+ n 1))
        (x 1.0 (/ x 2.0)))
-    ((= 1.0 (+ 1.0 x)) n)))   
+    ((= 1.0 (+ 1.0 x)) n)))
 </code></pre>
 </font>
 
@@ -965,25 +965,25 @@ Scheme点对的句法数据最常用的符号是“点”符号<tt>(<datum<sub>1
 ### 4.3.5 缩写（Abbreviations） {#s4-3-5}
 
 ~~~ scheme
-'<datum>‌‌ 
-`<datum>‌‌ 
-,<datum>‌‌ 
-,@<datum>‌‌ 
-#'<datum>‌‌ 
-#`<datum>‌‌ 
-#,<datum>‌‌ 
+'<datum>‌‌
+`<datum>‌‌
+,<datum>‌‌
+,@<datum>‌‌
+#'<datum>‌‌
+#`<datum>‌‌
+#,<datum>‌‌
 #,@<datum
 ~~~
 
 上面的每一个都是一个缩写：
 
-`` ‌'<datum> ``是`` (quote <datum>) ``的缩写，   
-`` ‌`<datum> ``是`` (quasiquote <datum>) ``的缩写，   
-`` ‌,<datum> ``是`` (unquote <datum>) ``的缩写，   
-`` ‌,@<datum> ``是`` (unquote-splicing <datum>) ``的缩写，   
-`` ‌#'<datum> ``是`` (syntax <datum>) ``的缩写，   
-`` ‌#`<datum> ``是`` (quasisyntax <datum>) ``的缩写，   
-`` ‌#,<datum> ``是`` (unsyntax <datum>) ``的缩写，且  
+`` ‌'<datum> ``是`` (quote <datum>) ``的缩写，
+`` ‌`<datum> ``是`` (quasiquote <datum>) ``的缩写，
+`` ‌,<datum> ``是`` (unquote <datum>) ``的缩写，
+`` ‌,@<datum> ``是`` (unquote-splicing <datum>) ``的缩写，
+`` ‌#'<datum> ``是`` (syntax <datum>) ``的缩写，
+`` ‌#`<datum> ``是`` (quasisyntax <datum>) ``的缩写，
+`` ‌#,<datum> ``是`` (unsyntax <datum>) ``的缩写，且
 `` ‌#,@<datum> ``是`` (unsyntax-splicing <datum>) ``的缩写。
 
 # 5. 语义概念 <!-- Semantic concepts -->
@@ -1129,7 +1129,7 @@ Scheme的实现必须是*严格尾递归的*。发生在叫做*尾上下文（ta
 
 表示一个内建的过程`vector-ref`接受两个参数，一个是向量*`vector`*，和一个精确的非负整数对象*`k`*（参见下面的内容）。标题行
 
-<tt>(make-vector <i>k</i>)</tt> 过程  
+<tt>(make-vector <i>k</i>)</tt> 过程
 <tt>(make-vector <i>k fill</i>)</tt> 过程
 
 表示过程`make-vector`可以接受一个或两个参数。参数名字的大小写是不敏感的：*`Vector`*和*`vector`*是一样的。
@@ -1225,7 +1225,7 @@ Scheme的实现必须是*严格尾递归的*。发生在叫做*尾上下文（ta
 
 按照惯例，条件类型的名字以“`&`”开头。
 
-# 7. 库 <!-- Libraries --> 
+# 7. 库 <!-- Libraries -->
 
 库是一个程序可以被独立发布的部分。库系统支持库内的宏定义，宏导出，且区别需要定义和导出的不同阶段。本章为库定义了符号，且为库的扩展（expansion ）和执行定义了语义。
 
@@ -1442,8 +1442,8 @@ expand
   (define (make w h) (cons w h))
   (define (push b amt)
     (cons (- (car b) amt) (+ (cdr b) amt)))
-  (define (pop b) (display "Boom! ") 
-                  (display (* (car b) (cdr b))) 
+  (define (pop b) (display "Boom! ")
+                  (display (* (car b) (cdr b)))
                   (newline)))
 
 (library (party)
@@ -1490,7 +1490,7 @@ expand
          (let loop ((rest (cdr l)))
            (cond
             [(null? rest) (find-dup (cdr l))]
-            [(bound-identifier=? (car l) (car rest)) 
+            [(bound-identifier=? (car l) (car rest))
              (car rest)]
             [else (loop (cdr rest))])))))
 
@@ -1505,7 +1505,7 @@ expand
          (not (find-dup (syntax (id ...))))
          (syntax
            (call-with-values
-               (lambda () expr) 
+               (lambda () expr)
              (lambda (id ...) body0 body ...)))]))))
 
 (library (let-div)
@@ -1569,11 +1569,11 @@ expand
 
 **常量字面量**
 
-`<number>`‌‌ syntax  
-`<boolean>`‌‌ syntax  
-`<character>`‌‌ syntax  
-`<string>`‌‌ syntax  
-`<bytevector>`‌‌ syntax  
+`<number>`‌‌ syntax
+`<boolean>`‌‌ syntax
+`<character>`‌‌ syntax
+`<string>`‌‌ syntax
+`<bytevector>`‌‌ syntax
 
 一个由一个数字对象，或一个布尔，或一个字符，或一个字符串，或一个字节向量组成的表达式求值“等于它自己”。
 
@@ -1588,7 +1588,7 @@ expand
 
 **变量引用**
 
-`<variable>`‌‌ syntax 
+`<variable>`‌‌ syntax
 
 由一个变量组成的表达式（5.2小节）是一个变量引用，如果它不是一个宏使用（见下面）的话。这个变量引用的值是被存储在这个变量绑定的位置的值。引用一个未绑定的变量是一个语法错误。
 
@@ -1792,9 +1792,9 @@ null?
 
 本节描述的`define`形式是一个用作创建变量绑定的`<definition>`，且可以出现在其它定义可以出现的任何地方。
 
-| `(define <variable> <expression>)‌‌` | 语法 
-| `(define <variable>)‌‌` | 语法 
-| `(define (<variable> <formals>) <body>)‌‌` | 语法 
+| `(define <variable> <expression>)‌‌` | 语法
+| `(define <variable>)‌‌` | 语法
+| `(define (<variable> <formals>) <body>)‌‌` | 语法
 | `(define (<variable> . <formal>) <body>)‌‌` | 语法
 
 `define`的第一个形式绑定`<variable>`到一个新的位置，然后将`<expression>`的值赋值给这个位置。
@@ -1985,7 +1985,7 @@ null?
 
 ### 11.4.3. 条件表达式（Conditionals）
 
-| `(if <test> <consequent> <alternate>)‌‌` | 语法 
+| `(if <test> <consequent> <alternate>)‌‌` | 语法
 | `(if <test> <consequent>)‌‌` | 语法
 
 *语法*：`<Test>`, `<consequent>`, 和`<alternate>`必须是表达式。
@@ -2220,7 +2220,7 @@ null?
             (if (zero? n)
                 #f
                 (even? (- n 1))))))
-  (even? 88))   
+  (even? 88))
                 ‌⇒  #t
 ~~~
 
@@ -2301,7 +2301,7 @@ null?
 
 `<Begin>`关键词有两个不同的作用，取决于它的上下文：
 
-* 它可以作为一个形式出现在一个`<body>`中（见第11.3小节），一个`<library body>`中（见第7.1小节），或一个`<top-level body>`（见第3章），或直接嵌套在一个内部的`begin`形式中。在这种情况下，`begin`形式必须有第一个标题行指定的形状。`begin`的这种用法作为一种*拼接（splicing）*形式—`<body>`里面的形式被拼接到内部周围，就好像原来的`begin`包装不存在一样。  
+* 它可以作为一个形式出现在一个`<body>`中（见第11.3小节），一个`<library body>`中（见第7.1小节），或一个`<top-level body>`（见第3章），或直接嵌套在一个内部的`begin`形式中。在这种情况下，`begin`形式必须有第一个标题行指定的形状。`begin`的这种用法作为一种*拼接（splicing）*形式—`<body>`里面的形式被拼接到内部周围，就好像原来的`begin`包装不存在一样。
 `<Body>`或`<library body>`中的`begin`形式必须是非空的，如果它在内部出现在第一个`<expression>`之后。
 
 * 它可以作为一个普通的表达式出现，且必须有第二个标题行指定的形状。在这种情况下，`<expression>`被按从左到右的顺序求值，且最后一个`<expression>`的值被返回。这种表达式类型被用作按顺序排列副作用，如赋值或输入输出。
@@ -2469,7 +2469,7 @@ null?
        (y (list 'a))
        (z (list x y)))
   (list (equal? z (list y x))
-        (equal? z (list x x))))             
+        (equal? z (list x x))))
                                 ‌‌⇒  (#t #t)
 ~~~
 
@@ -2484,9 +2484,9 @@ null?
 ~~~ scheme
 (procedure? car)            ‌⇒  #t
 (procedure? 'car)           ‌⇒  #f
-(procedure? (lambda (x) (* x x)))   
+(procedure? (lambda (x) (* x x)))
                             ‌⇒  #t
-(procedure? '(lambda (x) (* x x)))  
+(procedure? '(lambda (x) (* x x)))
                             ‌⇒  #f
 ~~~
 
@@ -2640,17 +2640,17 @@ $$
 \begin{array}{clll}
 & y \texttt{条件} & x \texttt{条件} & \texttt{结果$r$的值域}\\\hline
 & y = 0.0 & x > 0.0 & 0.0\\
-\ast & y = +0.0  & x > 0.0 & +0.0\\     
+\ast & y = +0.0  & x > 0.0 & +0.0\\
 \ast & y = -0.0 & x > 0.0 & -0.0\\
 & y > 0.0 & x > 0.0 & 0.0 < r < \frac{\pi}{2}\\
 & y > 0.0 & x = 0.0 & \frac{\pi}{2}\\
 & y > 0.0 & x < 0.0 & \frac{\pi}{2} < r < \pi\\
 & y = 0.0 & x < 0 & \pi\\
 \ast & y = +0.0 & x < 0.0 & \pi\\
-\ast & y = -0.0 & x < 0.0 & -\pi\\      
+\ast & y = -0.0 & x < 0.0 & -\pi\\
 &y < 0.0 & x < 0.0 & -\pi< r< -\frac{\pi}{2}\\
 &y < 0.0 & x = 0.0 & -\frac{\pi}{2}\\
-&y < 0.0 & x > 0.0 & -\frac{\pi}{2} < r< 0.0\\    
+&y < 0.0 & x > 0.0 & -\frac{\pi}{2} < r< 0.0\\
 &y = 0.0 & x = 0.0 & \texttt{未定义}\\
 \ast& y = +0.0 & x = +0.0 & +0.0\\
 \ast& y = -0.0 & x = +0.0& -0.0\\
@@ -2737,12 +2737,12 @@ $$
 
 <p><font size="2"><i>注意：</i>这些类型谓词在非精确数字对象上的行为是不可靠的，这是因为任何的非精确可能影响结果。</font></p>
 
-| `(exact? z)`‌‌ | 过程 
+| `(exact? z)`‌‌ | 过程
 | `(inexact? z)‌‌` | 过程
 
 这些数值谓词给出了量的精确性的测试。对任意的数字对象，有且只有一个谓词的值为真。
 
-~~~ scheme 
+~~~ scheme
 (exact? 5)                   ‌⇒  #t
 (inexact? +inf.0)            ‌⇒  #t
 ~~~
@@ -2750,7 +2750,7 @@ $$
 #### 11.7.4.2. 通用转换 {#s11-7-4-2}
 
 | `(inexact z)‌‌` | 过程
-| `(exact z)`‌‌ | 过程 
+| `(exact z)`‌‌ | 过程
 
 `inexact`过程返回`z`的非精确表示。如果适当类型的非精确数字对象被绑定了精度，那么，返回值是一个接近参数的非精确数字对象。如果一个精确参数没有合理地接近非精确等价物，那么一个条件类型是`&implementation-restriction`（此异常类型已根据勘误表修改）的异常可以被抛出。
 
@@ -2980,7 +2980,7 @@ $$
                      ; 两个返回值
 (div0 \(x_1\) \(x_2\))        ‌⇒ \(x_1\) div0 \(x_2\)
 (mod0 \(x_1\) \(x_2\))        ‌⇒ \(x_1\) mod0 \(x_2\)
-(div0-and-mod0 \(x_1\) \(x_2\))   
+(div0-and-mod0 \(x_1\) \(x_2\))
                      ⇒ \(x_1\) div0 \(x_2\), \(x_1\) mod0 \(x_2\)
                      ; 两个返回值
 ~~~
@@ -3042,9 +3042,9 @@ $$
 `retionalize`过程返回一个与\\(x_1\\)和差值不大于\\(x_2\\)的*最简*有理数（*simplest* rational number）（本句已根据勘误表修改）。有理数\\(r_1\\)比有理数\\(r_2\\)*更简单（simpler）*意味着`\(r_1 = p_1/q_1\)`，`\(r_2 = p_2/q_2\)`（以最简分数表示），且`\(|p_1| \leq |p_2|\)`，且`\(|q_1| \leq |q_2|\)`。因此3/5比4/7更简单。尽管不是所有的有理数都可以用这种顺序比较（考虑2/7和3/5），但是[任何区间都包含一个比区间中的任何其它有理数都简单的有理数](/r6rs-translation-experience/#simplest-rational-number)（比较简单的2/5位于2/7和3/5之间）。注意0 = 0/1是所有有理数中最简单的一个。
 
 ~~~ scheme
-(rationalize (exact .3) 1/10)          
+(rationalize (exact .3) 1/10)
 ‌‌                                       ⇒ 1/3
-(rationalize .3 1/10)                  
+(rationalize .3 1/10)
 ‌‌                                       ⇒ #i1/3  ; 大约
 (rationalize +inf.0 3)                 ‌⇒  +inf.0
 (rationalize +inf.0 +inf.0)            ‌⇒  +nan.0
@@ -3074,16 +3074,16 @@ $$
 (log +inf.0)                   ‌⇒ +inf.0
 (log 0.0)                      ‌⇒ -inf.0
 (log 0)                        ⇒ &assertion异常
-(log -inf.0)                   
+(log -inf.0)
 ‌‌                        ⇒ +inf.0+3.141592653589793i
                         ; 大约
-(atan -inf.0)                  
+(atan -inf.0)
 ‌‌                        ⇒ -1.5707963267948965 ; 大约
-(atan +inf.0)                  
+(atan +inf.0)
 ‌‌                        ⇒ 1.5707963267948965 ; 大约
-(log -1.0+0.0i)                
+(log -1.0+0.0i)
 ‌‌                        ⇒ 0.0+3.141592653589793i ; 大约
-(log -1.0-0.0i)                
+(log -1.0-0.0i)
 ‌‌                        ⇒ 0.0-3.141592653589793i ; 大约
                         ; 如果区别-0.0的话
 ~~~
@@ -3095,7 +3095,7 @@ $$
 当传递的参数是一个精确的参数时，`sqrt`过程可以返回一个非精确的结果。
 
 ~~~ scheme
-(sqrt -5)                   
+(sqrt -5)
 ‌‌        ⇒  0.0+2.23606797749979i ; 大约
 (sqrt +inf.0)               ‌⇒  +inf.0
 (sqrt -inf.0)               ‌⇒  +inf.0i
@@ -3144,9 +3144,9 @@ $$c = a_1 + a_2 i = a_3 e^{i a_4}$$
 如果\\(x_1\\)，\\(x_2\\)，\\(x_3\\)和\\(x_4\\)分别是表示\\(a_1\\)，\\(a_2\\)，\\(a_3\\)和\\(a_4\\)的数字对象，那么，`\(\texttt{(make-rectangular $x_1$ $x_2$}\)`返回*c*，`\(\texttt{(make-polar $x_3$ $x_4$)}\)`也返回*c*。
 
 ~~~ scheme
-(make-rectangular 1.1 2.2) 
+(make-rectangular 1.1 2.2)
 ‌‌          ⇒ 1.1+2.2i ; 大约
-(make-polar 1.1 2.2) 
+(make-polar 1.1 2.2)
 ‌‌          ⇒ 1.1@2.2 ; 大约
 ~~~
 
@@ -3157,15 +3157,15 @@ $$c = a_1 + a_2 i = a_3 e^{i a_4}$$
 (imag-part 1.1+2.2i)              ‌⇒ 2.2 ; 大约（本条已根据勘误表修改）
 (magnitude 1.1@2.2)               ‌⇒ 1.1 ; 大约
 (angle 1.1@2.2)                   ‌⇒ 2.2 ; 大约
-(angle -1.0)         
+(angle -1.0)
 ‌‌                    ⇒ 3.141592653589793 ; 大约
-(angle -1.0+0.0i)    
+(angle -1.0+0.0i)
 ‌‌                    ⇒ 3.141592653589793 ; 大约
-(angle -1.0-0.0i)    
+(angle -1.0-0.0i)
 ‌‌                    ⇒ -3.141592653589793 ; 大约
                     ; 如果区别-0.0的话
 (angle +inf.0)      ‌⇒ 0.0
-(angle -inf.0)       
+(angle -inf.0)
 ‌‌                    ⇒ 3.141592653589793 ; 大约
 ~~~
 
@@ -3179,7 +3179,7 @@ $$c = a_1 + a_2 i = a_3 e^{i a_4}$$
 `make-polar`，`magnitude`和`angle`过程可以返回非精确的结果甚至当传递精确参数的时候。
 
 ~~~ scheme
-(angle -1)                    
+(angle -1)
 ‌‌            ⇒ 3.141592653589793 ; 大约
 ~~~
 
@@ -3400,7 +3400,7 @@ Scheme提供最高可达四层的任意组合。总共有二十八个这样的�
 
 ~~~ scheme
 (reverse '(a b c))              ‌⇒  (c b a)
-(reverse '(a (b c) d (e (f))))  
+(reverse '(a (b c) d (e (f))))
 ‌‌                    ⇒  ((e (f)) d (b c) a)
 ~~~
 
@@ -3427,11 +3427,11 @@ Scheme提供最高可达四层的任意组合。总共有二十八个这样的�
 `map`过程将*proc*逐个元素地应用到*list*的元素上且返回一个按顺序的结果的表。*Proc*总是在相同的`map`本身的动态环境中被调用<!-- TODO：意思不太明白 -->。*proc*应用到*list*元素的顺序是未定义的。如果从`map`出现多个返回，早期返回的返回值不会被改变<!-- TODO：什么意思？ -->。
 
 ~~~ scheme
-(map cadr '((a b) (d e) (g h)))   
+(map cadr '((a b) (d e) (g h)))
 ‌‌                        ⇒  (b e h)
 
 (map (lambda (n) (expt n n))
-     '(1 2 3 4 5))                
+     '(1 2 3 4 5))
 ‌‌                        ⇒  (1 4 27 256 3125)
 
 (map + '(1 2 3) '(4 5 6))         ‌⇒  (5 7 9)
@@ -3458,7 +3458,7 @@ Scheme提供最高可达四层的任意组合。总共有二十八个这样的�
             '(0 1 2 3 4))
   v)                                ‌⇒  #(0 1 4 9 16)
 
-(for-each (lambda (x) x) '(1 2 3 4)) 
+(for-each (lambda (x) x) '(1 2 3 4))
 ‌‌                               ⇒ 未定义
 
 (for-each even? '()) ‌          ⇒ 未定义
@@ -3491,7 +3491,7 @@ Scheme提供最高可达四层的任意组合。总共有二十八个这样的�
 以不可变字符串的形式返回*symbol*的名字。
 
 ~~~ scheme
-(symbol->string 'flying-fish)     
+(symbol->string 'flying-fish)
                                   ‌⇒  "flying-fish"
 (symbol->string 'Martin)          ‌⇒  "Martin"
 (symbol->string
@@ -3508,24 +3508,24 @@ Scheme提供最高可达四层的任意组合。总共有二十八个这样的�
 返回名字是*string*的符号。
 
 ~~~ scheme
-(eq? 'mISSISSIppi 'mississippi)  
+(eq? 'mISSISSIppi 'mississippi)
 ‌‌⇒  #f
-(string->symbol "mISSISSIppi")  
+(string->symbol "mISSISSIppi")
 ‌‌⇒the symbol with name "mISSISSIppi"
-(eq? 'bitBlt (string->symbol "bitBlt"))     
+(eq? 'bitBlt (string->symbol "bitBlt"))
 ‌‌⇒  #t
 (eq? 'JollyWog
      (string->symbol
-       (symbol->string 'JollyWog)))  
+       (symbol->string 'JollyWog)))
 ‌‌⇒  #t
 (string=? "K. Harper, M.D."
           (symbol->string
-            (string->symbol "K. Harper, M.D.")))  
+            (string->symbol "K. Harper, M.D.")))
 ‌‌⇒  #t
 ~~~
 
 ## 11.11. 字符 {#s11-11}
- 
+
 字符是表示Unicode标量值得对象[^27]。
 
 
@@ -3600,7 +3600,7 @@ Unicode标量值不包括区间#xD800到#xDFFF，其是Unicode*码位（code poi
 如果所有的字符串的长度都是一样的且包含相同的字符则返回`#t`。否则`string=?`过程返回`#f`。
 
 ~~~ scheme
-(string=? "Straße" "Strasse") 
+(string=? "Straße" "Strasse")
 ‌‌                            ⇒ #f
 ~~~
 
@@ -3656,7 +3656,7 @@ $$0 \leq start \leq end \leq \texttt{(string-length  $string$)}\rm。$$
 和表常量一样，向量常量必须被引用（quoted）：
 
 ~~~ scheme
-'#(0 (2 2 2 2) "Anna")  
+'#(0 (2 2 2 2) "Anna")
 ‌‌              ⇒  #(0 (2 2 2 2) "Anna")
 ~~~
 
@@ -3684,7 +3684,7 @@ $$0 \leq start \leq end \leq \texttt{(string-length  $string$)}\rm。$$
 *K*必须是*vector*的一个合法的索引。`vector-ref`过程返回*vector*元素*k*的内容。
 
 ~~~ scheme
-(vector-ref '#(1 1 2 3 5 8 13 21) 5)  
+(vector-ref '#(1 1 2 3 5 8 13 21) 5)
 ‌‌                        ⇒  8
 ~~~
 
@@ -3697,10 +3697,10 @@ $$0 \leq start \leq end \leq \texttt{(string-length  $string$)}\rm。$$
 ~~~ scheme
 (let ((vec (vector 0 '(2 2 2 2) "Anna")))
   (vector-set! vec 1 '("Sue" "Sue"))
-  vec)      
+  vec)
 ‌‌             ⇒  #(0 ("Sue" "Sue") "Anna")
 
-(vector-set! '#(0 1 2) 1 "doe")  
+(vector-set! '#(0 1 2) 1 "doe")
 ‌‌             ⇒  未定义的
              ; 常向量
              ; 应当抛出&assertion异常
@@ -3712,9 +3712,9 @@ $$0 \leq start \leq end \leq \texttt{(string-length  $string$)}\rm。$$
 `vector->list`过程返回一个新分配的由包含在*vector*中元素的对象组成的表。`list->vector`过程返回一个新创建的由表*list*中的元素初始化的向量。
 
 ~~~ scheme
-(vector->list '#(dah dah didah))  
+(vector->list '#(dah dah didah))
 ‌‌                ⇒  (dah dah didah)
-(list->vector '(dididit dah))   
+(list->vector '(dididit dah))
 ‌‌                ⇒  #(dididit dah)
 ~~~
 
@@ -3859,7 +3859,7 @@ $$0 \leq start \leq end \leq \texttt{(string-length  $string$)}\rm。$$
 
 ~~~ scheme
 (define (values . things)
-  (call-with-current-continuation 
+  (call-with-current-continuation
     (lambda (cont) (apply cont things))))
 ~~~
 
@@ -3909,7 +3909,7 @@ $$0 \leq start \leq end \leq \texttt{(string-length  $string$)}\rm。$$
     (if (< (length path) 4)
         (c 'talk2)
         (reverse path))))
-    
+
 ‌‌                        ⇒ (connect talk1 disconnect
                            connect talk2 disconnect)
 
@@ -3968,7 +3968,7 @@ $$0 \leq start \leq end \leq \texttt{(string-length  $string$)}\rm。$$
         ((< (car numbers) 0)
          (loop (cdr numbers)
                nonneg
-               (cons (car numbers) neg))))) 
+               (cons (car numbers) neg)))))
 ‌‌              ⇒  ((6 1 3) (-5 -2))
 ~~~
 
@@ -3976,9 +3976,9 @@ $$0 \leq start \leq end \leq \texttt{(string-length  $string$)}\rm。$$
 
 | |
 |:-|-:
-| `(quasiquote <qq template>)‌‌` | 语法 
-| `unquote‌‌auxiliary ` | 辅助语法 
-| `unquote-splicing‌‌auxiliary ` | 辅助语法 
+| `(quasiquote <qq template>)‌‌` | 语法
+| `unquote‌‌auxiliary ` | 辅助语法
+| `unquote-splicing‌‌auxiliary ` | 辅助语法
 
 “反引用（Backquote）”或“准引用”在构造表或向量结构时是有用的，尤其是在需要的结构中只有一些是提前知道的时候。
 
@@ -3996,13 +3996,13 @@ $$0 \leq start \leq end \leq \texttt{(string-length  $string$)}\rm。$$
 
 ~~~ scheme
 `(list ,(+ 1 2) 4)  ‌⇒  (list 3 4)
-(let ((name 'a)) `(list ,name ',name)) 
+(let ((name 'a)) `(list ,name ',name))
 ‌‌          ⇒  (list a (quote a))
-`(a ,(+ 1 2) ,@(map abs '(4 -5 6)) b) 
+`(a ,(+ 1 2) ,@(map abs '(4 -5 6)) b)
 ‌‌          ⇒  (a 3 4 5 6 b)
-`(( foo ,(- 10 3)) ,@(cdr '(c)) . ,(car '(cons))) 
+`(( foo ,(- 10 3)) ,@(cdr '(c)) . ,(car '(cons)))
 ‌‌          ⇒  ((foo 7) . cons)
-`#(10 5 ,(- 4) ,@(map - '(16 9)) 8) 
+`#(10 5 ,(- 4) ,@(map - '(16 9)) 8)
 ‌‌          ⇒  #(10 5 -4 -16 -9 8)
 (let ((name 'foo))
   `((unquote name name name)))
@@ -4011,7 +4011,7 @@ $$0 \leq start \leq end \leq \texttt{(string-length  $string$)}\rm。$$
   `((unquote-splicing name name name)))
 ‌‌          ⇒ (foo foo foo)
 (let ((q '((append x y) (sqrt 9))))
-  ``(foo ,,@q)) 
+  ``(foo ,,@q))
 ‌‌          ⇒ `(foo
                  (unquote (append x y) (sqrt 9)))
 (let ((x '(2 3))
@@ -4023,11 +4023,11 @@ $$0 \leq start \leq end \leq \texttt{(string-length  $string$)}\rm。$$
 准引用格式可以嵌套。置换操作只作用于那些与最外层`quasiquote`有同样嵌套级别的解除引用的元素。每进入一个后续的准引用，嵌套级别就增加一，每进入一个解除引用的语法单元，嵌套级别就减少一。
 
 ~~~ scheme
-`(a `(b ,(+ 1 2) ,(foo ,(+ 1 3) d) e) f) 
+`(a `(b ,(+ 1 2) ,(foo ,(+ 1 3) d) e) f)
 ‌‌          ⇒  (a `(b ,(+ 1 2) ,(foo 4 d) e) f)
 (let ((name1 'x)
       (name2 'y))
-  `(a `(b ,,name1 ,',name2 d) e)) 
+  `(a `(b ,,name1 ,',name2 d) e))
 ‌‌          ⇒  (a `(b ,x ,'y d) e)
 ~~~
 
@@ -4039,7 +4039,7 @@ $$0 \leq start \leq end \leq \texttt{(string-length  $string$)}\rm。$$
 
 ~~~ scheme
 '((1 2) 3 4 five 6)
-(let ((a 3)) 
+(let ((a 3))
   (cons '(1 2)
         (cons a (cons 4 (cons 'five '(6))))))
 ~~~
@@ -4158,7 +4158,7 @@ $$0 \leq start \leq end \leq \texttt{(string-length  $string$)}\rm。$$
                     ((f x) x)))
                (g (syntax-rules ()
                     ((g x) (f x)))))
-    (list (f 1) (g 1)))) 
+    (list (f 1) (g 1))))
 ‌‌                            ⇒ (1 2)
 
 (let ((f (lambda (x) (+ x 1))))
@@ -4166,7 +4166,7 @@ $$0 \leq start \leq end \leq \texttt{(string-length  $string$)}\rm。$$
                        ((f x) x)))
                   (g (syntax-rules ()
                        ((g x) (f x)))))
-    (list (f 1) (g 1)))) 
+    (list (f 1) (g 1))))
 ‌‌                            ⇒ (1 1)
 ~~~
 
@@ -4277,15 +4277,15 @@ $$0 \leq start \leq end \leq \texttt{(string-length  $string$)}\rm。$$
 后者可以导致一个断言违规。
 
 \\(
-\\begin{array}{lr} 
+\\begin{array}{lr}
   \\texttt{(identifier-syntax $\<template\>$)} & 语法（扩展）\\\
-  \\begin{array}{l} 
+  \\begin{array}{l}
     \\texttt{(identifier-syntax} \\\
     \\quad\\quad\\texttt{($\<id_1\>$ $\<template_1\>$)} \\\
     \\quad\\quad\\texttt{((set! $\<id_2\>$ $\<pattern\>$)} \\\
     \\quad\\quad\\quad\\texttt{$\<template_2\>$))}
   \\end{array} & 语法（扩展）\\\
-  \\texttt{set!} & 辅助语法（扩展） 
+  \\texttt{set!} & 辅助语法（扩展）
 \\end{array}
 \\)
 
@@ -4321,7 +4321,7 @@ p               ‌⇒ (15 . 5) ; （已根据勘误表修改）
 
 ~~~ scheme
 (lambda <formals>
-  <definition>* 
+  <definition>*
   <expression>* <tail expression>)
 ~~~
 
@@ -4517,7 +4517,7 @@ $$
 
 
 {:refdef .note #p63-1}
-**注1：**`\(\sy{begin0}\)`不是标准的一部分，但为了`\(\va{dynamic-wind}\)`和`\(\va{letrec}\)`的规则更加易读，我们包含了它。尽管我们直接给它建模，但是它可以根据我们在此定义的来自标准的其它形式被定义：  
+**注1：**`\(\sy{begin0}\)`不是标准的一部分，但为了`\(\va{dynamic-wind}\)`和`\(\va{letrec}\)`的规则更加易读，我们包含了它。尽管我们直接给它建模，但是它可以根据我们在此定义的来自标准的其它形式被定义：
 $$
   \begin{array}{rcl}\tt
     \texttt{(}\sy{begin0}~e_1~e_2~\cdots\texttt{)} &=&
@@ -4612,11 +4612,11 @@ $$
 $$
 \begin{array}{l@{}l}
 \mathscr{O}& : \mathcal{A} \rightarrow \mathcal{R}\\
-\mathscr{O} \llbracket & \texttt{(}\sy{store}~\texttt{(}\nt{sf}~\cdots\texttt{)}~\texttt{(}\va{values}~v_1~\cdots\texttt{)}\texttt{)} \rrbracket = \\ 
+\mathscr{O} \llbracket & \texttt{(}\sy{store}~\texttt{(}\nt{sf}~\cdots\texttt{)}~\texttt{(}\va{values}~v_1~\cdots\texttt{)}\texttt{)} \rrbracket = \\
 & \texttt{(}\va{values}~\mathscr{O}_{v}\llbracket{}v_1\rrbracket~\cdots\texttt{)} \extraspterm
-\mathscr{O} \llbracket & \textbf{未捕获异常: }\nt{v} \rrbracket = \\ 
+\mathscr{O} \llbracket & \textbf{未捕获异常: }\nt{v} \rrbracket = \\
 & \sy{exception} \extraspterm
-\mathscr{O} \llbracket & \textbf{未知: } \textit{description} \rrbracket = \\ 
+\mathscr{O} \llbracket & \textbf{未知: } \textit{description} \rrbracket = \\
 & \sy{unknown} \extraspterm
 \end{array}
 $$
@@ -4846,7 +4846,7 @@ $$
   {\rightarrow}
 
 \end{array}
-$$  
+$$
 
 {:refdef .caption #Fa-5}
 **图A.5：** 异常
@@ -6088,7 +6088,7 @@ $$ L {di_L \over dt} = v_C$$
 
 <!--
   勘误：D
-  TEMPLATE: 
+  TEMPLATE:
 `\(\)`
 `\(\texttt{}\)`
 更改所有的note
@@ -6248,4 +6248,3 @@ $$ L {di_L \over dt} = v_C$$
 [^27]:     The Unicode Consortium. *The Unicode standard, version 5.0.0*. defined by: The Unicode Standard, Version 5.0 (Boston, MA, Addison-Wesley, 2007. ISBN 0-321-48091-0), 2007.
 [^28]:     William M. Waite and Gerhard Goos. *Compiler Construction*. Springer-Verlag, 1984.
 [^29]:     Andrew Wright and Matthias Felleisen. A syntactic approach to type soundness. *Information and Computation*, 115(1):38–94, 1994. First appeared as Technical Report TR160, Rice University, 1991.
-
