@@ -1,195 +1,100 @@
-\chapter{Overview of Scheme}
+\chapter{Scheme概论}
 \label{semanticchapter}
 
-This chapter gives an overview of Scheme's semantics.
-The purpose of this overview is to explain
-enough about the basic concepts of the language to facilitate
-understanding of the subsequent chapters of the report, which are
-organized as a reference manual.  Consequently, this overview is
-not a complete introduction to the language, nor is it precise
-in all respects or normative in any way.
+本章概述了Scheme的语义。此概述的目的在于充分解释语言的基本概念，以帮助理解本报告的后面的章节，这些章节以参考手册的形式被组织起来。因此，本概述不是本语言的完整介绍，在某些方面也不够精确和规范。
 
-\vest Following Algol, Scheme is a statically scoped programming
-language.  Each use of a variable is associated with a lexically
-apparent binding of that variable.
+\vest 像Algol语言一样，Scheme是一种静态作用域的程序设计语言。对变量的每一次使用都对应于该变量在词法上的一个明显的绑定。
 
-\vest Scheme has latent as opposed to manifest types
-\cite{WaiteGoos}.  Types
-are associated with objects\mainindex{object} (also called values) rather than
-with variables.  (Some authors refer to languages with latent types as
-untyped, weakly typed or dynamically typed languages.)  Other languages with
-latent types are Python, Ruby, Smalltalk, and other dialects of Lisp.  Languages
-with manifest types (sometimes referred to as strongly typed or
-statically typed languages) include Algol 60, C, C\#, Java, Haskell, and ML.
+\vest Scheme中采用的是隐式类型而非显式类型\cite{WaiteGoos}。类型与对象
+\mainindex{object 对象}（也称值）相关联，而非与变量相关联。（一些作者将隐式类型的语言称为弱类型或动态类型的语言。）其它采用隐式类型的语言有Python, Ruby, Smalltalk和Lisp的其他方言。采用显式类型的语言（有时被称为强类型或静态类型的语言）包括Algol 60, C, C#, Java, Haskell和ML。
 
-\vest All objects created in the course of a Scheme computation, including
-procedures and continuations, have unlimited extent.
-No Scheme object is ever destroyed.  The reason that
-implementations of Scheme do not (usually!)\ run out of storage is that
-they are permitted to reclaim the storage occupied by an object if
-they can prove that the object cannot possibly matter to any future
-computation.  Other languages in which most objects have unlimited
-extent include C\#, Java, Haskell, most Lisp dialects, ML, Python,
-Ruby, and Smalltalk.
+\vest 在Scheme计算过程中创建的所有对象，包括过程和继续（continuation），都拥有无限的生存期（extent）。Scheme对象从不被销毁。Scheme的实现（通常！）不会耗尽空间的原因是，如果它们能证明某个对象无论如何都不会与未来的任何计算发生关联，它们就可以回收该对象占据的空间。其他允许多数对象拥有无限生存期的语言包括C#, Java, Haskell, 大部分Lisp方言, ML, Python, Ruby和Smalltalk。
 
-Implementations of Scheme must be properly tail-recursive.
-This allows the execution of an iterative computation in constant space,
-even if the iterative computation is described by a syntactically
-recursive procedure.  Thus with a properly tail-recursive implementation,
-iteration can be expressed using the ordinary procedure-call
-mechanics, so that special iteration constructs are useful only as
-syntactic sugar.
+Scheme的实现必须支持严格尾递归。这一机制允许迭代计算在常量空间内执行，即便该迭代计算在语法上是用递归过程描述的。借助严格尾递归的实现，迭代就可以用普通的过程调用机制来表示，这样一来，专用的迭代结构就只剩下语法糖衣的用途了。
 
-\vest Scheme was one of the first languages to support procedures as
-objects in their own right.  Procedures can be created dynamically,
-stored in data structures, returned as results of procedures, and so
-on.  Other languages with these properties include Common Lisp,
-Haskell, ML, Ruby, and Smalltalk.
 
-\vest One distinguishing feature of Scheme is that continuations, which
-in most other languages only operate behind the scenes, also have
-``first-class'' status.  First-class continuations are useful for implementing a
-wide variety of advanced control constructs, including non-local exits,
-backtracking, and coroutines.
+\vest Scheme是最早支持把过程在本质上当作对象的语言之一。过程可以动态创建，可以存储于数据结构中，可以作为过程的结果返回，等等。其他拥有这些特性的语言包括Common Lisp, Haskell, ML, Ruby和Smalltalk。
 
-In Scheme, the argument expressions of a procedure call are evaluated
-before the procedure gains control, whether the procedure needs the
-result of the evaluation or not.  C, C\#, Common Lisp, Python,
-Ruby, and Smalltalk are other languages that always evaluate argument
-expressions before invoking a procedure.  This is distinct from the
-lazy-evaluation semantics of Haskell, or the call-by-name semantics of
-Algol 60, where an argument expression is not evaluated unless its
-value is needed by the procedure.
+\vest 在大多数其他语言中只在幕后起作用的继续，在Scheme中也拥有“第一级”状态，这是Scheme的一个独树一帜的特征。第一级继续可用于实现大量不同的高级控制结构，如非局部退出（non-local exits）、回溯（backtracking）和协作程序（coroutine）等。
 
-Scheme's model of arithmetic provides a rich set of numerical types
-and operations on them.  Furthermore, it distinguishes \textit{exact}
-and \textit{inexact} number objects: Essentially, an exact number
-object corresponds to a number exactly, and an inexact number object
-is the result of a computation that involved rounding or other errors.
+在Scheme中，过程的参数表达式会在过程获得控制权之前被求值，无论这个过程需不需要这个值。C, C#, Common Lisp, Python, Ruby和Smalltalk是另外几个总在调用过程之前对参数表达式进行求值的语言。这和Haskell惰性求值（lazy-evaluation）的语义以及Algol 60按名求值（call-by-name）的语义不同，在这些语义中，参数表达式只有在过程需要这个值的时候才会被求值。
 
-\section{Basic types}
+Scheme的算术模型被设计为尽量独立于计算机内数值的特定表示方式。此外，他
+还区分\textit{精确}数和\textit{非精确}数对象：本质上，一个精确数对象精确地等价于一个数，一个非精确数对象是一个涉及到近似或其它误差的计算结果。
 
-Scheme programs manipulate \textit{objects}, which are also referred
-to as \textit{values}.
-Scheme objects are organized into sets of values called \textit{types}.
-This section gives an overview of the fundamentally important types of the
-Scheme language.  More types are described in later chapters.
+\section{基本类型}
+
+Scheme程序操作\textit{对象（object）}，有时也被成为\textit{值（value）}。Scheme对象被组织为叫做\textit{类型（type）}的值的集合。本节将给你Scheme语言十分重要的类型的一个概述。更多的类型将在后面章节进行描述。
 
 \begin{note}
-  As Scheme is latently typed, the use of the term \textit{type} in
-  this report differs from the use of the term in the context of other
-  languages, particularly those with manifest typing.
+  由于Scheme采用隐式类型，所以本报告中术语\textit{类型}的使用与其它语言文本中本术语的使用不同，尤其是与那些显式语言中的不同。
 \end{note}
 
-\paragraph{Booleans}
+\paragraph{布尔（Booleans）}
 
-\mainindex{boolean}A boolean is a truth value, and can be either
-true or false.  In Scheme, the object for ``false'' is written
-\schfalse{}.  The object for ``true'' is written \schtrue{}.  In
-most places where a truth value is expected, however, any object different from
-\schfalse{} counts as true.
+\mainindex{boolean 布尔}布尔类型是一个真值，可以是真或假。在Scheme中，对象“假”被写作`\schfalse{}。对象“真”被写作\schtrue{}。然而，在大部分需要一个真值的情况下，凡是不同于\schfalse{}的对象被看作真。
 
-\paragraph{Numbers}
+\paragraph{数值（Numbers）}
 
-\mainindex{number}Scheme supports a rich variety of numerical data types, including
-objects representing integers of arbitrary precision, rational numbers, complex numbers, and
-inexact numbers of various kinds.  Chapter~\ref{numbertypeschapter} gives an
-overview of the structure of Scheme's numerical tower.
+\mainindex{number 数值}Scheme广泛支持各类数值数据结构，包括任意精度的整数，有理数，复数和各种类型的非精确数。第~\ref{numbertypeschapter}章给了Scheme数值塔结构的概述。
 
-\paragraph{Characters}
+\paragraph{字符（Characters）}
 
-\mainindex{character}Scheme characters mostly correspond to textual characters.
-More precisely, they are isomorphic to the \textit{scalar values} of
-the Unicode standard.
+\mainindex{character 字符}Scheme字符多半等价于一个文本字符。更精确地说，它们同构与Unicode字符编码标准的\textit{标量值（scalar values）}。
 
-\paragraph{Strings}
+\paragraph{字符串（Strings）}
 
-\mainindex{string}Strings are finite sequences of characters with fixed length and thus
-represent arbitrary Unicode texts.
+\mainindex{string 字符串}字符串是确定长度字符的有限序列，因此它代表任意的Unicode文本。
 
-\paragraph{Symbols}
+\paragraph{符号（Symbols）}
 
-\mainindex{symbol}A symbol is an object representing a string,
-the symbol's \textit{name}.
-Unlike strings, two symbols whose names are spelled the same
-way are never distinguishable.  Symbols are useful for many applications;
-for instance, they may be used the way enumerated values are used in
-other languages.
+\mainindex{symbol 符号}符号是一个表示为字符串的对象，即它的\textit{名字}。不同于字符串，两个名字拼写一样的符号永远无法区分。符号在许多应用中十分有用；比如：它们可以像其它语言中枚举值那样使用。
 
-\paragraph{Pairs and lists}
+\paragraph{点对（Pairs）和表（lists）}
 
-\mainindex{pair}\mainindex{list}
-A pair is a data structure with two components.  The most common use
-of pairs is to represent (singly linked) lists, where the first
-component (the ``car'') represents the first element of the list, and
-the second component (the ``cdr'') the rest of the list.  Scheme also
-has a distinguished empty list, which is the last cdr in a chain of
-pairs that form a list.
+\mainindex{pair 点对}\mainindex{list 表}一个点对是两个元素的数据结构。点对最常用的用法是（逐一串联地）表示表，在这种表结构中，第一个元素（即“car”）表示表的第一个元素，第二个元素（即“cdr”）表示表的剩余部分。Scheme还有一个著名的空表，它是表中一串点对的最后一个cdr。
 
-\paragraph{Vectors}
+\paragraph{向量（Vectors）}
 
-\mainindex{vector}Vectors, like lists, are linear data structures
-representing finite sequences of arbitrary objects.
-Whereas the elements of a list are accessed
-sequentially through the chain of pairs representing it,
-the elements of a vector are addressed by integer indices.
-Thus, vectors are more appropriate than
-lists for random access to elements.
+\mainindex{vector 向量}像表一样，向量是任意对象有限序列的线性数据结构。然而，表的元素循环地通过链式的点对进行访问，向量的元素通过整数索引进行标识。所以，比起表，向量更适合做元素的随机访问。
 
-\paragraph{Procedures}
+\paragraph{过程（Procedures）}
 
-\mainindex{procedure}Procedures are values in Scheme.
+\mainindex{procedure 过程}在Scheme中过程是值。
 
-\section{Expressions}
+\section{表达式（Expressions）}
 
-The most important elements of Scheme code are
-\mainindex{expression}\textit{expressions}.  Expressions can be
-\textit{evaluated}, producing a \textit{value}.  (Actually, any number
-of values---see section~\ref{multiplereturnvaluessection}.)  The most
-fundamental expressions are literal expressions:
+Scheme代码中最重要的元素是\textit{表达式}。表达式可以被\textit{计算（evaluated）}，产生一个\textit{值（value）}。（实际上，是任意数量的值—参见~\ref{multiplereturnvaluessection}节。）最基本的表达式就是字面的表达式：
 
 \begin{scheme}
 \schtrue{} \ev \schtrue
 23 \ev 23%
 \end{scheme}
 
-This notation means that the expression \schtrue{} evaluates to
-\schtrue{}, that is, the value for ``true'',  and that the expression
-{\cf 23} evaluates to a number object representing the number 23.
+这表明表达式\schtrue{}的结果就是\schtrue，也就是“真”的值，同时，表达式
+{\cf 23}计算得出一个表示数字23的对象。
 
-Compound expressions are formed by placing parentheses around their
-subexpressions.  The first subexpression identifies an operation; the
-remaining subexpressions are operands to the operation:
+复合表达式通过在子表达式周围放置小括号来组合。第一个子表达式表示一个运算；剩余的子表达式是运算的操作数：
 %
 \begin{scheme}
 (+ 23 42) \ev 65
 (+ 14 (* 23 42)) \ev 980%
 \end{scheme}
 %
-In the first of these examples, {\cf +} is the name of
-the built-in operation for addition, and {\cf 23} and {\cf 42} are the
-operands.  The expression {\cf (+ 23 42)} reads as ``the sum of 23 and
-42''.  Compound expressions can be nested---the second example reads
-as ``the sum of 14 and the product of 23 and 42''.
 
-As these examples indicate, compound expressions in Scheme are always
-written using the same prefix notation\mainindex{prefix notation}.  As
-a consequence, the parentheses are needed to indicate structure.
-Consequently, ``superfluous'' parentheses, which are often permissible in
-mathematical notation and also in many programming languages, are not
-allowed in Scheme.
+上面例子中的第一个例子，{\cf +}是内置的表示加法的运算的名字，{\cf 23}
+和{\cf 42}是操作数。表达式{\cf (+ 23 42)}读作“23和42的和”。复合表达式可以被嵌套—第二个例子读作“14和23和42的积的和”。
 
-As in many other languages, whitespace (including line endings) is not
-significant when it separates subexpressions of an expression, and
-can be used to indicate structure.
+正如这些例子所展示的，Scheme中的复合表达式使用相同的前缀表示法
+\mainindex{prefix notation 前缀表示法}书写。所以，括号在表达这种结构的时候是必要的。所以，在数学表示和大部分语言中允许的“多余的”括号在Scheme中是不被允许的。
 
-\section{Variables and binding}
+正如其它许多语言，空白符（包括换行符）在表达式中分隔子表达式的时候不是
+很重要，它也可以用来表示结构。
 
-\mainindex{variable}\mainindex{binding}\mainindex{identifier}Scheme
-allows identifiers to stand for locations containing values.
-These identifiers are called variables.  In many cases, specifically
-when the location's value is never modified after its creation, it is
-useful to think of the variable as standing for the value directly.
+\section{变量和绑定（binding）}
+
+\mainindex{variable 变量}\mainindex{binding 绑定}\mainindex{identifier
+标识符}Scheme允许标识符代表一个包含值得位置。这些标识符叫做变量。在许多情况下，尤其是这个位置的值在创建之后再也不被修改的时候，认为变量直接代表这个值是非常有用的。
 
 \begin{scheme}
 (let ((x 23)
@@ -197,20 +102,14 @@ useful to think of the variable as standing for the value directly.
   (+ x y)) \ev 65%
 \end{scheme}
 
-In this case, the expression starting with {\cf let} is a binding
-construct.  The parenthesized structure following the {\cf let} lists
-variables alongside expressions: the variable {\cf x} alongside {\cf
-  23}, and the variable {\cf y} alongside {\cf 42}.  The {\cf let}
-expression binds {\cf x} to 23, and {\cf y} to 42.  These bindings are
-available in the \textit{body} of the {\cf let} expression, {\cf (+ x
-  y)}, and only there.
+在这种情况下，以{\cf let}开头的表达式是一种绑定结构。跟在{\cf let}之后
+的括号结构列出了和表达式一起的变量：和23一起的变量{\cf x}，以及和42一
+起的变量{\cf y}。{\cf let}表达式将{\cf x}绑定到{\cf 23}，将{\cf y}绑定
+到{\cf 42}。这些绑定在{\cf let}表达式的\textit{内部（body）}是有效的，如上面的{\cf (+ x y)}，也仅仅在那是有效的。
 
-\section{Definitions}
+\section{定义}
 
-\index{definition}The variables bound by a {\cf let} expression
-are \textit{local}, because their bindings are visible only in the
-{\cf let}'s body.  Scheme also allows creating top-level bindings for
-identifiers as follows:
+\index{definition 定义}{\cf let}表达式绑定的变量是\textit{局部的（local）}，因为绑定只在{\cf let}的内部可见。Scheme同样允许创建标识符的顶层绑定，方法如下：
 
 \begin{scheme}
 (define x 23)
@@ -218,8 +117,11 @@ identifiers as follows:
 (+ x y) \ev 65%
 \end{scheme}
 
-(These are actually ``top-level'' in the body of a top-level program or library;
-see section~\ref{librariesintrosection} below.)
+（这些实际上是在顶层程序或库的内部的“顶层”；参见下面的~\ref{librariesintrosection}节。）
+
+开始的两个括号结构是*定义*，它们创造了顶层的绑定，绑定`x`到23，绑定`y`到42。定义不是表达式，它不能出现在所有需要一个表达式出现的地方。而且，定义没有值。
+
+绑定遵从程序的词法结构：当存在相同名字的绑定的时候，一个变量参考离它最近的绑定，从它出现的地方开始，并且以从内而外的方式进行，如果在沿途没有发现局部绑定的话就使用顶层绑定：
 
 The first two parenthesized structures are \textit{definitions}; they
 create top-level bindings, binding {\cf x} to 23 and {\cf y} to 42.
@@ -347,7 +249,7 @@ Procedure calls can generally be distinguished from these
 \textit{special forms}\mainindex{special form} by
 looking for a syntactic keyword in the first position of an
 form: if the first position does not contain a syntactic keyword, the expression
-is a procedure call.  
+is a procedure call.
 (So-called \textit{identifier macros} allow creating other kinds of
 special forms, but are comparatively rare.)
 The set of syntactic keywords of Scheme is
@@ -440,7 +342,7 @@ built into other languages to be derived forms in Scheme.
 \section{Syntactic data and datum values}
 
 A subset of the Scheme objects is called \textit{datum
-  values}\index{datum value}. 
+  values}\index{datum value}.
 These include booleans, number objects, characters, symbols,
 and strings as well as lists and vectors whose elements are data.  Each
 datum value may be represented in textual form as a
@@ -463,7 +365,7 @@ The {\cf\singlequote} shown in the previous examples
 is not needed for representations of number objects or booleans.
 The syntactic datum {\cf foo} represents a
 symbol with name ``foo'', and {\cf 'foo} is a literal expression with
-that symbol as its value.  {\cf (1 2 3)} is a syntactic datum that 
+that symbol as its value.  {\cf (1 2 3)} is a syntactic datum that
 represents a list with elements 1, 2, and 3, and {\cf '(1 2 3)} is a literal
 expression with this list as its value.  Likewise, {\cf \#(1 2 3)}
 is a syntactic datum that represents a vector with elements 1, 2 and 3, and
@@ -529,7 +431,7 @@ such as exceptions in other languages.
 \label{librariesintrosection}
 
 Scheme code can be organized in components called
-\textit{libraries}\index{library}.  Each library contains 
+\textit{libraries}\index{library}.  Each library contains
 definitions and expressions.  It can import definitions
 from other libraries and export definitions to other libraries.
 
@@ -580,7 +482,7 @@ output the contents of the file to standard output:
              get-bytes-all))%
 \end{scheme}
 
-%%% Local Variables: 
+%%% Local Variables:
 %%% mode: latex
 %%% TeX-master: "r6rs"
-%%% End: 
+%%% End:
