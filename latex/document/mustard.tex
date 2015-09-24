@@ -1,43 +1,21 @@
-\chapter{Requirement levels} 
+\chapter{需求等级}
 \label{requirementchapter}
 
-The key words ``must'', ``must not'', ``should'',
-``should not'', ``recommended'', ``may'', and ``optional'' in this
-report are to be interpreted as described in RFC~2119~\cite{mustard}.
-Specifically:
+本报告中的关键词“必须（must）”, “必须不（must not）”, “应该（should）”, “不应该（should not）”, “推荐的（recommended）”, “可以（may）”和“可选的（optional）”按照RFC~2119~\cite{mustard}描述的进行解释。特别地：
 
 \begin{description}
-\item[must]\mainindex{must} This word means that a statement is an absolute
-  requirement of the specification.
-\item[must not]\mainindex{must not} This phrase means that a statement is an absolute
-  prohibition of the specification.
-\item[should]\mainindex{should} This word, or the adjective ``recommended'', means that
-  valid reasons may exist in particular circumstances to ignore a
-  statement, but that the implications must be understood and weighed
-  before choosing a different course.
-\item[should not]\mainindex{should not} This phrase, or the phrase ``not recommended'', means
-  that valid reasons may exist in particular circumstances when the
-  behavior of a statement is acceptable, but that the implications
-  should be understood and weighed before choosing the course described
-  by the statement.
-\item[may]\mainindex{may} This word, or the adjective ``optional'', means that an item
-  is truly optional.
+\item[必须]\mainindex{must，必须} 这个词意味着一个陈述是规范的一个绝对必要条件。
+\item[必须不]\mainindex{must not，必须不} 这个短语意味着一个陈述是规范绝对禁止的。
+\item[应该]\mainindex{should，应该} 这个词，或形容词“推荐的”，意味着有合适的理由的时候，在特定的情况下可以忽略这个陈述，但应当理解其含义，并在选择不同的做法前要仔细权衡。
+\item[不应该]\mainindex{should not，不应该} 这个短语，或短语“不推荐”，意味着有合适的理由的时候，在特定的情况下，一个陈述的行为是可接受的，但应当理解其含义，且选择本陈述的描述前应当仔细权衡。
+\item[可以]\mainindex{may，可以} 这个词，或形容词“可选的”，意味着一个条目是真正可选的。
 \end{description}
 
-In particular, this report occasionally uses ``should'' to designate
-circumstances that are outside the specification of this report, but
-cannot be practically detected by an implementation; see
-section~\ref{argumentcheckingsection}.  In such circumstances, a
-particular implementation may allow the programmer to ignore the
-recommendation of the report and even exhibit reasonable behavior.
-However, as the report does not specify the behavior,
-these programs may be unportable, that is, their execution might
-produce different results on different implementations.
+尤其，本报告偶尔使用“应该”去指定本报告规范之外但是实际上无法被一个实现检测到的情况；见\ref{argumentcheckingsection}小节。在这种情况下，一个特定的实现允许程序员忽略本报告的建议甚至表现出其它合理的行为。然而，由于本报告没有指定这种行为，这些程序可能是不可移植的，也就是说，它们的执行在不同的实现上可能产生不同的结果。
 
-Moreover, this report occasionally uses the phrase ``not required'' to note the
-absence of an absolute requirement.
+此外，本报告偶尔使用短语“不要求（not required）”来指示绝对必要条件的缺失。
 
-%%% Local Variables: 
+%%% Local Variables:
 %%% mode: latex
 %%% TeX-master: "r6rs"
-%%% End: 
+%%% End:
