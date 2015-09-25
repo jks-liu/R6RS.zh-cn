@@ -1,181 +1,71 @@
-\chapter{Numbers}
+\chapter{数字（Numbers）}
 \label{numbertypeschapter}
-\mainindex{number}
+\mainindex{number，数字}
 
-This chapter describes Scheme's model for numbers.  It is important to
-distinguish between the mathematical numbers, the Scheme objects that
-attempt to model them, the machine representations used to implement
-the numbers, and notations used to write numbers.  In this report, the
-term \textit{number} refers to a mathematical number, and the term
-\textit{number object} refers to a Scheme object representing a
-number.  This report uses the types \type{complex}, \type{real},
-\type{rational}, and \type{integer} to refer to both mathematical
-numbers and number objects.  The \type{fixnum} and \type{flonum} types
-refer to special subsets of the number objects, as determined by
-common machine representations, as explained below.
+本章描绘Scheme的数字模型。区别如下对象的不同是重要的：数学上的数字，尝试去建模这些数字的Scheme对象，用于实现这些数字的机器表示和用于书写数字的符号。在本报告中，术语\textit{数字}表示数学上的数字，术语\textit{数字对象（number object）}表示代表一个数字的Scheme对象。本报告使用类型\type{复数（complex）}，\type{实数（real）}，\type{有理数（rational）}和\type{整数（integer）}同时表示数学上的数字和数字对象。\type{定长数（fixnum）}和\type{浮点数（flonum）}类型表示这些数字对象的特殊子集，由通常的机器表示决定，这些会在下面说明。
 
-\section{Numerical tower}
+\section{数值塔（Numeracal tower）}
 \label{numericaltypes}
-\index{numerical types}
+\index{numerical types，数值类型}
 
-Numbers may be arranged into a tower of subsets in which each level
-is a subset of the level above it:
+数字可以被组织在一个子集的塔中，在这个塔中，每一层是上一层的子集：
 \begin{tabbing}
 \ \ \ \ \ \ \ \ \ \=\tupe{number} \\
 \> \tupe{complex} \\
 \> \tupe{real} \\
 \> \tupe{rational} \\
-\> \tupe{integer} 
+\> \tupe{integer}
 \end{tabbing}
 
-For example, 5 is an integer.  Therefore 5 is also a rational,
-a real, and a complex.  The same is true of the number objects
-that model 5.  
+比如，5是一个整数。因此，5也是一个有理数，实数和复数。为5建模的数字对象也一样。
 
-Number objects are organized as a corresponding tower of subtypes
-defined by the predicates {\cf number?}, {\cf complex?}, {\cf real?},
-{\cf rational?}, and {\cf integer?}; see section~\ref{number?}.
-Integer number objects are also called \textit{integer
-  objects}\mainindex{integer object}.
+数字对象也被组织为一个对应的子类型的塔，这些类型被谓词（predicates）{\cf number?}, {\cf complex?}, {\cf real?}, {\cf rational?}和{\cf integer?}定义；见\ref{number?}节。整形数字对象也被叫做\textit{整数对象（integer objects）}\mainindex{integer object，整数对象}。
 
-There is no simple relationship between the subset that contains a
-number and its representation inside a computer.  For example, the
-integer 5 may have several representations.  Scheme's numerical
-operations treat number objects as abstract data, as independent of
-their representation as possible.  Although an implementation of
-Scheme may use many different representations for numbers, this should
-not be apparent to a casual programmer writing simple programs.
+包含一个数字的子集和它在计算机中的表示是没有简单的关系的。比如，整数5可以有多个表示。Scheme的数值操作将数字对象当作抽象数据对待，尽可能和它们的表示相独立。尽管Scheme的实现可以使用不同的数字表示方法，但这些对于偶尔编些简单程序的程序员来说不应该是明显可见的。
 
-\section{Exactness}
+\section{精确性（Exactness）}
 \label{exactly}
 
-\mainindex{exactness}It is useful to distinguish between number objects
-that are known to correspond to a number exactly, and those number
-objects whose computation involved rounding or other errors.  For
-example, index operations into data structures may need to know the index
-exactly, as may some operations on polynomial coefficients in a symbolic algebra
-system.  On the other hand, the results of measurements are inherently
-inexact, and irrational numbers may be approximated by rational and
-therefore inexact approximations.  In order to catch uses of numbers
-known only inexactly where exact numbers are required, Scheme
-explicitly distinguishes \defining{exact} from \defining{inexact} number objects.  This
-distinction is orthogonal to the dimension of type.
+\mainindex{exactness，精确性}区分一个已知的精确等于一个数字的数字对象和那些在计算过程中有近似和误差的数字对象是有用的。比如，数据结构的索引操作可能需要精确地了解索引，符号代数系统中的多项式系数也应如此。另一方面，测量的结果在本质上就是不精确的，无理数可以被近似地表示为有理数，这也是不精确的近似。为了在需要精确数的地方使用非精确数，Scheme显式区分\defining{精确（exact）}和\defining{非精确（inexact）}数。这种区分和类型的划分是正交的（orthogonal）关系。
 
-A
-number object is exact if it is the value of an exact numerical
-literal or was derived from exact number objects using only exact
-operations.  Exact number objects correspond to mathematical numbers
-in the obvious way.
+如果一个数值被写作精确的常量，或是完全通过精确运算从精确数得出，它就是精确的。一个精确的数字对象明显地与一个数学上的数字相一致。
 
-Conversely, a number object is inexact if it is the value of an
-inexact numerical literal, or was derived from inexact number objects,
-or was derived using inexact operations.  Thus inexactness is
-contagious.
+同样地，如果一个数值被写作非精确的常量，或者是由非精确的成分得出的，或者是由非精确的运算得出的，它就是非精确的。也就是说，非精确性是数值的一种可传染的特性。
 
-Exact arithmetic is reliable in the following sense: If exact number
-objects are passed to any of the arithmetic procedures described in
-section~\ref{propagationsection}, and an exact number object is
-returned, then the result is mathematically correct.  This is
-generally not true of computations involving inexact number objects
-because approximate methods such as floating-point arithmetic may be
-used, but it is the duty of each implementation to make the result as
-close as practical to the mathematically ideal result.
+精确算术在下面的场景是可靠的：一个精确数对象被传递到\ref{propagationsection}节描述的任意一个算术过程，并返回一个精确数对象，这个结果是数学上正确的。然而在涉及到非精确数的计算的时候，这通常是不正确的，这时因为像浮点算法的近似方法可能被使用，但是，让结果尽可能接近数学上的理想结果是每个实现的职责。
 
-\section{Fixnums and flonums}
+\section{定长数和浮点数}
 
-A \defining{fixnum} is an exact integer object that lies
-within a certain implementation-dependent subrange of the
-exact integer objects. (Library section \extref{lib:fixnumssection}{Fixnums} describes a
-library for computing with fixnums.)
-Likewise, every implementation must
-designate a subset of its inexact real number objects as \defining{flonum}s, and
-to convert certain external representations into flonums.  
-(Library section \extref{lib:flonumssection}{Flonums} describes a library for
-computing with flonums.)  Note that
-this does not imply that an implementation must use
-floating-point representations.
+一个\defining{定长数}是一个精确的整数对象，这个整数对象在精确的整数对象的一个特定的实现相关的子范围（subrange）。（库的第\extref{lib:fixnumssection}{Fixnums}小节描绘了一个计算定长数的库。）同样地，每个实现应当指定一个非精确实数对象的子集作为*浮点数*，并将特定的外部表示转换成浮点数。（库的第\extref{lib:flonumssection}{Flonums}小节描绘了一个计算浮点数的库。）注意，这并不意味着实现必须使用浮点表示。
 
-\section{Implementation requirements}
+\section{实现要求（Implementation requirements）}
 
-\index{implementation restriction}\label{restrictions}
+\index{implementation restriction，实现要求}\label{restrictions}
 
-Implementations of Scheme must support number objects for
-the entire tower of subtypes given in section~\ref{numericaltypes}.
-Moreover, implementations must support exact integer 
-objects and exact rational number objects of practically unlimited
-size and precision, and to implement certain procedures (listed in
-\ref{propagationsection}) so they always return exact results when
-given exact arguments.  (``Practically unlimited'' means that the size
-and precision of these numbers should only be limited by the size of
-the available memory.)
+Scheme的实现必须支持\ref{numericaltypes}节给出的子类型的整个塔的数字对象。此外，实现必须支持几乎无限（Practically unlimited）大小和精度的精确整数对象和精确有理数对象，并实现特定的过程（在\ref{propagationsection}节列出），当给它们精确参数的时候这些过程总是返回精确结果。（“几乎无限”意味着这些数字的大小和精度应当仅受可用内存大小的限制。）
 
-Implementations may support only a limited range of inexact number
-objects of any type, subject to the requirements of this section.  For
-example, an implementation may limit the range of the inexact real
-number objects (and therefore the range of inexact integer and
-rational number objects) to the dynamic range of the flonum format.
-Furthermore the gaps between the inexact integer objects and
-rationals are likely to be very large in such an implementation as the
-limits of this range are approached.
+实现可以只支持任意类型非精确数字对象的一个有限的值域（range），但需要遵从本节的要求。比如，一个实现可以限制非精确实数对象的值域（且因此限制非精确整数和有理数对象的值域）在浮点格式的动态值域内。此外，在使用这种值域限制的实现中，非精确整数对象和有理数之间的差异很可能会很大。
 
-An implementation may use floating point and other approximate 
-representation strategies for \tupe{inexact} numbers.
-This report recommends, but does not require, that the IEEE 
-floating-point standards be followed by implementations that use
-floating-point representations, and that implementations using
-other representations should match or exceed the precision achievable
-using these floating-point standards~\cite{IEEE}.
+一个实现可以为\tupe{非精确}数字使用浮点或其它近似表示方法。本报告推荐但不要求实现遵从IEEE的浮点格式标准，使用其他表示方法的实现应当在精度上达到或超过这些浮点标准\cite{IEEE}。
 
-In particular, implementations that use floating-point representations
-must follow these rules: A floating-point result must be represented
-with at least as much precision as is used to express any of the
-inexact arguments to that operation.
-Potentially inexact operations such as {\cf sqrt}, when
-applied to exact arguments, should produce exact answers whenever possible
-(for example the square root of an exact 4 ought to be an exact 2).
-However, this is not required.
-If, on the other hand, an exact number object is operated upon so as to produce an
-inexact result (as by {\cf sqrt}), and if the result is represented in
-floating point, then the most precise floating-point format available
-must be used; but if the result is represented in some other way then
-the representation must have at least as much precision as the most
-precise floating-point format available.
+特别地，使用浮点数表示法的Scheme实现必须遵循以下规则：浮点数结果的表示精度必须达到或超过参与该运算的任意非精确参数的表示精度。只要有可能，像{\cf sqrt}这样潜在的非精确操作当传递一个精确的参数时，应该返回一个精确的结果（比如精确数4的平方根应当是精确的2）。可是，这不是必须的。另一方面，如果参数是精确数的运算会产生非精确的结果（如通过{\cf sqrt}），且该结果被表示为浮点数，那么就必须使用当前可用的精度最高的浮点数格式；不过，如果该结果是用其他形式表示的，那么该表示方法在精度上就必须达到或超过当前可用的精度最高的浮点数格式。
 
-It is the programmer's responsibility to avoid using inexact number
-objects with magnitude or significand too large to be represented in
-the implementation.
+避免使用量级或有效数字大到实现无法表示的非精确数是程序员的责任。
 
-\section{Infinities and NaNs}
+\section{无穷大（Infinities）和非数（NaNs）}
 
-Some Scheme implementations, specifically those that follow the IEEE
-floating-point standards, distinguish special number objects called
-\mainindex{infinity}\defining{positive infinity}, \defining{negative
-  infinity}, and \defining{NaN}.
+一些Scheme实现，尤其是那些遵从IEEE浮点格式标准的实现区别叫做\mainindex{infinity}\defining{正无穷大（positive infinity）}，\defining{负无穷大（negative infinity）}和\defining{非数}的特殊数字对象。
 
-Positive infinity is regarded as an inexact real (but not rational) number
-object that represents an indeterminate number greater than the
-numbers represented by all rational number objects.  Negative infinity
-is regarded as an inexact real (but not rational) number object that represents
-an indeterminate number less than the numbers represented by all
-rational numbers.
+正无穷大被认为是一个非精确的实数（但不是有理数）对象，它表示大于所以有理数对象表示的数字的一个模糊的数字。负无穷大被认为是一个非精确的实数（但不是有理数）对象，它表示小于所以有理数对象表示的数字的一个模糊的数字。
 
-A NaN is regarded as an inexact real (but not rational) number object so
-indeterminate that it might represent any real number, including
-positive or negative infinity, and might even be greater than positive
-infinity or less than negative infinity.
+一个非数被认为是一个非精确数（但不是一个实数）对象，它是如此不确定以至于它可以表示任何数，包括正负无穷大，且甚至可能大于正无穷大或小于负无穷大。
 
-\section{Distinguished -0.0}
+\section{可区别的-0.0}
 
 \index{-0.0}
-Some Scheme implementations, specifically those that follow the IEEE
-floating-point standards, distinguish between number objects for $0.0$
-and $-0.0$, i.e., positive and negative inexact zero.  This report
-will sometimes specify the behavior of certain arithmetic operations
-on these number objects.  These specifications are marked with ``if
-$-0.0$ is distinguished'' or ``implementations that distinguish
-$-0.0$''.
+一些Scheme实现，尤其是那些遵从IEEE浮点格式标准的实现区别数字对象$0.0$和$-0.0$。也就是说，正的和负的非精确的零。本报告有时会指定在这些数字对象上的特定算术操作的行为。这些说明会被写作“如果$-0.0$的话是不一样的”或“实现区分$-0.0$”。
 
-%%% Local Variables: 
+%%% Local Variables:
 %%% mode: latex
 %%% TeX-master: "r6rs"
-%%% End: 
+%%% End:
