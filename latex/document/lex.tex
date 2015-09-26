@@ -1,133 +1,59 @@
 % Lexical structure
 \hyphenation{white-space}
 %%\vfill\eject
-\chapter{Lexical syntax and datum syntax}
+\chapter{词汇语法（Lexical syntax）和数据语法（datum syntax）}
 \label{readsyntaxchapter}
 
-The syntax of Scheme code is organized in three levels:
+Scheme的语法被组织进三个层次：
 %
 \begin{enumerate}
-\item the \textit{lexical syntax} that describes how a program text is split
-  into a sequence of lexemes,
-\item the \textit{datum syntax}, formulated in terms of the lexical
-  syntax, that structures the lexeme sequence as a sequence of
-  \textit{syntactic data\mainindex{datum}\mainindex{syntactic
-      datum}}, where a syntactic datum is
-    a recursively structured entity,
-\item the \textit{program syntax} formulated in terms of the read
-  syntax, imposing further structure and assigning meaning to
-  syntactic data.
+\item \textit{词汇语法}描述一个程序文本怎样被分成语义（lexemes）的序列。
+\item \textit{数据语法}，按词汇语法制定，将\textit{句法数据（syntactic data）\mainindex{datum，数据}\mainindex{syntactic datum，句法数据}}的序列组织为语义的序列，其中一个句法数据递归地组织一个实体。
+\item \textit{程序语法（program syntax）}按数据语法制定，实施进一步的句法数据含义的组织和分配。（本句已根据勘误表修改。）
 \end{enumerate}
 %
-Syntactic data (also called \textit{external
-  representations\index{external representation}}) double
-as a notation for objects, and Scheme's \rsixlibrary{io ports} library
-(library section~\extref{lib:portsiosection}{Port I/O})
-provides the {\cf get-datum} and {\cf put-datum} procedures
-for reading and writing syntactic data, converting between their
-textual representation and the corresponding objects. 
-Each syntactic datum represents a corresponding \defining{datum value}.
-A syntactic datum can be used in a program to obtain the corresponding
-datum value using {\cf quote} (see section~\ref{quote}).
+句法数据（也叫做\textit{外部表示（external representations）\index{external representation}}）兼作为对象的一个符号，且Scheme的\rsixlibrary{io ports}库（见库的\extref{lib:portsiosection}{Port I/O}小节）提供了{\cf get-datum}和{\cf put-datum}过程用作句法数据的读写，在它们的文本表示和对应的对象之间进行转换。每一个句法数据表示一个对应的\defining{数据值}。一个句法数据可以使用{\cf quote}在一个程序中获得对应的数据值（见第\ref{quote}节）。
 
-Scheme source code consists of syntactic data and (non-significant) comments.
-Syntactic data in Scheme source code are called
-\textit{forms}\mainindex{form}.
-(A form nested inside another form is
-called a \defining{subform}.)
-Consequently, Scheme's syntax has the property that any sequence of
-characters that is a form is also a syntactic datum representing
-some object.  This can lead to confusion, since it may not be obvious
-out of context whether a given sequence of characters is intended to
-be a representation of objects or the text of a program.
-It is also a source of power, since it
-facilitates writing programs such as interpreters or compilers that
-treat programs as objects (or vice versa).
+Scheme源程序包含句法数据和（不重要的）注释。Scheme源程序中的句法数据叫做\textit{形式（forms）}\mainindex{form，形式}。（嵌套在另一个形式中的形式叫做\defining{子形式（subform）}。）因此，Scheme的语法有如下性质，字符的任何序列是一个形式也是一个代表一些对象的句法数据。这可能导致混淆，因为在脱离上下文的情况下，一个给定的字符序列是用于对象的表示还是一个程序的文本可能不是很明显。它可能也是使Scheme强大的原因，因为它使得编写解释器或编译器这类把程序当作对象（或相反）的程序变得简单。
 
-A datum value may have several different external representations.
-For example, both ``{\tt \#e28.000}'' and
-``{\tt\#x1c}'' are syntactic data representing the exact integer
-object 28, and the syntactic data ``{\tt(8 13)}'', ``{\tt( 08 13 )}'', ``{\tt(8 .\
-  (13 .\ ()))}''
-all represent a list containing the exact integer objects 8 and 13. 
-Syntactic data that represent equal objects (in the sense of {\cf
-  equal?}; see section~\ref{equal?}) are always equivalent 
-as forms of a program.
+一个数据值可能有多个不同的外部表示。比如“{\tt \#e28.000}”和“{\tt\#x1c}”都是表示精确整数对象28的句法数据，句法数据“{\tt(8 13)}”, “{\tt( 08 13 )}”和“{\tt(8 .\ (13 .\ ()))}”都表示包含精确整数对象8和13的表。表示相同对象（从{\cf equal?}的意义来说；见\ref{equal?}小节）的句法数据作为程序的形式来说总是等价的。
 
-Because of the close correspondence between syntactic data and datum
-values, this report sometimes uses the term \defining{datum} for
-either a syntactic datum or a datum value when the exact meaning
-is apparent from the context.
+因为句法数据和数据值之间密切的对应关系，所以当根据上下文精确含义显而易见时，本报告有时使用术语\defining{数据（datum）}来表示句法数据或数据值。
 
-An implementation must not extend the lexical or datum syntax in
-any way, with one exception: it need not treat the syntax
-{\cf \sharpsign{}!\meta{identifier}}, for any \meta{identifier} (see
-section~\ref{identifiersection}) that is not {\cf r6rs}, as a syntax
-violation, and it may use specific {\cf \sharpsign{}!}-prefixed
-identifiers as flags indicating that subsequent input contains extensions
-to the standard lexical or datum syntax. 
-The syntax {\cf \sharpsign{}!r6rs} may be used to signify that
-the input afterward is written with the lexical syntax and
-datum syntax described by
-this report.
-{\cf \sharpsign{}!r6rs} is otherwise treated as a comment; see section~\ref{whitespaceandcomments}.
+一个实现不允许以任何方式扩展词汇或数据语法，仅有一个例外：对任何不是{\cf r6rs}内建的\meta{identifier}（见\ref{identifiersection}小节），实现不需要把{\cf \sharpsign{}!\meta{identifier}}当作一个语法错误，且实现可以使用特定的{\cf \sharpsign{}!}前缀的标识符作为指示接下来的输入包含标准词汇和数据语法的扩展的标记。语法{\cf \sharpsign{}!r6rs}可被用作预示接下来的输入是用本报告中描述的词汇语法和数据语法写成的。或者，{\cf \sharpsign{}!r6rs}被当作注释对待，见\ref{whitespaceandcomments}小节。
 
-\section{Notation}
+\section{符号（Notation）}
 \label{BNF}
 
-The formal syntax for Scheme is written in an extended BNF.
-Non-terminals are written using angle brackets.  Case is insignificant
-for non-terminal names.
+Scheme的形式语法（formal syntax）被用扩展的BNF写成。非终结符（Non-terminals）使用尖角括号进行书写。非终结符名字的大小写是无关紧要的。
 
-All spaces in the grammar are for legibility.
-\meta{Empty} stands for the empty string.
+语法中的空格都是为了便于阅读而存在的。\meta{Empty}代表空字符串。
 
-The following extensions to BNF are used to make the description more
-concise:  \arbno{\meta{thing}} means zero or more occurrences of
-\meta{thing}, and \atleastone{\meta{thing}} means at least one
-\meta{thing}.
+对BNF的以下扩展可以使描述更加简洁：\arbno{\meta{thing}}代表零个或更多的\meta{thing}；\atleastone{\meta{thing}}代表至少一个\meta{thing}。
 
-Some non-terminal names refer to the Unicode scalar values of the same
-name: \meta{character tabulation} (U+0009), \meta{linefeed} (U+000A),
-\meta{carriage return} (U+000D), \meta{line tabulation} (U+000B),
-\meta{form feed} (U+000C), \meta{carriage return} (U+000D),
-\meta{space} (U+0020), \meta{next line} (U+0085), \meta{line
-  separator} (U+2028), and \meta{paragraph separator} (U+2029).
+一些非终结符的名字表示相同名字的Unicode标量值：\meta{character tabulation} (U+0009)，\meta{linefeed} (U+000A)，\meta{line tabulation} (U+000B)，\meta{form feed} (U+000C)，\meta{carriage return} (U+000D),
+\meta{space} (U+0020)，\meta{next line} (U+0085)，\meta{line
+  separator} (U+2028)和\meta{paragraph separator} (U+2029)。
 
-\section{Lexical syntax}
+\section{词汇语法（Lexical syntax）}
 \label{lexicalsyntaxsection}
 
-The lexical syntax determines how a character sequence is split into a
-sequence of lexemes\index{lexeme}, omitting non-significant portions
-such as comments and whitespace.  The character sequence is assumed to
-be text according to the Unicode standard~\cite{Unicode}.  Some of
-the lexemes, such as identifiers, representations of number objects, strings etc., of the lexical
-syntax are syntactic data in the datum syntax, and thus represent objects.
-Besides the formal account of the syntax, this section also describes
-what datum values are represented by these syntactic data.
+词汇语法决定了怎样将字符的序列分隔成语义（lexemes）\index{lexeme，语义}的序列，省略不重要的部分如注释和空白。字符序列被假定是Unicode标准\cite{Unicode}的文本。词汇语法的一些语义，比如标识符，数字对象的表示，字符串等等，是数据语法中的句法数据，且因此代表对象。除了语法的形式解释（formal account），本节还描述了这些句法数据表示什么数据值。
 
-The lexical syntax, in the description of comments, contains
-a forward reference to \meta{datum}, which is described as part of the
-datum syntax.  Being comments, however, these \meta{datum}s do not play
-a significant role in the syntax.
+注释中描述的词汇语法包含\meta{datum}的一个向前引用，这是数据语法的一部分。然而，作为注释，这些\meta{datum}在语法中并不起什么重要的作用。
 
-Case is significant except in representations of booleans, number objects, and
-in hexadecimal numbers specifying Unicode scalar values.  For example, {\cf \#x1A}
-and {\cf \#X1a} are equivalent.  The identifier {\cf Foo} is, however,
-distinct from the identifier {\cf FOO}.
+除了布尔，数字对象以及用16进制表示的Unicode标量是不区分大小写的，其它情况下大小写是敏感的。比如，{\cf \#x1A}和{\cf \#X1a}是一样的。然而，标识符{\cf Foo}和标识符{\CF FOO}是有区别的。
 
-\subsection{Formal account}
+\subsection{形式解释（Formal account）}
 \label{lexicalgrammarsection}
 
-\meta{Interlexeme space} may occur on either side of any lexeme, but not
-within a lexeme.
+\meta{Interlexeme space}可以出现在任意词位（lexeme）的两侧，但不允许出现在一个词位的中间。
 
-\hyper{Identifier}s, {\cf .}, \hyper{number}s, \hyper{character}s, and
-\hyper{boolean}s, must be terminated by a \meta{delimiter} or by the
-end of the input.
+\hyper{Identifier}, {\cf .}, \hyper{number}, \hyper{character}和\hyper{boolean}必须被一个\meta{delimiter}或输入的结尾终结。
 
-The following two characters are reserved for future extensions to the
-language: {\tt \verb"{" \verb"}"}
+下面的两个字符保留用作未来的语言扩展：{\tt \verb"{" \verb"}"}
+
+（以下规则已根据勘误表修改。）
 
 \begin{grammar}%
 \meta{lexeme} \: \meta{identifier} \| \meta{boolean} \| \meta{number}\index{identifier}
@@ -196,25 +122,24 @@ language: {\tt \verb"{" \verb"}"}
 \meta{string} \: " \arbno{\meta{string element}} "
 \meta{string element} \: \meta{any character other than \doublequote{} or \backwhack}
  \> \| \backwhack{}a \| \backwhack{}b \| \backwhack{}t \| \backwhack{}n \| \backwhack{}v \| \backwhack{}f \| \backwhack{}r
- \>  \| \backwhack\doublequote{} \| \backwhack\backwhack 
- \>  \| \backwhack\meta{intraline whitespace}\meta{line ending}
- \>  \hspace*{4em}\meta{intraline whitespace}
+ \>  \| \backwhack\doublequote{} \| \backwhack\backwhack
+ \>  \| \backwhack\arbno{\meta{intraline whitespace}}\meta{line ending}
+ \>  \hspace*{4em}\arbno{\meta{intraline whitespace}}
  \>  \| \meta{inline hex escape}
 \meta{intraline whitespace} \: \meta{character tabulation}
 \> \| \meta{any character whose category is Zs}%
 \end{grammar}
 
-A \meta{hex scalar value} represents a Unicode scalar value
-between 0 and \sharpsign{}x10FFFF, excluding the range
-$\left[\sharpsign{}x\textrm{D800}, \sharpsign{}x\textrm{DFFF}\right]$.
+\meta{Hex scalar value}表示0到\sharpsign{}x10FFFF的Unicode标量值，这个范围要排除$\left[\sharpsign{}x\textrm{D800}, \sharpsign{}x\textrm{DFFF}\right]$。
 
+% \linebreak：强制换行，与\newline的区别为\linebreak的当前行分散对齐。
 \label{numbersyntax}%
-The rules for \meta{num $R$}, \meta{complex $R$}, \meta{real
-$R$}, \meta{ureal $R$}, \meta{uinteger $R$}, and \meta{prefix $R$} below
-should be replicated for \hbox{$R = 2, 8, 10,$}
-and $16$.  There are no rules for \meta{decimal $2$}, \meta{decimal
-$8$}, and \meta{decimal $16$}, which means that number representations containing
-decimal points or exponents must be in decimal radix.
+让\hbox{$R = 2$，$8$，$10$}和$16$，然后重复下面的规则\meta{num $R$}，\linebreak{}\meta{complex $R$}，\meta{real $R$}，\meta{ureal $R$}，\meta{uinteger $R$}和\linebreak{}\meta{prefix $R$}。没有\meta{decimal $2$}，\meta{decimal $8$}和\meta{decimal $16$}的规则，这意味着包含小数点和指数的数字表示必须使用十进制基数。
+
+下面的规则中，大小写是不重要的。（本句根据勘误表添加。）
+
+（以下规则已根据勘误表修改。）
+
 
 \begin{grammar}%
 \meta{number} \: \meta{num $2$} \| \meta{num $8$}
@@ -230,7 +155,7 @@ decimal points or exponents must be in decimal radix.
    \> \| \meta{real $R$} + i %
       \| \meta{real $R$} - i
    \> \| + \meta{ureal $R$} i %
-      \| - \meta{ureal $R$} i 
+      \| - \meta{ureal $R$} i
    \> \| + \meta{naninf} i %
       \| - \meta{naninf} i
    \> \| + i %
@@ -246,7 +171,6 @@ decimal points or exponents must be in decimal radix.
          \meta{uinteger $10$} \meta{suffix}
    \> \| . \atleastone{\meta{digit $10$}} \meta{suffix}
    \> \| \atleastone{\meta{digit $10$}} . \arbno{\meta{digit $10$}} \meta{suffix}
-   \> \| \atleastone{\meta{digit $10$}} . \meta{suffix}
 \meta{uinteger $R$} \: \atleastone{\meta{digit $R$}}
 \meta{prefix $R$} \: %
          \meta{radix $R$} \meta{exactness}
@@ -254,7 +178,7 @@ decimal points or exponents must be in decimal radix.
 \end{grammar}
 
 \begin{grammar}%
-\meta{suffix} \: \meta{empty} 
+\meta{suffix} \: \meta{empty}
    \> \| \meta{exponent marker} \meta{sign} \atleastone{\meta{digit $10$}}
 \meta{exponent marker} \: e \| E \| s \| S \| f \| F
    \> \| d \| D \| l \| L
@@ -273,82 +197,45 @@ decimal points or exponents must be in decimal radix.
 \meta{digit 16} \: \meta{hex digit}
 \end{grammar}
 
-\subsection{Line endings}
+\subsection{换行符}
 \label{lineendings}
 
-Line endings are significant in Scheme in single-line comments (see
-section~\ref{whitespaceandcomments}) and within string literals.  In
-Scheme source code, any of the line endings in \meta{line ending}
-marks the end of a line.  Moreover, the two-character line endings
-\meta{carriage return} \meta{linefeed} and \meta{carriage return}
-\meta{next line} each count as a single line ending.
+在Scheme单行注释（见\ref{whitespaceandcomments}小节）和字符串字面量中，换行符是重要的。在Scheme源代码中，在\meta{line ending}中的任意换行符都指示一个行的结束。此外，两字符的换行符\meta{carriage return} \meta{linefeed}和\meta{carriage return} \meta{next line}都仅表示一个单独的换行。
 
-In a string literal, a \hyper{line ending} not preceded by a {\cf\backwhack}
-stands for a linefeed character, which is the standard line-ending
-character of Scheme.
+在一个字符串字面量中，一个之前没有{\cf\backwhack}的\hyper{line ending}表示一个换行字符（linefeed character），这个字符是Scheme中的标准换行符。
 
-\subsection{Whitespace and comments}
+\subsection{空白和注释}
 \label{whitespaceandcomments}
 
-\defining{Whitespace} characters are spaces, linefeeds,
-carriage returns, character tabulations, form feeds, line tabulations,
-and any other character whose category is Zs, Zl, or Zp.
-Whitespace is used for improved readability and
-as necessary to separate lexemes from each other.  Whitespace may
-occur between any two lexemes,
-but not within a lexeme.  Whitespace may also occur inside a string,
-where it is significant.
+\defining{空白（Whitespace）}字符是空格，换行，回车，字符制表符，换页符，行制表符和其它种类是Zs，Zl或Zp的任意其它字符。空白字符用于提高可读性和必要地相互分隔词位。空白可以出现在两个词位中间，但不允许出现在一个词位的中间。空白字符也可以出现在一个字符串中，但此时空白是有意义的。
 
-The lexical syntax includes several comment forms. In all cases,
-comments are invisible to Scheme, except that they act as delimiters,
-so, for example, a comment cannot appear in the middle of an
-identifier or representation of a number object.
+词汇语法包括一些注释形式。在所有的情况下，注释对Scheme是不可见的，除非它们作为分隔符，所以，比如，一个注释不能出现在标识符或一个数字对象的表示的中间。
 
-A semicolon ({\tt;}) indicates the start of a line
-comment.\mainindex{comment}\mainschindex{;} The comment continues to
-the end of the line on which the semicolon appears.
+一个分号（{\tt;}）指示一个行注释的开始。\mainindex{comment，注释}\mainschindex{;}注释一直延续到分号出现的那一行的结尾。
 
-Another way to indicate a comment is to prefix a \hyper{datum}
-(cf.\ section~\ref{datumsyntax}) with {\tt \#;}\sharpindex{;}, possibly with
-\meta{interlexeme space} before the \hyper{datum}.  The comment consists of
-the comment prefix {\tt \#;} and the \hyper{datum} together.  This
-notation is useful for ``commenting out'' sections of code.
+另一个指示注释的方法是在\hyper{datum}（参见\ref{datumsyntax}节）前加一个前缀 {\tt \#;}，可选的在\hyper{datum}前加上\meta{interlexeme space}。注释包括注释前缀{\tt \#;}和\hyper{datum}。这个符号用作“注释掉”代码段。
 
-Block comments may be indicated with properly nested {\tt
-  \#|}\index{#"|@\texttt{\sharpsign\verticalbar}}\index{"|#@\texttt{\verticalbar\sharpsign}}
-and {\tt |\#} pairs.
+块注释可用正确嵌套的{\tt \#|}\index{#"|@\texttt{\sharpsign\verticalbar}}\index{"|#@\texttt{\verticalbar\sharpsign}}和{\tt |\#}指示。
 
 \begin{scheme}
 \#|
-   The FACT procedure computes the factorial
-   of a non-negative integer.
+   FACT过程计算一个非负数的阶乘。
 |\#
 (define fact
   (lambda (n)
-    ;; base case
+    ;; 基础条件（base case）
     (if (= n 0)
         \#;(= n 1)
-        1       ; identity of *
+        1       ; *的单位元（identity）
         (* n (fact (- n 1))))))%
 \end{scheme}
 
-The lexeme {\cf \sharpsign{}!r6rs}, which signifies that the program text
-that follows is written with the lexical and datum syntax described in this
-report, is also otherwise treated as a comment.
+词位{\cf \sharpsign{}!r6rs}，表示接下来的输入是用本报告中描述的词汇语法和数据语法写成的，另外，它也被当作注释对待。
 
-\subsection{Identifiers}
+\subsection{标识符（Identifiers）}
 \label{identifiersection}
 
-Most identifiers\mainindex{identifier} allowed by other programming
-languages are also acceptable to Scheme.  In general,
-a sequence of letters, digits, and ``extended alphabetic
-characters'' is
-an identifier when it begins with a character that cannot begin a
-representation of a number object.
-In addition, \ide{+}, \ide{-}, and \ide{...} are identifiers, as is
-a sequence of letters, digits, and extended alphabetic
-characters that begins with the two-character sequence \ide{->}.
-Here are some examples of identifiers:
+其他程序设计语言认可的大多数标识符（identifiers）\mainindex{标识符，identifier}也能被Scheme接受。通常，第一个字符不是任何数值的字母、数字和“扩展字符”序列就是一个标识符。此外，\ide{+}，\ide{-}和\ide{...}都是标识符，以两个字符序列\ide{->}开始的字母、数字和“扩展字符”序列也是。这里有一些标识符的例子：
 
 \begin{scheme}
 lambda         q                soup
@@ -357,42 +244,25 @@ list->vector   {+}                V17a
 the-word-recursion-has-many-meanings%
 \end{scheme}
 
-Extended alphabetic characters may be used within identifiers as if
-they were letters.  The following are extended alphabetic characters:
+扩展字符可以像字母那样用于标识符内。以下是扩展字符：
 
 \begin{scheme}
 !\ \$ \% \verb"&" * + - . / :\ < = > ? @ \verb"^" \verb"_" \verb"~" %
 \end{scheme}
 
-Moreover, all characters whose Unicode scalar values are greater than 127 and
-whose Unicode category is Lu, Ll, Lt, Lm, Lo, Mn, Mc, Me, Nd, Nl, No, Pd,
-Pc, Po, Sc, Sm, Sk, So, or Co can be used within identifiers.
-In addition, any character can be used within an identifier
-when specified via an \meta{inline hex escape}.  For example, the
-identifier \verb|H\x65;llo| is the same as the identifier
-\verb|Hello|, and the identifier \verb|\x3BB;| is the same as the
-identifier $\lambda$.
+此外，所有Unicode标量值大于127且类型属于Lu, Ll, Lt, Lm, Lo, Mn, Mc, Me, Nd, Nl, No, Pd, Pc, Po, Sc, Sm, Sk, So或Co的字符都可以被用在标识符中。当通过一个\meta{inline hex escape}表示的时候，任何字符都可以用在标识符中。比如，标识符\verb|H\x65;llo|和标识符\verb|Hello|是一样的，标识符\verb|\x3BB;|和标识符$\lambda$是一样的。
 
-Any identifier may be used as a variable\index{variable} or as a
-syntactic keyword\index{syntactic keyword} (see
-sections~\ref{variablesection} and~\ref{macrosection}) in a Scheme
-program.
-Any identifier may also be used as a syntactic datum, in which case it
-represents a \textit{symbol}\index{symbol} (see section~\ref{symbolsection}).
+在Scheme程序中，任意标识符可作为一个变量\index{variable，变量}或一个语法关键词（syntactic keyword）\index{syntactic keyword，语法关键词}（见\index{variable}和\ref{macrosection}节）。任何标识符也可以作为一个句法数据，在这种情况下，它表示一个\textit{符号（symbol）}\index{symbol，符号}（见\ref{symbolsection}小节）。
 
-\subsection{Booleans}
+\subsection{布尔（Booleans）}
 
-The standard boolean objects for true and false have external representations
-\schtrue{} and \schfalse.\sharpindex{t}\sharpindex{f}
+标准布尔对象真和假有外部表示\schtrue{}和\schfalse.\sharpindex{t}\sharpindex{f}
 
-\subsection{Characters}
+\subsection{字符（Characters）}
 
-Characters are represented using the notation
-\sharpsign\backwhack\hyper{character}\index{#\@\texttt{\sharpsign\backwhack}} or
-\sharpsign\backwhack\hyper{character name} or
-\sharpsign\backwhack{}x\meta{hex scalar value}.
+字符可以用符号\sharpsign\backwhack\hyper{character}\index{#\@\texttt{\sharpsign\backwhack}}或\sharpsign\backwhack\hyper{character name}或\linebreak{}\sharpsign\backwhack{}x\meta{hex scalar value}表示。
 
-For example:
+比如：
 
 \texonly
 \newcommand{\extab}{\>}
@@ -403,10 +273,10 @@ For example:
 \newcommand{\extab}{&}
 \begin{tabular}{ll}
 \endhtmlonly
-{\cf\#\backwhack{}a}          \extab \textrm{lower case letter a}\\
-{\cf\#\backwhack{}A}          \extab \textrm{upper case letter A}\\
-{\cf\#\backwhack{}(}          \extab \textrm{left parenthesis}\\
-{\cf\#\backwhack{}}           \extab \textrm{space character}\\
+{\cf\#\backwhack{}a}          \extab \textrm{小写字母a}\\
+{\cf\#\backwhack{}A}          \extab \textrm{大写字母A}\\
+{\cf\#\backwhack{}(}          \extab \textrm{左小括号}\\
+{\cf\#\backwhack{}}           \extab \textrm{空格}\\
 {\cf\#\backwhack{}nul}        \extab \textrm{U+0000}\\
 {\cf\#\backwhack{}alarm}      \extab \textrm{U+0007}\\
 {\cf\#\backwhack{}backspace}  \extab \textrm{U+0008}\\
@@ -418,7 +288,7 @@ For example:
 {\cf\#\backwhack{}return}     \extab \textrm{U+000D}\\
 {\cf\#\backwhack{}esc}        \extab \textrm{U+001B}\\
 {\cf\#\backwhack{}space}      \extab \textrm{U+0020}\\
- \extab preferred way to write a space\\
+ \extab 表示一个空格时优先使用这种方法\\
 {\cf\#\backwhack{}delete}     \extab \textrm{U+007F}\\[1ex]
 {\cf\#\backwhack{}xFF}        \extab \textrm{U+00FF}\\
 {\cf\#\backwhack{}x03BB}      \extab \textrm{U+03BB}\\
@@ -428,27 +298,27 @@ For example:
 {\cf\#\backwhack{}\(\lambda\)x}         \extab \exception{\&lexical}\\
 {\cf\#\backwhack{}alarmx}     \extab \exception{\&lexical}\\
 {\cf\#\backwhack{}alarm x}    \extab \textrm{U+0007}\\
- \extab followed by {\cf{}x}\\
+ \extab 跟着{\cf{}x}\\
 {\cf\#\backwhack{}Alarm}      \extab \exception{\&lexical}\\
 {\cf\#\backwhack{}alert}      \extab \exception{\&lexical}\\
 {\cf\#\backwhack{}xA}         \extab \textrm{U+000A}\\
 {\cf\#\backwhack{}xFF}        \extab \textrm{U+00FF}\\
 {\cf\#\backwhack{}xff}        \extab \textrm{U+00FF}\\
 {\cf\#\backwhack{}x ff}       \extab \textrm{U+0078}\\
- \extab followed by another datum, {\cf{}ff}\\
+ \extab 跟着另外一个数据，{\cf{}ff}\\
 {\cf\#\backwhack{}x(ff)}      \extab \textrm{U+0078}\\
- \extab followed by another datum,\\
- \extab a parenthesized {\cf{}ff}\\
+ \extab 跟着另外一个数据，\\
+ \extab 一个被括号括着的{\cf{}ff}\\
 {\cf\#\backwhack{}(x)}        \extab \exception{\&lexical}\\
 {\cf\#\backwhack{}(x}         \extab \exception{\&lexical}\\
 {\cf\#\backwhack{}((x)}       \extab \textrm{U+0028}\\
- \extab followed by another datum,\\
- \extab parenthesized {\cf{}x}\\
+ \extab 跟着另外一个数据,\\
+ \extab 在括号内的{\cf{}x}\\
 {\cf\#\backwhack{}x00110000}  \extab \exception{\&lexical}\\
- \extab out of range\\
+ \extab 超出范围\\
 {\cf\#\backwhack{}x000000001} \extab \textrm{U+0001}  \\
 {\cf\#\backwhack{}xD800}      \extab \exception{\&lexical}\\
- \extab in excluded range
+ \extab 在被排除的范围
 \htmlonly
 \end{tabular}
 \endhtmlonly
@@ -456,60 +326,37 @@ For example:
 \end{tabbing}
 \endtexonly
 
-(The notation \exception{\&lexical} means that the line in question is
-a lexical syntax violation.)
+（记号\exception{\&lexical}表示有问题的行违反了词汇语法。）
 
-Case is significant in \sharpsign\backwhack\hyper{character}, and in
-\sharpsign\backwhack{\rm$\langle$character name$\rangle$}, % \hyper doesn't allow a linebreak
-but not in {\cf\sharpsign\backwhack{}x}\meta{hex scalar value}.  
-A \meta{character} must be followed by a \meta{delimiter} or by the end of the input.
-This rule resolves various ambiguous cases involving named characters,
-requiring, for
-example, the sequence of characters ``{\tt\sharpsign\backwhack space}''
-to be interpreted as the space character rather than as
-the character ``{\tt\sharpsign\backwhack s}'' followed
-by the identifier ``{\tt pace}''.
+在\sharpsign\backwhack\hyper{character}和\sharpsign\backwhack\hyper{character name}中，大小写是敏感的，但在{\cf\sharpsign\backwhack{}x}\meta{hex scalar value}中\meta{hex scalar value}的大小写是不敏感的。（上句已根据勘误表进行修改。）一个\meta{character}必须跟着一个\meta{delimiter}或输入的结束。此规则解决了关于命名字符的各种歧义，比如，要求字符序列“{\tt\sharpsign\backwhack space}”被解释为一个空白字符而不是字符“{\tt\sharpsign\backwhack s}”和跟着的标识符“{\tt pace}”。
 
 \begin{note}
-  The {\cf\sharpsign\backwhack{}newline} notation is retained for
-  backward compatibility.  Its use is deprecated;
-  {\cf\sharpsign\backwhack{}linefeed} should be used instead.
+  由于反向兼容的原因我们保留符号{\cf\sharpsign\backwhack{}newline}。它已经过时了；应使用{\cf\sharpsign\backwhack{}linefeed}代替。
 \end{note}
 
-\subsection{Strings}
+\subsection{字符串（Strings）}
 
-\vest String are represented by sequences of characters enclosed within doublequotes
-({\cf "}).  Within a string literal, various escape
-sequences\mainindex{escape sequence} represent characters other than
-themselves.  Escape sequences always start with a backslash (\backwhack{}):
+\vest 字符串使用被双引号（{\cf "}）括起来的字符序列表示。在字符串字面量中，各种转义序列（escape sequences）\mainindex{escape sequence，转义序列}被用来表示字符，而不是字符自己。转义序列总是以一个反斜杠（\backwhack{}）开始：
 
 \begin{itemize}
-\item{\cf\backwhack{}a} : alarm, U+0007
-\item{\cf\backwhack{}b} : backspace, U+0008 
-\item{\cf\backwhack{}t} : character tabulation, U+0009 
-\item{\cf\backwhack{}n} : linefeed, U+000A 
-\item{\cf\backwhack{}v} : line tabulation, U+000B 
-\item{\cf\backwhack{}f} : formfeed, U+000C 
-\item{\cf\backwhack{}r} : return, U+000D 
-\item{\cf\backwhack{}}\verb|"| : doublequote, U+0022 
-\item{\cf\backwhack{}\backwhack{}} : backslash, U+005C 
-\item{\cf\backwhack{}}\hyper{intraline whitespace}\hyper{line ending}\\\hspace*{2em}\hyper{intraline whitespace} : nothing
-\item{\cf\backwhack{}x\meta{hex scalar value};} : specified character (note the
-  terminating semi-colon).
+\item{\cf\backwhack{}a} : 响铃（alarm）, U+0007
+\item{\cf\backwhack{}b} : 退格（backspace）, U+0008
+\item{\cf\backwhack{}t} : 制表（character tabulation）, U+0009
+\item{\cf\backwhack{}n} : 换行（linefeed）, U+000A
+\item{\cf\backwhack{}v} : 行制表（line tabulation）, U+000B
+\item{\cf\backwhack{}f} : 换页（formfeed）, U+000C
+\item{\cf\backwhack{}r} : 回车（return）, U+000D
+\item{\cf\backwhack{}}\verb|"| : 双引号（doublequote）, U+0022
+\item{\cf\backwhack{}\backwhack{}} : 反斜杠（backslash）, U+005C
+\item{\cf\backwhack{}}\hyper{intraline whitespace}\hyper{line ending}\\\hspace*{2em}\hyper{intraline whitespace} : 空
+\item{\cf\backwhack{}x\meta{hex scalar value};} : 指定字符（注意结尾的分号）。
 \end{itemize}
 
-These escape sequences are case-sensitive, except that the alphabetic
-digits of a \meta{hex scalar value} can be uppercase or lowercase.
+这些转义序列是大小写敏感的，除了\meta{hex scalar value}中的字母数字（alphabetic digits）可以是大写也可以是小写。
 
-Any other character in a string after a backslash is a syntax violation. Except
-for a line ending, any
-character outside of an escape sequence and not a doublequote stands
-for itself in the string literal. For example the single-character
-string literal {\tt "$\lambda$"} (doublequote, a lower case lambda, doublequote)
-represents the same string as {\tt "\backwhack{}x03bb;"}.
-A line ending that does not follow a backslash stands for a linefeed character.
+字符串中反斜杠后的任意其它字符都是违反语法的。除了行结尾外，任意在转义序列外且不是一个双引号的字符在字符串字面量中代表它自己。比如，但字符字符串字面量{\tt "$\lambda$"}（双引号，一个小写的lambda，双引号）和{\tt "\backwhack{}x03bb;"}表示一样的字符串。一个前面不是反斜杠的行结尾表示一个换行字符。
 
-Examples:
+例如：
 
 \texonly
 \begin{tabbing}
@@ -529,97 +376,44 @@ Examples:
 {\cf "\backwhack{}x00000041;"} \extab  {\cf "A"} ; \textrm{U+0041}\\
 {\cf "\backwhack{}x0010FFFF;"} \extab \textrm{U+10FFFF}\\
 {\cf "\backwhack{}x00110000;"} \extab  \exception{\&lexical}\\
- \extab out of range\\
+ \extab 超出范围\\
 {\cf "\backwhack{}x000000001;"} \extab \textrm{U+0001}\\
 {\cf "\backwhack{}xD800;"} \extab \exception{\&lexical}\\
- \extab in excluded range\\
+ \extab 在被排除的范围\\
 {\cf "A}\\
 {\cf bc"} \extab \textrm{U+0041, U+000A, U+0062, U+0063}\\
- \extab if no space occurs after the {\cf{}A}
+ \extab 如果{\cf{}A}后面没有空格
 \htmlonly
 \end{tabular}
 \endhtmlonly
 \texonly
 \end{tabbing}
 \endtexonly
-  
-\subsection{Numbers}
+
+\subsection{数字（Numbers）}
 \label{numbernotations}
 
-The syntax of external representations for number objects is described
-formally by the \meta{number} rule in the formal grammar.
-Case is not significant in external representations of number objects.
+数字对象外部表示的语法在形式语法的\meta{number}规则中被正式描述。在数字对象的外部表示中，大小写是不重要的。
 
-A representation of a number object may be written in binary, octal, decimal, or
-hexadecimal by the use of a radix prefix.  The radix prefixes are {\cf
-\#b}\sharpindex{b} (binary), {\cf \#o}\sharpindex{o} (octal), {\cf
-\#d}\sharpindex{d} (decimal), and {\cf \#x}\sharpindex{x} (hexadecimal).  With
-no radix prefix, a representation of a number object is assumed to be expressed in decimal.
+数字对象的表示可以通过特定的基数前缀被写作二进制，八进制，十进制和十六进制。基数前缀是{\cf \#b}\sharpindex{b}（二进制），{\cf \#o}\sharpindex{o}（八进制），{\cf \#d}\sharpindex{d}（十进制）和{\cf \#x}\sharpindex{x}（十六进制）。在没有基数前缀时，一个数字对象的表示被假设是十进制的。
 
-A representation of a number object may be specified to be either exact or
-inexact by a prefix.  The prefixes are {\cf \#e}\sharpindex{e}
-for exact, and {\cf \#i}\sharpindex{i} for inexact.  An exactness
-prefix may appear before or after any radix prefix that is used.  If
-the representation of a number object has no exactness prefix, the
-constant is
-inexact if it contains a decimal point, an
-exponent, or
-a nonempty mantissa width;
-otherwise it is exact.
+一个数字对象的表示可通过前缀被指定为精确的货非精确的。前缀{\cf \#e}\sharpindex{e}表示精确的，前缀{\cf \#i}\sharpindex{i}表示非精确的。如果使用基数前缀的话，精确性前缀可使用在其之前或之后。如果一个数字对象的表示没有精确性前缀，则在下列情况是非精确的，包含一个小数点，指数，或一个非空的尾数宽度（mantissa width），否则它是精确的。
 
-In systems with inexact number objects
-of varying precisions, it may be useful to specify
-the precision of a constant.  For this purpose, representations of
-number objects
-may be written with an exponent marker that indicates the
-desired precision of the inexact
-representation.  The letters {\cf s}, {\cf f},
-{\cf d}, and {\cf l} specify the use of \var{short}, \var{single},
-\var{double}, and \var{long} precision, respectively.  (When fewer
-than four internal
-inexact
-representations exist, the four size
-specifications are mapped onto those available.  For example, an
-implementation with two internal representations may map short and
-single together and long and double together.)  In addition, the
-exponent marker {\cf e} specifies the default precision for the
-implementation.  The default precision has at least as much precision
-as \var{double}, but
-implementations may wish to allow this default to be set by the user.
+在一个非精确数可以有不同精度的系统中，指定一个常数的精度可能是有用的。如果这样的话，数字对象的表示可以用一个指示非精确数预期精度的指数标记写成。字母{\cf s}, {\cf f}, {\cf d}和{\cf l}分别表示使用\var{short}，\var{single}，\var{double}和\var{long}精度。（当内部非精确表示少于四种时，这四个精度定义被映射到当前可用的定义。例如，只有两种内部表示的实现可以将short和single映射为一种精度，将long和double映射为一种）。另外，指数标记{\cf e}指明了Scheme实现的缺省精度。缺省精度应达到或超过\var{double}的精度，但Scheme实现也许会希望用户可设置此缺省精度。
 
 \begin{scheme}
-3.1415926535898F0 
-       {\rm{}Round to single, perhaps} 3.141593
+3.1415926535898F0
+       {\rm{}舍入到single, 大概是} 3.141593
 0.6L0
-       {\rm{}Extend to long, perhaps} .600000000000000%
+       {\rm{}扩展到long, 大概是} .600000000000000%
 \end{scheme}
 
-A representation of a number object with nonempty mantissa width,
-{\cf \var{x}|\var{p}}, represents the best binary
-floating-point approximation of \var{x} using a \var{p}-bit significand. 
-For example, {\cf 1.1|53} is a
-representation of the best approximation of 1.1 in IEEE double
-precision.
-If \var{x} is an external representation of an inexact real number object
-that contains no vertical bar, then its numerical value should be computed
-as though it had a mantissa width of 53 or more.
+一个有非空尾数宽度数字对象的表示，{\cf \var{x}|\var{p}}，代表有\var{p}位有效数字的\var{x}的最好的二进制浮点数近似。比如，{\cf 1.1|53}是使用IEEE double精度的1.1最好的近似的表示。如果\var{x}是一个不包含竖线的非精确实数对象的外部表示，那么它的数值应该被认为有53或更多的尾数宽度。
 
-Implementations that use binary floating-point representations
-of real number objects should represent {\cf \var{x}|\var{p}}
-using a \var{p}-bit significand if practical, or by a greater
-precision if a \var{p}-bit significand is not practical, or
-by the largest available precision if \var{p} or more bits
-of significand are not practical within the implementation.
+如果实际可行的话，实数对象使用二进制浮点表示的实现应该用\var{p}位精度表示{\cf \var{x}|\var{p}}，或者如果实际不行的话，应该使用大于\var{p}位精度的实现，或者如果以上两个都不行的话，应该使用实现中最大的精度。
 
 \begin{note}
-The precision of a significand should not be confused with the
-number of bits used to represent the significand.  In the IEEE
-floating-point standards, for example, the significand's most
-significant bit is implicit in single and double precision but
-is explicit in extended precision.  Whether that bit is implicit
-or explicit does not affect the mathematical precision.
-In implementations that use binary floating point, the default
-precision can be calculated by calling the following procedure:
+有效数字的精度不应该和用作表示有效数字的位的数量相混淆。在IEEE浮点标准中，比如，有效数字的最高有效位暗示在single和double精度之间但明确使用扩展精度。不管那一位是不是明确指定的都不影响数学精度。使用二进制浮点的实现，默认的精度可通过调用下面的过程计算：
 
 \begin{scheme}
 (define (precision)
@@ -627,55 +421,33 @@ precision can be calculated by calling the following procedure:
        (x 1.0 (/ x 2.0)))
     ((= 1.0 (+ 1.0 x)) n)))
 \end{scheme}
-\end{note}      
-
-\begin{note}
-When the underlying floating-point representation is IEEE double
-precision, the {\cf |\var{p}} suffix should not always be omitted:
-Denormalized floating-point numbers have diminished precision,
-and therefore their external representations should
-carry a {\cf |\var{p}} suffix with the actual width of the
-significand.
 \end{note}
 
-The literals {\cf +inf.0} and {\cf -inf.0} represent positive and
-negative infinity, respectively.  The {\cf +nan.0}
-literal represents the NaN that is the result of {\cf (/ 0.0 0.0)},
-and may represent other NaNs as well.
+\begin{note}
+当优先使用的浮点表示是IEEE double精度时，{\cf |\var{p}}后缀不应该总是被省略：非规范化浮点数在精度上有所松懈，所以它们的外部表示应该加上一个使用有效数字真实宽度的{\cf |\var{p}}后缀。
+\end{note}
 
-If \var{x} is an external representation of an inexact real number
-object and
-contains no vertical bar and no exponent marker
-other than {\cf e}, the inexact real number object it represents is a flonum
-(see library section~\extref{lib:flonumssection}{Flonums}).
-Some or all of the other external representations of
-inexact real number objects may also represent flonums, but that is not required by
-this report.
+字面量{\cf +inf.0}和{\cf -inf.0}分别表示正无穷大和负无穷大。字面量{\cf +nan.0}表示非数，它是{\cf (/ 0.0 0.0)}的结果，且同样也可以表示其它非数。字面量{\cf -nan.0}也表示一个非数。（上句根据勘误表添加。）
 
-\section{Datum syntax}
+如果\var{x}是一个非精确实数对象的外部表示且不包括竖线且不包括除了{\cf e}之外的指数标记，这个非精确实数对象表示一个浮点数（见库的第\extref{lib:flonumssection}{Flonums}小节）。其它非精确实数对象外部表示的一些或所有也可以表示浮点数，但这不是本报告要求的。
+
+\section{数据语法（Datum syntax）}
 \label{datumsyntaxsection}
 
-The datum syntax describes the syntax of
-syntactic data\mainindex{syntactic datum} in terms of a sequence of
-\meta{lexeme}s, as defined in the lexical syntax.
+数据语法按照词汇语法中定义的\meta{lexeme}的序列描述句法数据（syntactic data）\mainindex{syntactic datum，句法数据}的语法。
 
-Syntactic data include the lexeme data described in the
-previous section as well as the following constructs for forming
-compound data:
+句法数据包括本报告前面章节描述的语义数据以及以下用于组织复合数据的结构：
 %
 \begin{itemize}
-\item pairs and lists, enclosed by \verb|( )| or \verb|[ ]| (see
-  section~\ref{pairlistsyntax})
-\item vectors (see section~\ref{vectorsyntax})
-\item bytevectors (see section~\ref{bytevectorsyntax})
+\item 点对和表，被\verb|( )|或\verb|[ ]| （见\ref{pairlistsyntax}小节）括起来
+\item 向量（见\ref{vectorsyntax}小节）
+\item 字节向量（bytevectors）（见\ref{bytevectorsyntax}小节）
 \end{itemize}
 
-\subsection{Formal account}
+\subsection{形式解释（Formal account）}
 \label{datumsyntax}
 
-The following grammar describes the syntax of syntactic data in terms
-of various kinds of lexemes defined in the grammar in
-section~\ref{lexicalsyntaxsection}:
+下面的语法按照定义在\ref{lexicalsyntaxsection}节的语法的各种语义描述句法数据的语法：
 
 \begin{grammar}%
 \meta{datum} \: \meta{lexeme datum}
@@ -696,82 +468,52 @@ section~\ref{lexicalsyntaxsection}:
  \>\>\quad\quad {\rm integer in $\{0, \ldots, 255\}$}$\rangle$%
 \end{grammar}
 
-\subsection{Pairs and lists}
+\subsection{点对（Pairs）和表（lists）}
 \label{pairlistsyntax}
 
-List and pair data, representing pairs and lists of values
-(see section~\ref{listsection}) are represented using parentheses or brackets.
-Matching pairs of brackets that occur in the rules of \meta{list} are
-equivalent to matching pairs of parentheses.
+表示值对和值的列表（见\ref{listsection}节）的列表和点对数据使用小括号和中括号表示。规则\meta{list}中匹配的中括号对等价于匹配的小括号对。
 
-The most general notation for Scheme pairs as syntactic data is
-the ``dotted'' notation \hbox{\cf (\hyperi{datum} .\ \hyperii{datum})} where
-\hyperi{datum} is the representation of the value of the car field and
-\hyperii{datum} is the representation of the value of the
-cdr field.  For example {\cf (4 .\ 5)} is a pair whose car is 4 and whose
-cdr is 5.
+Scheme点对的句法数据最常用的符号是“点”符号\hbox{\cf (\hyperi{datum} .\ \hyperii{datum})}，其中\hyperi{datum}是car区域的值的表示，\hyperii{datum}是cdr区域的值的表示。比如{\cf (4 .\ 5)}是一个car是4，cdr是5的点对。
 
-A more streamlined notation can be used for lists: the elements of the
-list are simply enclosed in parentheses and separated by spaces.  The
-empty list\index{empty list} is represented by {\tt()} .  For example,
+表可以使用一个改进的记号：表中的元素被简单地括进小括号中并用空格分隔。空表（empty list）\index{empty list，空表}用 {\tt()}表示。比如：
 
 \begin{scheme}
 (a b c d e)%
 \end{scheme}
 
-and
+和
 
 \begin{scheme}
 (a . (b . (c . (d . (e . ())))))%
 \end{scheme}
 
-are equivalent notations for a list of symbols.
+作为符号的表是等价的表示。
 
-The general rule is that, if a dot is followed by an open parenthesis,
-the dot, open parenthesis, and matching closing parenthesis
-can be omitted in the external representation.
+一个通用的规则是，如果一个点跟着一个左小括号，则在外部表示中可以省略这个点，左小括号和对应的右小括号。
 
-The sequence of characters ``{\cf (4 .\ 5)}'' is the external representation of a
-pair, not an expression that evaluates to a pair.
-Similarly, the sequence of characters ``{\tt(+ 2 6)}'' is {\em not} an
-external representation of the integer 8, even though it {\em is} an
-expression (in the language of the \rsixlibrary{base} library)
-evaluating to the integer 8; rather, it is a
-syntactic datum representing a three-element list, the elements of which
-are the symbol {\tt +} and the integers 2 and 6.
+符号序列“{\cf (4 .\ 5)}”是一个点对的外部表示，而不是一个计算结果为点对的表达式。类似的，符号序列“{\tt(+ 2 6)}”{\em{}不}是整数8的外部表示，虽然它{\em{}是}一个计算结果是整数8的表达式（在\rsixlibrary{base}库的语言中）；当然，它是一个句法数据，这个句法数据表示一个三个元素的表，这个表的元素是符号{\tt +}，整数2和6。
 
-\subsection{Vectors}
+\subsection{向量（Vectors）}
 \label{vectorsyntax}
 
-Vector data, representing vectors of objects (see
-section~\ref{vectorsection}), are represented using the notation
-{\tt\#(\hyper{datum} \dotsfoo)}.  For example, a vector of length 3
-containing the number object for zero in element 0, the list {\cf(2 2 2 2)} in
-element 1, and the string {\cf "Anna"} in element 2 can be represented as
-follows:
+表示向量对象（见\ref{vectorsection}小节）的向量数据使用{\tt\#(\hyper{datum} \dotsfoo)}表示。比如：一个长度是3，且0号元素位置是数字对象零，1号元素位置是表{\cf (2 2 2 2)}，2号元素位置是字符串{\cf "Anna"}，的向量可以如下表示：
 
 \begin{scheme}
 \#(0 (2 2 2 2) "Anna")%
 \end{scheme}
 
-This is the external representation of a vector, not an
-expression that evaluates to a vector.
+这是一个向量的外部表示，而不是一个计算结果为向量的表达式。
 
-\subsection{Bytevectors}
+\subsection{字节向量（Bytevectors）}
 \label{bytevectorsyntax}
 
-Bytevector data, representing bytevectors (see
-library chapter~\extref{lib:bytevectorschapter}{Bytevectors}), are represented using the notation
-{\tt\#vu8(\hyper{u8} \dotsfoo)}, where the \hyper{u8}s represent the octets of
-the bytevector.  For example, a bytevector of length 3 containing the
-octets 2, 24, and 123 can be represented as follows:
+表示字节向量（见库的第\extref{lib:bytevectorschapter}{Bytevectors}章）的向量数据使用符号{\tt\#vu8(\hyper{u8} \dotsfoo)}表示，其中\hyper{u8}表示字节向量的八位字节（octets）。比如：一个长度是3且包含八位字节2，24和123的字节向量可以如下表示：
 
 \begin{scheme}
 \#vu8(2 24 123)%
 \end{scheme}
 
-This is the external representation of a bytevector, and also an
-expression that evaluates to a bytevector.
+这是一个字节向量的外部表示，也是一个计算结果为字节向量的表达式。
 
 \subsection{Abbreviations}\unsection
 \label{abbreviationsection}
@@ -787,26 +529,26 @@ expression that evaluates to a bytevector.
 \pproto{\#,@\hyper{datum}}{}
 }
 
-Each of these is an abbreviation:
+上面的每一个都是一个缩写：
 \\\quad\schindex{'}\singlequote\hyper{datum}
-for {\cf (quote \hyper{datum})},
+是{\cf (quote \hyper{datum})}的缩写，
 \\\quad\schindex{`}\backquote\hyper{datum}
-for {\cf (quasiquote \hyper{datum})},
+是{\cf (quasiquote \hyper{datum})}的缩写，
 \\\quad\schindex{,}{\cf,}\hyper{datum}
-for {\cf (unquote \hyper{datum})},
+是{\cf (unquote \hyper{datum})}的缩写，
 \\\quad\index{,@\texttt{,\atsign}}{\cf,}\atsign\hyper{datum}
-for {\cf (unquote-splicing \hyper{datum})},
+是{\cf (unquote-splicing \hyper{datum})}的缩写，
 \\\quad\sharpindex{'}{\cf\#'}\hyper{datum}
-for {\cf (syntax \hyper{datum})},
+是{\cf (syntax \hyper{datum})}的缩写，
 \\\quad\sharpindex{`}{\cf\#`}\hyper{datum}
-for {\cf (quasisyntax \hyper{datum})},
+是{\cf (quasisyntax \hyper{datum})}的缩写，
 \\\quad\sharpindex{,}{\cf\#,}\hyper{datum}
-for {\cf (unsyntax \hyper{datum})}, and
+是{\cf (unsyntax \hyper{datum})}的缩写，且
 \\\quad\index{#,@\texttt{\#,\atsign}}{\cf\#,@}\hyper{datum}
-for {\cf (unsyntax-splicing \hyper{datum})}.
+是{\cf (unsyntax-splicing \hyper{datum})}的缩写。
 \end{entry}
 
-%%% Local Variables: 
+%%% Local Variables:
 %%% mode: latex
 %%% TeX-master: "r6rs"
-%%% End: 
+%%% End:
