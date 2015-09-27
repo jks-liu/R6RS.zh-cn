@@ -1,274 +1,146 @@
 %\vfill\eject
-\chapter{Entry format}
+\chapter{条目格式（Entry format）}
 \label{entryformatchapter}
 
-The chapters that describe bindings in the base library and the standard
-libraries are organized
-into entries.  Each entry describes one language feature or a group of
-related features, where a feature is either a syntactic construct or a
-built-in procedure.  An entry begins with one or more header lines of the form
+描述基础库和标准库绑定的章节被用条目组织。每个条目描述一个语言特性或一组相关的特性，其中，一个特性是一个句法结构，或者是一个内置过程。一个条目以一个或多个标题行（header lines）开始，标题行有如下格式：
 
-\noindent\pproto{\var{template}}{\var{category}}\unpenalty
+\noindent\pproto{\var{模板（template）}}{\var{类别（category）}}\unpenalty
 
-The \var{category} defines the kind of binding described by the entry,
-typically either ``\exprtype'' or ``procedure''.
-An entry may specify various restrictions on subforms or arguments.
-For background on this, see section~\ref{argumentcheckingsection}.
+\var{类别}定义了条目描述的绑定的种类，其中类别通常要么是“语法”要么是“过程”。一个条目可以指定子形式或参数的各种限制。对于这些的背景知识，见\ref{argumentcheckingsection}小节。
 
-\section{Syntax entries}
+\section{语法（Syntax）条目}
 
-If \var{category} is ``\exprtype'', the entry describes a 
-special syntactic construct, and the template gives the syntax of the
-forms of the construct.  
-The template is written in a notation similar to a right-hand
-side of the BNF rules in chapter~\ref{readsyntaxchapter}, and describes
-the set of forms equivalent to the forms matching the
-template as syntactic data.  Some ``\exprtype'' entries carry a
-suffix ({\cf expand}), specifying that the syntactic keyword of the
-construct is exported with level
-$1$.  Otherwise, the syntactic keyword is exported with level $0$; see
-section~\ref{phasessection}.
+如果\var{类别}是“语法”，则这个条目描述一个特定的句法结构，且模板给了这个结构的形式的语法。模板使用类似于第\ref{readsyntaxchapter}章BNF规则右侧的符号，且描述了等价于匹配作为句法数据的模板的形式的形式的集合。一些“语法”条目带有一个后缀{\cf 扩展（expand）}，指明结构的句法关键词是以级别$0$（level $0$）被导出的。否则，句法关键词以级别$1$被导出；见\ref{phasessection}小节。
 
-Components of the form described by a template are designated
-by syntactic variables, which are written using angle brackets, for
-example, \hyper{expression}, \hyper{variable}.  Case is insignificant
-in syntactic variables.  Syntactic variables
-stand for other forms, or
-sequences of them.  A syntactic variable may refer to a non-terminal
-in the grammar for syntactic data (see section~\ref{datumsyntax}),
-in which case only forms matching
-that non-terminal are permissible in that position.
-For example, \hyper{identifier} stands for a form which must be an
-identifier.
-Also,
-\hyper{expression} stands for any form which is a
-syntactically valid expression.  Other non-terminals that are used in
-templates are defined as part of the specification.
+一个模板描述的形式的要素（component）被句法变量（syntactic variables）指定，这些句法变量使用尖括号书写，比如：\hyper{expression}, \hyper{variable}。句法变量中的大小写是无关紧要的。句法变量代表其它的形式或它们的序列。一个句法变量可以在语法中为句法数据（见\ref{datumsyntax}小节）引用一个非终结符，在这种情况下，只有匹配非终结符的形式才被允许在那个位置。比如，\hyper{identifier}代表一个必须是标识符的形式。同样，\hyper{expression}代表一个句法上是一个合法表达式的形式。其它用在模板中的非终结符被定义为本规范的一部分。
 
-The notation
+符号
 \begin{tabbing}
 \qquad \hyperi{thing} $\ldots$
 \end{tabbing}
-indicates zero or more occurrences of a \hyper{thing}, and
+代表零个或多个\hyper{thing}，且
 \begin{tabbing}
 \qquad \hyperi{thing} \hyperii{thing} $\ldots$
 \end{tabbing}
-indicates one or more occurrences of a \hyper{thing}.
+代表一个或多个\hyper{thing}.
 
-It is the programmer's responsibility to ensure that each component of
-a form has the shape specified by a template.  Descriptions of syntax
-may express other restrictions on the components of a form.
-Typically, such a restriction is formulated as a phrase of the form
-``\hyper{x} must be\mainindex{must be} a \ldots''.  Again, these
-specify the programmer's responsibility.  It is the implementation's
-responsibility to check that these restrictions are satisfied, as long
-as the macro transformers involved in expanding the form terminate.
-If the implementation detects that a component does not meet the
-restriction, an exception with condition type {\cf\&syntax} is raised.
+确保一个形式的每一个要素有模板指定的形状是程序员的责任。语法的描述可以表达一个形式的要素的其它限制。通常，这样的限制被格式化成如下形式的短语“\hyper{x}必须是（must be）\mainindex{must be，必须是}一个...”。再次强调，这些是程序员的责任。只要宏转换涉及扩展形式终结符，检查这些限制被满足就是实现的责任。如果实现检测到一个要素不满足限制，一个条件类型是{\cf\&syntax}的异常被抛出。
 
-\section{Procedure entries}
+\section{过程（Procedure）条目}
 
-If \var{category} is ``procedure'', then the entry describes a procedure, and
-the header line gives a template for a call to the procedure.  Parameter
-names in the template are \var{italicized}.  Thus the header line
+如果\var{类别}是“过程”，则条目描述一个过程，标题行给出一个过程调用的模板。模板中参数的名字是\var{斜体（italicized）}。因此，标题行
 
-\noindent\pproto{(vector-ref \var{vector} \var{k})}{procedure}\unpenalty
+\noindent\pproto{(vector-ref \var{vector} \var{k})}{过程}\unpenalty
 
-indicates that the built-in procedure {\tt vector-ref} takes
-two arguments, a vector \var{vector} and an exact non-negative integer
-object \var{k} (see below).  The header lines
+表示一个内建的过程{\tt vector-ref}接受两个参数，一个是向量\var{vector}，和一个精确的非负整数对象\var{k}（参见下面的内容）。标题行
 
 \noindent%
-\pproto{(make-vector \var{k})}{procedure}
-\pproto{(make-vector \var{k} \var{fill})}{procedure}\unpenalty
+\pproto{(make-vector \var{k})}{过程}
+\pproto{(make-vector \var{k} \var{fill})}{过程}\unpenalty
 
-indicate that the {\tt make-vector} procedure takes
-either one or two arguments.  The parameter names are
-case-insensitive: \var{Vector} is the same as \var{vector}.
+表示过程{\tt make-vector}可以接受一个或两个参数。参数名字的大小写是不敏感的：\var{Vector}和\var{vector}是一样的。
 
-As with syntax templates, an ellipsis \dotsfoo{} at the end of a header
-line, as in
+正如语法模板，标题行的结尾有一个省略号\dotsfoo{}，如下所示
 
-\noindent\pproto{(= \vari{z} \varii{z} \variii{z} \dotsfoo)}{procedure}\unpenalty
+\noindent\pproto{(= \vari{z} \varii{z} \variii{z} \dotsfoo)}{过程}\unpenalty
 
-indicates that the procedure takes arbitrarily many arguments of the
-same type as specified for the last parameter name.  In this case,
-{\cf =} accepts two or more arguments that must all be complex
-number objects.
+表示过程接受和最后一个参数名相同类型的任意多个参数。在上面那个例子中，{\cf =}接受两个或更多的复数对象参数。
 
 \label{typeconventions}
-A procedure that detects an argument that it is not specified to
-handle must raise an exception with condition type
-{\cf\&assertion}.  Also, the argument specifications are exhaustive: if the
-number of arguments provided in a procedure call does not match 
-any number of arguments accepted by the procedure, an exception with
-condition type {\cf\&assertion} must be raised.
+一个过程当检测到它没有指定的参数时必须抛出一个条件类型是{\cf\&assertion}的异常，并且，参数规格是详尽的：如果一个过程调用提供的参数数量不匹配过程接受参数的任何一个数量，一个条件类型是{\cf\&assertion}的异常必须被抛出。
 
-For succinctness, the report follows the convention
-that if a parameter name is also the name of a type, then the corresponding argument must be of the named type.
-For example, the header line for {\tt vector-ref} given above dictates that the
-first argument to {\tt vector-ref} must be a vector.  The following naming
-conventions imply type restrictions:
+简单地说，本报告遵循如下的惯例，如果一个参数的名字也是一个类型的名字，那么，对应的参数必须是这个类型。比如，上面的{\tt vector-ref}的标题行指明{\tt vector-ref}的第一个参数必须是一个向量。下面的命名惯例暗示类型的限制：
 
 \texonly\begin{center}\endtexonly
   \begin{tabular}{ll}
-    \var{obj}&any object\\
-    \var{z}&complex number object\\
-    \var{x}&real number object\\
-    \var{y}&real number object\\
-    \var{q}&rational number object\\
-    \var{n}&integer object\\
-    \var{k}&exact non-negative integer object\\
-    \var{bool}&boolean (\schfalse{} or \schtrue{})\\
-    \var{octet}&exact integer object in $\{0, \ldots, 255\}$\\
-    \var{byte}&exact integer object in $\{-128, \ldots, 127\}$\\
-    \var{char}&character (see section~\ref{charactersection})\\
-    \var{pair}&pair (see section~\ref{listsection})\\
-    \var{vector}&vector (see section~\ref{vectorsection})\\
-    \var{string}&string (see section~\ref{stringsection})\\
-    \var{condition}&condition (see library section~\extref{lib:conditionssection}{Conditions})\\
-    \var{bytevector}&bytevector (see library chapter~\extref{lib:bytevectorschapter}{Bytevectors})\\
-    \var{proc}&procedure (see section~\ref{proceduressection})
+    \var{obj}&任何对象\\
+    \var{z}&复数对象\\
+    \var{x}&实数对象\\
+    \var{y}&实数对象\\
+    \var{q}&有理数对象\\
+    \var{n}&整数对象\\
+    \var{k}&精确的非负整数对象\\
+    \var{bool}&布尔（\schfalse{}或\schtrue{}）\\
+    \var{octet}&范围在$\{0, \ldots, 255\}$的精确的整数对象\\
+    \var{byte}&范围在$\{-128, \ldots, 127\}$的精确的整数对象\\
+    \var{char}&字符（见\ref{charactersection}小节）\\
+    \var{pair}&点对（见\ref{listsection}小节）\\
+    \var{vector}&向量（见\ref{vectorsection}小节）\\
+    \var{string}&字符串（见\ref{stringsection}小节）\\
+    \var{condition}&条件（见库的第\extref{lib:conditionssection}{Conditions}小节）\\
+    \var{bytevector}&字节向量（见库的第\extref{lib:bytevectorschapter}{Bytevectors}章）\\
+    \var{proc}&过程（见\ref{proceduressection}小节）
   \end{tabular}
 \texonly\end{center}\endtexonly
 
-Other type restrictions are expressed through parameter-naming
-conventions that are described in specific chapters.  For example,
-library chapter~\extref{lib:numberchapter}{Arithmetic} uses a number of special
-parameter variables for the various subsets of the numbers.
+其它类型限制通过特定章节描述的变量名字惯例表达。比如，库的第\extref{lib:numberchapter}{Arithmetic}章为数字的各种子集使用了很多特别的参数变量。
 
-With the listed type restrictions, it is the programmer's responsibility to
-ensure that the corresponding argument is of the specified type.
-It is the implementation's responsibility to check for
-that type.
+当使用上面列出的限制的时候，确保对应的参数拥有指定的类型是程序员的责任。检查那些类型是实现的责任。
 
-A parameter called \var{list} means that it is the
-programmer's responsibility to pass an argument that is a list (see
-section~\ref{listsection}).  It is the implementation's responsibility
-to check that the argument is appropriately structured for the
-operation to perform its function, to the extent that this is possible
-and reasonable.  The implementation must at least check that the
-argument is either an empty list or a pair.
+一个叫做\var{表（list）}的参数意味着传递一个类型是表（见\ref{listsection}小节）的参数是程序员的责任。在某种程度上,将检查参数是为了操作执行它的功能适当组织的作为实现的责任是可能的也是合理的。实现必须至少检查参数或者是一个空表或者是一个点对。
 
-Descriptions of procedures may express other restrictions on the
-arguments of a procedure.  Typically, such a restriction is formulated
-as a phrase of the form ``\var{x} must be a \ldots'' (or otherwise
-using the word ``must'').
+过程的描述可以在过程的参数上表达其它的限制。代表性地，这样的限制被格式化成如下形式的短语“\var{x}必须是一个\ldots”（或者，否则使用词语“必须”）。
 
-\section{Implementation responsibilities}
+\section{实现责任}
 
-In addition to the restrictions implied by naming conventions, an
-entry may list additional explicit restrictions.
-These explicit restrictions usually describe both the
-programmer's responsibilities, who must ensure that the subforms of a
-form are appropriate, or that an appropriate
-argument is passed, and the implementation's responsibilities, which
-must check that subform adheres to the specified restrictions (if
-macro expansion terminates), or if the argument is appropriate.  A description
-may explicitly list the implementation's responsibilities for some
-arguments or subforms in a paragraph labeled ``\textit{Implementation
-  responsibilities}''.  In this case, the responsibilities specified
-for these subforms or arguments in the rest of the description are only for the
-programmer.  A paragraph describing implementation responsibility does not
-affect the implementation's responsibilities for checking subforms or arguments not
-mentioned in the paragraph.
+除了通过命名惯例进行隐含的限制，一个条目可以列出另外的显式的限制。这些显式的限制通常同时描述程序员的责任和实现的责任，程序员的责任意味着程序员必须确保一个形式的子形式是适当的，或一个适当的参数被传递，实现的责任意味着实现必须检查子形式符合规范的限制（如果宏扩展终结的话），或检查参数是不是适当的。通过为参数或子形式打上“\textit{实现责任}”的标签，一个描述可以显式地列出实现的责任。在这种情况下，在描述的其它部分为这些子形式或参数指定的责任就只是程序员的责任。一个描述实现责任的段落不影响那一段没有描述的实现检查子形式或参数的责任。
 
-\section{Other kinds of entries}
+\section{其它种类的条目}
 
-If \var{category} is something other than ``syntax'' and
-``procedure'', then the entry describes a non-procedural value, and
-the \var{category} describes the type of that value.  The header line
+如果\var{类别}既不是“语法”也不是“过程”，那么，那个条目描述一个非过程值，且\var{类别}描述了这个值的种类。标题行
 
-\noindent\rvproto{\&who}{condition type}\\
-indicates that {\cf\&who} is a condition type.  The header line
+\noindent\rvproto{\&who}{条件类型（condition type）}\\
+指示{\cf\&who}是一个条件类型。标题行
 
-\noindent\rvproto{unquote}{auxiliary syntax}\\
-indicates that {\cf unquote} is a syntax binding that may occur
-only as part of specific surrounding expressions.  Any use as an
-independent syntactic construct or identifier is a syntax violation.
-As with ``\exprtype'' entries, some ``auxiliary syntax'' entries  carry a
-suffix ({\cf expand}), specifying that the syntactic keyword of the
-construct is exported with level $1$.
+\noindent\rvproto{unquote}{辅助语法（auxiliary syntax）}\\
+指示{\cf unquote}是一个语法绑定，这个语法绑定只会作为特定周边表达式的部分出现。任何作为一个独立的句法结构或标识符的使用是一个语法错误。和“语法”条目一样，一些“辅助语法”条目带有一个语法后缀（{\cf 扩展}），指明结构的句法关键词以级别$1$导出。
 \section{Equivalent entries}
 
-The description of an entry occasionally states that it is \textit{the
-  same} as another entry.  This means that both entries are
-equivalent.  Specifically, it means that if both entries have the same
-name and are thus exported from different libraries, the entries from
-both libraries can be imported under the same name without conflict.
+一个条目的描述偶尔会说它和另外一个条目是\textit{一样}的。这意味着这两个条目是等价的。特别地，它意味着如果两个条目有一样的形式，且从不同的库导出，则两个库的条目可以使用同样的名字导入而没有冲突。
 
-\section{Evaluation examples}
+\section{求值（Evaluation）的例子}
 
-The symbol ``\evalsto'' used in program examples can be read
-``evaluates to''.  For example,
+用在程序例子中的符号“\evalsto”可以被读作“的值是（evaluates to）”。比如，
 
 \begin{scheme}
 (* 5 8)      \ev  40%
 \end{scheme}
 
-means that the expression {\tt(* 5 8)} evaluates to the object {\tt 40}.
-Or, more precisely:  the expression given by the sequence of characters
-``{\tt(* 5 8)}'' evaluates, in an environment that imports the relevant library, to an object
-that may be represented externally by the sequence of characters ``{\tt
-40}''.  See section~\ref{datumsyntaxsection} for a discussion of external
-representations of objects.
+意味着表达式{\tt(* 5 8)}的值是对象{\tt 40}。或者，更精确地说：符号序列“{\tt(* 5 8)}”给出的表达式求值，在导入了相应的库的环境中，得到一个对象，这个对象在外部使用符号的序列“{\tt 40}”表示。见\ref{datumsyntaxsection}小节对对象外部表示的讨论。
 
-The ``\evalsto'' symbol is also used when the evaluation of an
-expression causes a violation.  For example,
+“\evalsto”符号也在表达式的计算导致错误的时候使用。比如，
 
 \begin{scheme}
 (integer->char \sharpsign{}xD800) \xev \exception{\&assertion}%
 \end{scheme}
 %
-means that the evaluation of the expression {\cf (integer->char
-  \sharpsign{}xD800)} must raise an exception with condition type
-{\cf\&assertion}.
+意味着表达式{\cf (integer->char \sharpsign{}xD800)}的求值必须抛出一个条件类型是{\cf\&assertion}的异常。
 
-Moreover, the ``\evalsto'' symbol is also used to explicitly say that
-the value of an expression in unspecified.  For example:
+此外，“\evalsto”符号也被用作显式地说明一个表达式的值是未定义的（unspecified）。比如：
 %
 \begin{scheme}
 (eqv? "" "")             \ev  \unspecified%
 \end{scheme}
 
-Mostly, examples merely illustrate the behavior specified in the
-entry.  In some cases, however, they disambiguate otherwise ambiguous
-specifications and are thus normative.  Note that, in some cases,
-specifically in the case of inexact number objects, the return value is only
-specified conditionally or approximately.  For example:
+通常，例子仅仅阐述了条目中指定的行为。可是在有些时候，它们帮助规范中模糊不清的地方消歧义，所以此时它们是规范性的。注意，在有些情况下，特别是在非精确数字对象的情况下，返回值只会有条件地或近似的指明。比如
 %
 \begin{scheme}
-(atan -inf.0)                  \lev -1.5707963267948965 ; \textrm{approximately}%
+(atan -inf.0)                  \lev -1.5707963267948965 ; \textrm{近似地（approximately）}%
 \end{scheme}
 
-\section{Naming conventions}
+\section{命名惯例（conventions）}
 
-By convention, the names of procedures that store values into previously
-allocated locations (see section~\ref{storagemodel}) usually end in
-``\ide{!}''.
+依照惯例，将值存进上次分配的位置（见\ref{storagemodel}小节）的过程的名字通常使用“\ide{!}”。
 
-By convention, ``\ide{->}'' appears within the names of procedures that
-take an object of one type and return an analogous object of another type.
-For example, {\cf list->vector} takes a list and returns a vector whose
-elements are the same as those of the list.
+依照惯例，“\ide{->}”出现在以一个类型的对象作为参数，返回另一个类型的类似对象的过程名字中。比如，{\cf list->vector}接受一个表并返回一个元素和此表一样的向量。
 
-By convention, the names of predicates---procedures that always return
-a boolean value---end in ``\ide{?}'' when the name contains any
-letters; otherwise, the predicate's name does not end with a question
-mark.
+按照惯例，谓词（predicates）—总是返回一个布尔的过程—以“\ide{?}”结尾，只有当名字不包含任何字母的时候，谓词才不以问号结尾。
 
-By convention, the components of compound names are separated by ``\ide{-}''
-In particular, prefixes that are actual words or can be pronounced as
-though they were actual words are followed by a hyphen, except when
-the first character following the hyphen would be something other than
-a letter, in which case the hyphen is omitted.  Short,
-unpronounceable prefixes (``\ide{fx}'' and ``\ide{fl}'') are not
-followed by a hyphen.
+按照惯例，复合名字的要素使用“\ide{-}”进行分隔。尤其，是一个实际单词或可以像一个实际单词一样发音的单词的前缀会跟着一个连字符，除非跟在连字符后面的第一个字符不是一个字母，在这种情况下，连字符可以省略。简单地说，连字符不会跟在不可发音的前缀（“\ide{fx}”和“\ide{fl}”）后面。
 
-By convention, the names of condition types start with
-``{\cf\&}''\index{&@\texttt{\&}}.
+按照惯例，条件类型的名字以“{\cf\&}”\index{&@\texttt{\&}}开头。
 
-%%% Local Variables: 
+%%% Local Variables:
 %%% mode: latex
 %%% TeX-master: "r6rs"
-%%% End: 
+%%% End:
