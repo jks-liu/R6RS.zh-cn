@@ -1,17 +1,12 @@
-\chapter{Libraries}
+\chapter{库（Libraries）}
 \label{librarychapter}
-\mainindex{library}
-Libraries are parts of a program that can be distributed
-independently.
-The library system supports macro definitions within libraries,
-macro exports, and distinguishes the phases in which definitions
-and imports are needed.  This chapter defines the notation for
-libraries and a semantics for library expansion and execution.
+\mainindex{library，库}
+库是一个程序可以被独立发布的部分。库系统支持库内的宏定义，宏导出，且区别需要定义和导出的不同阶段。本章为库定义了符号，且为库的扩展（expansion ）和执行定义了语义。
 
-\section{Library form}
+\section{库形式}
 \label{librarysyntaxsection}
 
-A library definition must have the following form:\mainschindex{library}\mainschindex{import}\mainschindex{export}
+一个库定义必须有下面的形式：\mainschindex{library，库}\mainschindex{import}\mainschindex{export}
 
 \begin{scheme}
 (library \hyper{library~name}
@@ -20,103 +15,64 @@ A library definition must have the following form:\mainschindex{library}\mainsch
   \hyper{library~body})%
 \end{scheme}
 
-A library declaration contains the following elements:
+一个库的声明包含下面的要素：
 
 \begin{itemize}
-\item The \hyper{library~name} specifies the name of the library
-  (possibly with version).
-\item The {\cf export} subform specifies a list of exports, which name
-  a subset of the bindings defined within or imported into the
-  library.
-\item The {\cf import} subform specifies the imported bindings as a
-  list of import dependencies, where each dependency specifies:
+\item \hyper{library~name}指定了库的名字（可能还有版本）。
+\item {\cf export}子形式指定一个导出的列表，这个列表命名了定义在或导入到这个库的绑定的子集。
+\item {\cf import}子形式指定了作为一个导入依赖列表导入的绑定，其中每一个依赖指定：
 \begin{itemize}
-\item the imported library's name, and, optionally, constraints on its
-  version,
-\item the relevant levels, e.g., expand or run time (see
-  section~\ref{phasessection}, and
-\item the subset of the library's exports to make available within the
-      importing library, and the local names to use within the importing
-      library for each of the library's exports.
+\item 导入的库的名字，且可以可选地包含它的版本，
+\item 相应的级别，比如，扩展（expand）或运行时（run time）（见\ref{phasessection}小节）和
+\item 为了在导入库中可用的库导出的子集，和为在导入库中可用的为每一个库导出准备的名字。
 \end{itemize}
-\item The \hyper{library body} is the library body, consisting of a
-  sequence of definitions followed by a sequence of expressions.  The
-  definitions may be both for local (unexported) and exported
-  bindings, and the expressions are initialization expressions to be evaluated
-  for their effects.
+\item \hyper{library body}是库的内部，由一系列定义和紧随其后的表达式组成。标识符可以既是本地的（未导出的）也是导出绑定的，且表达式是为它们的效果求值的初始化表达式。
 \end{itemize}
 
-An identifier can be imported with the same local name from two or
-more libraries or for two levels from the same library only if the
-binding exported by each library is the same (i.e., the binding is
-defined in one library, and it arrives through the imports only by
-exporting and re-exporting).  Otherwise, no identifier can be imported
-multiple times, defined multiple times, or both defined and imported.
-No identifiers are visible within a library except for those
-explicitly imported into the library or defined within the library.
+一个标识符可以从两个或更多的库中使用相同的本地名字导入，或者使用两个不同的级别从相同的库中导入，只要每个库导出的绑定是一样的（也就是说，绑定在一个库中被定义，它只能通过导出和再导出经过导入）。否则，没有标识符可以被导入多次，被定义多次，或者同时被定义和导入。除了被显式地导入到库中或在库中定义的标识符，其它标识符在库中都是不可见的。
 
-A \hyper{library name} uniquely identifies a library within an
-implementation, and is globally visible in the {\cf import} clauses
-(see below) of all other libraries within an implementation.
-A \hyper{library name} has the following form:
+一个\hyper{library name}在一个实现中唯一地标识一个库，且在实现中的其它所有的库的{\cf import}子句（clauses）（见下面）中是全局可见的。一个\hyper{library name}有下面的形式：
 
 \begin{scheme}
 (\hyperi{identifier} \hyperii{identifier} \ldots \hyper{version})%
 \end{scheme}
 
-where \hyper{version} is empty or has the following form:
+其中\hyper{version}或者是空的，或者有以下的形式：
 %
 \begin{scheme}
 (\hyper{sub-version} \ldots)%
 \end{scheme}
 
-Each \hyper{sub-version} must represent an exact nonnegative integer object.
-An empty \hyper{version} is equivalent to {\cf ()}.
+每一个\hyper{sub-version}必须表示一个精确的非负整数对象。一个空的\hyper{version}等价于{\cf ()}。
 
-An \hyper{export~spec} names a set of imported and locally defined bindings to
-be exported, possibly with different
-external names.  An \hyper{export~spec} must have one of the
-following forms:
+一个\hyper{export~spec}命名一个集合，这个集合包含导入的和本地的定义，这个集合将被导出，可能还会使用不同的外部名字。一个\hyper{export~spec}必须是如下的形式当中的一个：
 
 \begin{scheme}
 \hyper{identifier}
 (rename (\hyperi{identifier} \hyperii{identifier}) \ldots)%
 \end{scheme}
 
-In an \hyper{export~spec}, an \hyper{identifier} names a single binding defined
-within or imported into the library, where the external name for the export is
-the same as the name of the binding within the library. 
-A {\cf rename} spec exports the binding named by 
-\hyperi{identifier} in each {\cf (\hyperi{identifier}
-  \hyperii{identifier})} pairing, using \hyperii{identifier} as the
-external name.
+在一个\hyper{export~spec}中，一个\hyper{identifier}命名一个被定义在或被导入到库中的单独的绑定，其中，这个导入的外部名字和库中绑定的名字是一样的。一个{\cf rename}指明在每一个{\cf (\hyperi{identifier} \hyperii{identifier})}这样的配对中，被命名为\hyperi{identifier}的绑定使用\hyperii{identifier}作为外部名字。
 
-Each \hyper{import~spec} specifies a set of bindings to be imported into
-the library, the levels at which they are to be available, and the local
-names by which they are to be known.  An \hyper{import spec} must
-be one of the following:
+每一个\hyper{import~spec}指定一个被导入到库中的绑定的集合，在这个集合中，级别是可见的，且通过它可以知道本地的名字。一个\hyper{import spec}必须是下面的一个：
 %
 \begin{scheme}
 \hyper{import set}
 (for \hyper{import~set} \hyper{import~level} \ldots)%
 \end{scheme}
 
-An \hyper{import level}  is one of the following:
+一个\hyper{import level}是下面中的一个：
 \begin{scheme}
 run
 expand
 (meta \hyper{level})%
 \end{scheme}
 
-where \hyper{level} represents an exact integer object.
+其中\hyper{level}表示一个精确的整数对象。
 
-As an \hyper{import level}, {\cf run} is an abbreviation for {\cf
-  (meta 0)}, and {\cf expand} is an abbreviation for {\cf (meta 1)}.
-Levels and phases are discussed in section~\ref{phasessection}.
+在一个\hyper{import level}中，{\cf run}是{\cf (meta 0)}的缩写，且{\cf expand}是{\cf (meta 1)}的缩写。级别和阶段（phases）在\ref{phasessection}小节讨论。
 
-An \hyper{import~set} names a set of bindings from another library and
-possibly specifies local names for the imported bindings.  It must be
-one of the following:
+一个\hyper{import~set}命名一个来自另一个库的绑定的集合，且可能为导入的绑定指定一个本地的名字。它必须是下面的一个：
 
 \begin{scheme}
 \hyper{library~reference}
@@ -127,29 +83,18 @@ one of the following:
 (rename \hyper{import~set} (\hyperi{identifier} \hyperii{identifier}) \ldots)%
 \end{scheme}
 
-A \hyper{library~reference} identifies a library by its 
-name and optionally by its version.  It has one of the following forms:
+一个\hyper{library~reference}通过它的名字和可选的版本标识一个库。它有下面形式中的一个：
 
 \begin{scheme}
 (\hyperi{identifier} \hyperii{identifier} \ldots)
 (\hyperi{identifier} \hyperii{identifier} \ldots \hyper{version~reference})%
 \end{scheme}
 
-A \hyper{library~reference} whose first \hyper{identifier} is
-{\cf for}, {\cf library}, {\cf only}, {\cf except}, {\cf prefix}, or {\cf rename} is
-permitted only within a {\cf library} \hyper{import~set}.
-The \hyper{import~set} {\cf (library \hyper{library~reference})} is
-otherwise equivalent to \hyper{library~reference}.
+一个第一个\hyper{identifier}是{\cf for}, {\cf library}, {\cf only}, {\cf except}, {\cf prefix}，或{\cf rename}的\hyper{library~reference}只允许出现在一个{\cf library \hyper{import~set}}中。否则{\cf <import set> (library <library reference>)}等价于\hyper{library~reference}。
 
-A \hyper{library~reference} with no \hyper{version~reference}
-(first form above) is equivalent to a \hyper{library~reference} with a
-\hyper{version~reference} of {\cf ()}.
+一个没有\hyper{version~reference}（上面的第一个形式）的\hyper{library~reference}等价于\hyper{version~reference}是{\cf ()}的\hyper{library~reference}。
 
-A \hyper{version~reference} specifies a set of \hyper{version}s that
-it matches.  The \hyper{library~reference} identifies all libraries of
-the same name and whose version is matched by the
-\hyper{version~reference}.  A \hyper{version~reference} has
-the following form:
+一个\hyper{version~reference}指定它匹配的\hyper{version}的一个子集。\hyper{library~reference}指定所有相同名字且版本匹配\hyper{version~reference}的库。一个\hyper{version~reference}有下面的形式：
 %
 \begin{scheme}
 (\hyperi{sub-version reference} \ldots \hypern{sub-version reference})
@@ -158,17 +103,9 @@ the following form:
 (not \hyper{version reference})%
 \end{scheme}
 %
-A \hyper{version reference} of the first form matches a \hyper{version}
-with at least $n$ elements, whose \hyper{sub-version reference}s match
-the corresponding \hyper{sub-version}s.  An {\cf and} \hyper{version
-  reference} matches a version if all \hyper{version references}
-following the {\cf and} match it.  Correspondingly, an {\cf
-  or} \hyper{version reference} matches a version if one of
-\hyper{version references} following the {\cf or} matches it,
-and a {\cf not} \hyper{version reference} matches a version if the
-\hyper{version reference} following it does not match it.
+第一个形式的一个\hyper{version reference}匹配\hyper{version}至少$n$个要素的，且\hyper{sub-version reference}匹配对应的\hyper{sub-version}。一个{\cf and} \hyper{version reference}匹配一个版本，如果所有的跟在{\cf and}后的\hyper{version references}都匹配的话。相应地，{\cf or} \hyper{version reference}匹配一个版本，如果跟在{\cf or}后的一个\hyper{version reference}匹配的话。一个{\cf not} \hyper{version reference}匹配一个版本，如果跟在其后的\hyper{version reference}都不匹配的话。
 
-A \hyper{sub-version reference} has one of the following forms:
+一个\hyper{sub-version reference}有下列形式之一：
 
 \begin{scheme}
 \hyper{sub-version}
@@ -179,302 +116,114 @@ A \hyper{sub-version reference} has one of the following forms:
 (not \hyper{sub-version~reference})%
 \end{scheme}
 
-A \hyper{sub-version reference} of the first form matches a
-\hyper{sub-version} if it is equal to it.  A {\cf >=}
-\hyper{sub-version reference} of the first form matches a sub-version
-if it is greater or equal to the \hyper{sub-version} following it;
-analogously for {\cf <=}.  An {\cf and} \hyper{sub-version reference}
-matches a sub-version if all of the subsequent \hyper{sub-version
-  reference}s match it.  Correspondingly, an {\cf or}
-\hyper{sub-version reference} matches a sub-version if one of the
-subsequent \hyper{sub-version reference}s matches it, and a {\cf not}
-\hyper{sub-version reference} matches a sub-version if the subsequent
-\hyper{sub-version reference} does not match it.
+第一个形式的一个\hyper{sub-version reference}匹配一个版本，如果二者相等。第一个形式的{\cf >=} \hyper{sub-version reference}匹配一个子版本如果它大于等于跟在它后面的\hyper{sub-version}；{\cf <=}与其类似。一个{\cf and} \hyper{sub-version reference}匹配一个子版本，如果所有随后的\hyper{sub-version reference}都匹配的话。相应地，一个{\cf or} \hyper{sub-version reference}匹配一个子版本，如果随后的\hyper{sub-version reference}中的一个匹配的话。一个{\cf not} \hyper{sub-version reference}匹配一个子版本，如果随后的\hyper{sub-version reference}都不匹配的话。
 
-Examples:
+例子：
 
 \texonly\begin{center}\endtexonly
   \begin{tabular}{lll}
-    version reference & version & match?
+    版本参考 & 版本 & 匹配？
     \\
-    {\cf ()} & {\cf (1)} & yes\\
-    {\cf (1)} & {\cf (1)} & yes\\
-    {\cf (1)} & {\cf (2)} & no\\
-    {\cf (2 3)} & {\cf (2)} & no\\
-    {\cf (2 3)} & {\cf (2 3)} & yes\\
-    {\cf (2 3)} & {\cf (2 3 5)} & yes\\
-    {\cf (or (1 (>= 1)) (2))} & {\cf (2)} & yes\\
-    {\cf (or (1 (>= 1)) (2))} & {\cf (1 1)} & yes\\
-    {\cf (or (1 (>= 1)) (2))} & {\cf (1 0)} & no\\
-    {\cf ((or 1 2 3))} & {\cf (1)} & yes\\
-    {\cf ((or 1 2 3))} & {\cf (2)} & yes\\
-    {\cf ((or 1 2 3))} & {\cf (3)} & yes\\
-    {\cf ((or 1 2 3))} & {\cf (4)} & no
+    {\cf ()} & {\cf (1)} & 是\\
+    {\cf (1)} & {\cf (1)} & 是\\
+    {\cf (1)} & {\cf (2)} & 否\\
+    {\cf (2 3)} & {\cf (2)} & 否\\
+    {\cf (2 3)} & {\cf (2 3)} & 是\\
+    {\cf (2 3)} & {\cf (2 3 5)} & 是\\
+    {\cf (or (1 (>= 1)) (2))} & {\cf (2)} & 是\\
+    {\cf (or (1 (>= 1)) (2))} & {\cf (1 1)} & 是\\
+    {\cf (or (1 (>= 1)) (2))} & {\cf (1 0)} & 否\\
+    {\cf ((or 1 2 3))} & {\cf (1)} & 是\\
+    {\cf ((or 1 2 3))} & {\cf (2)} & 是\\
+    {\cf ((or 1 2 3))} & {\cf (3)} & 是\\
+    {\cf ((or 1 2 3))} & {\cf (4)} & 否
   \end{tabular}
 \texonly\end{center}\endtexonly
 
-When more than one library is identified by a library reference, the
-choice of libraries is determined in some implementation-dependent manner.
+当多于一个库被库参考引用的时候，库的选择有实现定义的方法决定。
 
-To avoid problems such as incompatible types and replicated state,
-implementations should prohibit the two libraries whose library names
-consist of the same sequence of identifiers but whose versions do not
-match to co-exist in the same program.
+为了避免诸如不兼容的类型和重复的状态这些问题，实现必须禁止库名字由相同标识符序列组成但版本不匹配的两个库在同一个程序中共存。
 
-By default, all of an imported library's exported bindings are made
-visible within an importing library using the names given to the bindings
-by the imported library.
-The precise set of bindings to be imported and the names of those
-bindings can be adjusted with the {\cf only}, {\cf except},
-{\cf prefix}, and {\cf rename} forms as described below.
+默认情况下，一个被导入的库导出的所有的绑定在一个使用被导入的库给的绑定的名字的导入库中是可见的。被导入的绑定和那些绑定的名字的精确的集合可以通过下面描述的{\cf only}, {\cf except}, {\cf prefix}, 和{\cf rename}形式进行调整。
 
 \begin{itemize}
-\item An {\cf only} form produces a subset of the bindings from another
-\hyper{import~set}, including only the listed
-\hyper{identifier}s.
-The included \hyper{identifier}s must be in
-the original \hyper{import~set}.
-\item An {\cf except} form produces a subset of the bindings from another
-\hyper{import~set}, including all but the listed
-\hyper{identifier}s.
-All of the excluded \hyper{identifier}s must be in
-the original \hyper{import~set}.
-\item A {\cf prefix} form adds the \hyper{identifier} prefix to each
-name from another \hyper{import~set}.
-\item A {\cf rename} form, {\cf (rename (\hyperi{identifier} \hyperii{identifier}) \ldots)},
-removes the bindings for {\cf \hyperi{identifier} \ldots} to form an
-intermediate \hyper{import~set}, then adds the bindings back for the
-corresponding {\cf \hyperii{identifier} \ldots} to form the final
-\hyper{import~set}.
-Each \hyperi{identifier} must be in the original \hyper{import~set},
-each \hyperii{identifier} must not be in the intermediate \hyper{import~set},
-and the \hyperii{identifier}s must be distinct.
+\item 一个{\cf only}形式产生来自另一个\hyper{import~set}的绑定的一个子集，只包括被列出的\hyper{identifier}。被包含的\hyper{identifier}必须在原始的\hyper{import~set}中。
+\item 一个{\cf except}形式产生来自另一个\hyper{import~set}的绑定的一个子集，包括除了被列出的所有的\hyper{identifier}。所有被排除的\hyper{identifier}必须在原始的\hyper{import~set}中。
+\item 一个{\cf prefix}从另一个\hyper{import~set}中添加一个\hyper{identifier}前缀到每个名字中。
+\item 一个{\cf rename}形式，{\cf (rename (\hyperi{identifier} \hyperii{identifier}) \ldots)}，从一个中间的\hyper{import~set}删除{\cf \hyperi{identifier} \ldots}的绑定，然后将对应的{\cf \hyperii{identifier} \ldots}添加回到最终的\hyper{import~set}中。每一个\hyperi{identifier}必须在原始的\hyper{import~set}中，每一个\hyperii{identifier}必须不在中间的\hyper{import~set}中，且\hyperii{identifier}必须是不一样的。
 \end{itemize}
-It is a syntax violation if a constraint given above is not met.
+不符合上面的约束是一个语法错误。
 
 \label{librarybodysection}
-The \hyper{library~body} of a {\cf library} form consists of forms
-that are classified as 
-\textit{definitions}\mainindex{definition} or
-\textit{expressions}\mainindex{expression}.  Which forms belong to
-which class depends on the imported libraries and the result of
-expansion---see chapter~\ref{expansionchapter}.  Generally, forms that
-are not 
-definitions (see section~\ref{defines} for definitions available
-through the base library) are expressions.
+一个{\cf 库}形式的\hyper{library~body}由被分类为\textit{定义（definitions）}\mainindex{definition，定义}或\textit{表达式（expressions）}\mainindex{expression，表达式}的形式组成。哪些形式属于哪些类型是根据被导入的库和表达式的结果来决定的---见第\ref{expansionchapter}章。通常，不是定义（见\ref{defines}小节，有基本库可见的定义）的形式是表达式。
 
-A \hyper{library~body} is like a \hyper{body} (see section~\ref{bodiessection}) except that
-a \hyper{library~body}s need not include any expressions.  It must
-have the following form:
+一个\hyper{library~body}和\hyper{body}差不多（见\ref{bodiessection}小节），除了一个\hyper{library~body}不需要包括任何表达式。它必须有下面的形式：
 
 \begin{scheme}
 \hyper{definition} \ldots \hyper{expression} \ldots%
 \end{scheme}
 
-When {\cf begin}, {\cf let-syntax}, or {\cf letrec-syntax} forms
-occur in a top-level body prior to the first
-expression, they are spliced into the body; see section~\ref{begin}.
-Some or all of the body, including portions wrapped in {\cf begin},
-{\cf let-syntax}, or {\cf letrec-syntax}
-forms, may be specified by a syntactic abstraction
-(see section~\ref{macrosection}).
+当{\cf begin}, {\cf let-syntax}, 或{\cf letrec-syntax}形式先于第一个表达式出现在顶层内部的时候，它们被拼接成内部；见\ref{begin}小节。内部的一些或所以，包括在{\cf begin}, {\cf let-syntax}, 或{\cf letrec-syntax}形式里面的部分，可以通过一个句法抽象指定（见\ref{macrosection}小节）。
 
-The transformer expressions and bindings are evaluated and created
-from left to right, as described in chapter~\ref{expansionchapter}.
-The expressions of variable definitions are evaluated
-from left to right, as if in an implicit {\cf letrec*},
-and the body expressions are also evaluated from left to right
-after the expressions of the variable definitions.
-A fresh location is created for each exported variable and initialized
-to the value of its local counterpart.
-The effect of returning twice to the continuation of the last body
-expression is unspecified.
+转换表达式和绑定像第\ref{expansionchapter}章描述的，按从左向右的顺序被求值和被创建。变量的表达式按从左向右求值，就像在一个隐式的{\cf letrec*}中，且内部的表达式也在变量定义的表达式之后从左向右进行求值。每一个导出的变量和它本地副本值得初始化都会创建一个新的位置。两次返回给内部最后表达式的继续的行为是未定义的。
 
 \begin{note}
-The names {\cf library}, {\cf export}, {\cf import},
-{\cf for}, {\cf run}, {\cf expand}, {\cf meta},
-{\cf import}, {\cf export}, {\cf only}, {\cf except}, {\cf
-  prefix}, {\cf rename}, {\cf and}, {\cf or}, {\cf not}, {\cf >=}, and {\cf <=}
-appearing in the library syntax are part of the
-syntax and are not reserved, i.e., the same names can be used for other
-purposes within the library or even exported from or imported 
-into a library with different meanings, without affecting their
-use in the {\cf library} form.
+出现在库语法的名字{\cf library}，\allowbreak{}{\cf export}，\allowbreak{}{\cf import},
+{\cf for}，\allowbreak{}{\cf run}，\allowbreak{}{\cf expand}，\allowbreak{}{\cf meta},
+{\cf import}，\allowbreak{}{\cf export}，\allowbreak{}{\cf only}，\allowbreak{}{\cf except}，\allowbreak{}{\cf
+  prefix}，\allowbreak{}{\cf rename}，\allowbreak{}{\cf and}，\allowbreak{}{\cf or}，\allowbreak{}{\cf not}，\allowbreak{}{\cf >=}\allowbreak{}和\allowbreak{}{\cf <=}\allowbreak{}
+是语法的一部分，且不是被保留的，也就是说，相同的名字可以在库中用作其它的用途，甚至以不同的含义导出或导入到其它库中，这些都不会影响它们在{\cf 库}形式中的使用。
 \end{note}
 
-Bindings defined with a library are not visible in code
-outside of the library, unless the bindings are explicitly exported from the
-library. 
-An exported macro may, however, \emph{implicitly export} an otherwise
-unexported identifier defined within or imported into the library.
-That is, it may insert a reference to that identifier into the output code
-it produces.
+在一个库的里面定义的绑定在库外面的代码中是不可见的，除非绑定被显式地从这个库中导出。可是，一个导出的宏可能\emph{隐式地导出（implicitly export）}一个另外的标识符，其是在库中定义的或导入到库中的。也就是说，它可以插入标识符的一个引用到其产生的代码中。
 
-\label{importsareimmutablesection} 
-All explicitly exported variables are immutable in both the
-exporting and importing libraries. 
-It is thus a syntax violation if an
-explicitly exported variable appears on the left-hand side of a {\cf set!}
-expression, either in the exporting or importing libraries.
+\label{importsareimmutablesection}
+所有的显式地导出的变量在导出的和导入的的库中都是不可变的。因此，不管是在导入的还是导出的库中，一个显式地导出的变量出现在一个{\cf set!}表达式的左边是一个语法错误。
 
-All implicitly exported variables are also immutable in both the
-exporting and importing libraries.
-It is thus a syntax violation if a
-variable appears on the left-hand side of a {\cf set!}
-expression in any code produced by an exported macro outside of the
-library in which the variable is defined.
-It is also a syntax violation if a
-reference to an assigned variable appears in any code produced by
-an exported macro outside of the library in which the variable is defined,
-where an assigned variable is one that appears on the left-hand
-side of a {\cf set!} expression in the exporting library.
+所有的隐式地导出的变量在导出的和导入的的库中也都是不可变的。因此，在一个变量被定义的库的外面通过宏产生的代码中，如果这个变量出现在一个{\cf set!}表达式的左边，那么这是一个语法错误。如果一个被赋值的变量的引用出现在这个变量被定义的库的外面通过宏产生的代码中，那么这也是一个语法错误，其中，一个被赋值的变量指出现在导出库中一个{\cf set!}表达式左边的变量。
 
-All other variables defined within a library are mutable.
+所有其它的定义在一个库中的变量是可变的。
 
-\section{Import and export levels}
+\section{导入和导出级别（levels）}
 \label{phasessection}
 
-Expanding a library may require run-time information from another
-library.  For example, if a macro transformer calls a
-procedure from library $A$, then the library $A$ must be
-instantiated before expanding any use of the macro in library $B$.  Library $A$ may
-not be
-needed when library $B$ is eventually run as part of a program, or it
-may be needed for run time of library $B$, too.  The library
-mechanism distinguishes these times by phases, which are explained in
-this section.
+扩展一个库可能需要来自其它库的运行时信息。比如，如果一个宏转换调用一个来自库$A$的过程，那么在库$B$中扩展宏的任何使用之前，库$A$必须被实例化（instantiated）。当库$B$作为一个程序的部分被最终运行的时候，库$A$可能不被需要，或者，它可能也被库$B$的运行时需要。库机制使用阶段来区别这些时间，这会在本小节解释。
 
-Every library can be characterized by expand-time information (minimally,
-its imported libraries, a list of the exported keywords, a list of the
-exported variables, and code to evaluate the transformer expressions) and
-run-time information (minimally, code to evaluate the variable definition
-right-hand-side expressions, and code to evaluate the body expressions).
-The expand-time information must be available to expand references to
-any exported binding, and the run-time information must be available to
-evaluate references to any exported variable binding.
+每个库可用通过扩展时（expand-time）信息（最低限度地，它的导入的库，导出的关键词的一个列表，导出的变量的一个列表，计算转换表达式的代码）和运行时信息（最低限度地，计算变量定义的右边表达式的代码，计算内部表达式的代码）表现其特征。扩展时信息必须对任何导出绑定的扩展引用可见，且运行时信息必须对任何导出变量绑定的求值引用可见。
 
-\mainindex{phase}
+\mainindex{phase，阶段B}
 %
-A \emph{phase} is a time at which the expressions within a library are
-evaluated.
-Within a library body, top-level expressions and
-the right-hand sides of {\cf define} forms are evaluated at run time,
-i.e., phase $0$, and the right-hand
-sides of {\cf define-syntax} forms are evaluated at expand time, i.e.,
-phase $1$.
-When {\cf define-syntax},
-{\cf let-syntax}, or {\cf letrec-syntax}
-forms appear within code evaluated at phase $n$, the right-hand sides
-are evaluated at phase $n+1$.
+一个\emph{阶段（phase）}是一段时间，在这段时间里库中的表达式被求值。在一个库的内部，顶层表达式和{\cf define}形式的右边在运行时，也就是阶段$0$，被求值，且{\cf define-syntax}形式的右边在扩展时，也就是阶段$1$，被求值。当{\cf define-syntax}, {\cf let-syntax}, 或{\cf letrec-syntax}出现在在阶段*n*被求值的代码中时，它们的右边将在阶段$n+1$被求值。
 
-These phases are relative to the phase in which the library itself is
-used.
-An \defining{instance} of a library corresponds to an evaluation of its
-variable definitions and expressions in a particular phase relative to another
-library---a process called \defining{instantiation}.
-For example, if a top-level expression in a library $B$ refers to
-a variable export from another library $A$, then it refers to the export from an
-instance of $A$ at phase $0$ (relative to the phase of $B$).
-But if a phase $1$ expression within $B$ refers to the same binding from
-$A$, then it refers to the export from an instance of $A$ at phase $1$
-(relative to the phase of $B$).
+这些阶段和库它自己使用的阶段是相关的。库的一个\defining{实例（instance）}对应于一个与另一个库相关的特定阶段的它的变量定义和表达式的求值过程---一个叫做\defining{实例化（instantiation）}的过程。比如，如果库$B$中的一个顶层表达式引用库$A$中导出的一个变量，那么它在阶段$0$（相对于$B$的阶段）从$A$的一个实例中引用这个导出。但是，$B$中一个阶段$1$的表达式引用$A$中相同的绑定，那么，它在阶段$1$（相对于$B$的阶段）从$A$的一个实例中引用这个导出。
 
-A \defining{visit} of a library corresponds to the evaluation of its syntax
-definitions in a particular phase relative to another
-library---a process called \defining{visiting}. 
-For example, if a top-level expression in a library $B$ refers to
-a macro export from another library $A$, then it refers to the export from a
-visit of $A$ at phase $0$ (relative to the phase of $B$), which corresponds
-to the evaluation of the macro's transformer expression at phase $1$.
+一个库的\defining{访问（visit）}对应于在一个特定阶段与另一个库相关的语法定义的计算过程—一个叫做\defining{访问（visit）}的过程。比如，如果库$B$中的一个顶层表达式引用来库$A$导出的一个宏，那么，它在阶段$0$（相对应$B$的阶段）从$A$的访问中引用这个导出，其对应于在阶段$1$宏转换表达式的求职过程。
 
-
-\mainindex{level}\mainindex{import level} 
+\mainindex{level}\mainindex{import level}
 %
-A \emph{level} is a lexical property of an identifier that determines
-in which phases it can be referenced. The level for each identifier
-bound by a definition within a library is $0$; that is, the identifier
-can be referenced only at phase $0$ within the library.
-The level for each imported binding is determined by the enclosing {\cf
-  for} form of the {\cf import} in the importing library, in
-addition to the levels of the identifier in the exporting
-library. Import and export levels are combined by pairwise addition of
-all level combinations.  For example, references to an imported
-identifier exported for levels $p_a$ and $p_b$ and imported for levels
-$q_a$, $q_b$, and $q_c$ are valid at levels $p_a+q_a$, $p_a+q_b$,
-$p_a+q_c$, $p_b+q_a$, $p_b+q_b$, and $p_b+q_c$. An \hyper{import~set}
-without an enclosing {\cf for} is equivalent to {\cf (for
-  \hyper{import~set} run)}, which is the same as {\cf (for
-  \hyper{import~set} (meta 0))}.
+一个\emph{级别}是一个标识符的词法属性，其决定了它可以在哪个阶段被引用。在一个库中，每个用定义绑定的标识符的级别是$0$；也就是说，在库中只能在阶段$0$引用这个标识符。除了导出库中标识符的级别之外，每一个导入的绑定的级别由导入库中{\cf import}的封装的{\cf for}形式决定。导入和导出级别通过所有级别组合的成对相加的方式组合。比如，一个以$p_a$和$p_b$级别导出，以$q_a$，$q_b$和$q_c$级别导入的被导入的标识符的引用在以下级别是有效的：$p_a + q_a$, $p_a + q_b$, $p_a + q_c$, $p_b + q_a$, $p_b + q_b$, 和$p_b + q_c$。一个没有封装的{\cf for}的\hyper{import~set}等价于{\cf (for \hyper{import~set} run)}，它和{\cf (for \hyper{import~set} (meta 0))}是一样的。
 
-The export level of an exported binding is $0$ for all bindings
-that are defined within the exporting library. The export levels of a
-reexported binding, i.e., an export imported from another library, are the
-same as the effective import levels of that binding within the reexporting
-library.
+对于所有的定义在导出库中的绑定来说，一个被导出的的绑定的级别是$0$。一个重新导出的绑带，也就是一个从其它库导入的导出，的级别和重新导出库中的绑定的有效导入级别是一样的。
 
-For the libraries defined in the library report, the export level is
-$0$ for nearly all bindings. The exceptions are {\cf syntax-rules},
-{\cf identifier-syntax}, {\cf ...}, and {\cf \_} from the
-\rsixlibrary{base} library, which are exported with level $1$, {\cf
-  set!} from the \rsixlibrary{base} library, which is exported with
-levels $0$ and $1$, and all bindings from the composite
-\thersixlibrary{} library (see library
-chapter~\extref{lib:complibchapter}{Composite library}), which are
-exported with levels $0$ and $1$.
+对于定义在库报告中的库来说，几乎所有的绑定，导出级别是$0$。例外是来自\rsixlibrary{base}库的{\cf syntax-rules}，\allowbreak{}{\cf identifier-syntax}，\allowbreak{}{\cf ...}\allowbreak{}和\allowbreak{}{\cf \_}\allowbreak{}形式以级别$1$被导出，来自\rsixlibrary{base}库的{\cf set!}形式以级别$0$和$1$被导出，来自复合\thersixlibrary{}库（见库的第\extref{lib:complibchapter}{Composite library}章）的所有绑定以级别$0$和$1$被导出。
 
-Macro expansion within a library can introduce a reference to an
-identifier that is not explicitly imported into the library. In that
-case, the phase of the reference must match the identifier's level as
-shifted by the difference between the phase of the source library
-(i.e., the library that supplied the identifier's lexical context) and
-the library that encloses the reference. For example, suppose that
-expanding a library invokes a macro transformer, and the evaluation of
-the macro transformer refers to an identifier that is exported from
-another library (so the phase-$1$ instance of the library is used);
-suppose further that the value of the binding is a syntax object
-representing an identifier with only a level-$n$ binding; then, the
-identifier must be used only at phase $n+1$ in the
-library being expanded. This combination of levels and phases is why
-negative levels on identifiers can be useful, even though libraries
-exist only at non-negative phases.
+一个库中的宏扩展可以引出标识符的一个引用，其中这个标识符没有显式地导入到这个库中。在这种情况下，引用的阶段必须符合标识符的作为偏移的级别，这个偏移是源库（也就是提供标识符词法上下文的库）和封装引用的库的阶段的不同。比如，假设扩展一个库调用一个宏转换，且宏转换的求值引用一个标识符，这个标识符被从另一个库中被导出（所以，库的阶段$1$的实例被使用）；进一步假设绑定的值是一个表示一个指示级别$n$绑定的标识符的语法对象；那么，在库被扩展的时候，标识符必须只能在$n+1$阶段被使用。这个级别和阶段的组合就是为什么标识符负的级别是有用的，甚至，尽管库只存在非负的阶段。
 
-If any of a library's definitions are referenced at phase $0$ in the
-expanded form of a program, then an instance of the referenced library
-is created for phase $0$ before the program's definitions and
-expressions are evaluated. This rule applies transitively: if the
-expanded form of one library references at phase $0$ an identifier
-from another library, then before the referencing library is
-instantiated at phase $n$, the referenced library must be instantiated
-at phase $n$. When an identifier is referenced at any phase $n$
-greater than $0$, in contrast, then the defining library is
-instantiated at phase $n$ at some unspecified time before the
-reference is evaluated. Similarly, when a macro keyword is referenced at
-phase $n$ during the expansion of a library, then the
-defining library is visited at phase $n$ at some unspecified time
-before the reference is evaluated.
+如果在一个程序的扩展形式中，一个库的定义中的任何一个在阶段$0$被引用，那么被引用的库的一个作为阶段$0$实例会在程序的定义和表达式被求值之前被创建。这条规则的应用是透明的：如果一个库的扩展形式在阶段$0$从另一个库引用一个标识符，那么，在引用库在阶段$n$被实例化之前，被引用的库必须在阶段$n$被实例化。当一个标识符在任何大于$0$的阶段$n$被引用，那么于此相反，定义库会在阶段$n$被实例化，其在引用被求值之前的一些未定义的时间。同样地，在一个库的扩展期间，当一个宏关键词在阶段$n$被引用的时候，定义库在阶段$n$被访问，其是引用被计算之前的一定未定义的时间。
 
-An implementation may distinguish instances/visits of a library for
-different phases or to use an instance/visit at any phase as an instance/visit at
-any other phase. An implementation may further
-expand each {\cf library} form with distinct
-visits of libraries in any phase and/or instances of
-libraries in phases above $0$. An implementation may
-create instances/visits of more libraries at more phases than required to
-satisfy references. When an identifier appears as an expression in a
-phase that is inconsistent with the identifier's level, then an
-implementation may raise an exception either at expand time or run
-time, or it may allow the reference. Thus, a library whose meaning depends on whether the
-instances of a library are distinguished or shared across phases or
-{\cf library} expansions may be unportable.
+一个实现可以为不同的阶段区别实例/访问，或者在任何阶段使用一个实例/访问就像在任何其它阶段的一个实例/访问一样。更进一步，一个实现可以扩展每一个{\cf 库}形式以区别在任何阶段的库的访问和/或在大于$0$的阶段的库的实例。一个实现可以创建更多库的实例/访问在比要求的安全引用的更多的阶段。当一个标识符作为一个表达式出现在一个与标识符级别不一致的阶段时，那么一个实现可以抛出一个异常，异常的抛出可以在扩展时也可以在运行时，或者，它也可以允许这个引用。因此，一个库可能是不可移植的，当其含义依赖于一个库的实例在库的整个阶段或{\cf library}扩展时是有区别的还是共享的时候。
 
-\section{Examples}
+\section{例子}
 
-Examples for various \hyper{import~spec}s and \hyper{export~spec}s:
+各种\hyper{import~spec}和\hyper{export~spec}的例子：
+
+（注：下面的例子已根据勘误表更正。）
 
 \begin{scheme}
 (library (stack)
   (export make push! pop! empty!)
-  (import (rnrs))
+  (import (rnrs)
+          (rnrs mutable-pairs))
 
   (define (make) (list '()))
   (define (push! s v) (set-car! s (cons v (car s))))
@@ -490,12 +239,12 @@ Examples for various \hyper{import~spec}s and \hyper{export~spec}s:
   (define (make w h) (cons w h))
   (define (push b amt)
     (cons (- (car b) amt) (+ (cdr b) amt)))
-  (define (pop b) (display "Boom! ") 
-                  (display (* (car b) (cdr b))) 
+  (define (pop b) (display "Boom! ")
+                  (display (* (car b) (cdr b)))
                   (newline)))
 
 (library (party)
-  ;; Total exports:
+  ;; 所有的导出:
   ;; make, push, push!, make-party, pop!
   (export (rename (balloon:make make)
                   (balloon:push push))
@@ -503,11 +252,11 @@ Examples for various \hyper{import~spec}s and \hyper{export~spec}s:
           make-party
           (rename (party-pop! pop!)))
   (import (rnrs)
-          (only (stack) make push! pop!) ; not empty!
+          (only (stack) make push! pop!) ; 非空的！
           (prefix (balloons) balloon:))
 
-  ;; Creates a party as a stack of balloons,
-  ;; starting with two balloons
+  ;; 以气球的堆栈创建一个派对（party）,
+  ;; 从两个气球开始
   (define (make-party)
     (let ([s (make)]) ; from stack
       (push! s (balloon:make 10 10))
@@ -522,12 +271,12 @@ Examples for various \hyper{import~spec}s and \hyper{export~spec}s:
   (import (rnrs) (party))
 
   (define p (make-party))
-  (pop! p)        ; displays "Boom! 108"
+  (pop! p)        ; 显示"Boom! 108"
   (push! p (push (make 5 5) 1))
-  (pop! p))       ; displays "Boom! 24"%
+  (pop! p))       ; 显示"Boom! 24"%
 \end{scheme}
 
-Examples for macros and phases:
+宏和阶段的例子:
 
 \begin{schemenoindent}
 (library (my-helpers id-stuff)
@@ -539,7 +288,7 @@ Examples for macros and phases:
          (let loop ((rest (cdr l)))
            (cond
             [(null? rest) (find-dup (cdr l))]
-            [(bound-identifier=? (car l) (car rest)) 
+            [(bound-identifier=? (car l) (car rest))
              (car rest)]
             [else (loop (cdr rest))])))))
 
@@ -554,7 +303,7 @@ Examples for macros and phases:
          (not (find-dup (syntax (id ...))))
          (syntax
            (call-with-values
-               (lambda () expr) 
+               (lambda () expr)
              (lambda (id ...) body0 body ...)))]))))
 
 (library (let-div)
@@ -574,7 +323,7 @@ Examples for macros and phases:
 \end{schemenoindent}
 
 
-%%% Local Variables: 
+%%% Local Variables:
 %%% mode: latex
 %%% TeX-master: "r6rs"
-%%% End: 
+%%% End:
