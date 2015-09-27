@@ -1,80 +1,49 @@
-\chapter{Top-level programs}
+\chapter{顶层程序（Top-level programs）}
 \label{programchapter}
 
-A \defining{top-level program} specifies an entry point for defining and running
-a Scheme program.  A top-level program specifies a set of libraries to import and
-code to run.  Through the imported libraries, whether directly or through the
-transitive closure of importing, a top-level program defines a complete Scheme
-program.
 
-\section{Top-level program syntax}
+一个\defining{顶层程序}为定义和运行一个Scheme程序制定一个入口点。一个顶层程序指定导入库和准备运行的程序的一个集合。通过被导入的库，不管是直接地还是通过导入的传递闭包（transitive closure），一个顶层程序定义了一个完整的Scheme程序。
+
+\section{顶层程序语法}
 \label{programsyntaxsection}
 
-A top-level program is a delimited piece of text, typically a file, that 
-has the following form:
+顶层程序是带分隔符的文本片段，通常是一个文件，其有如下的形式：
 %
 \begin{scheme}
 \hyper{import form} \hyper{top-level body}%
 \end{scheme}
 %
-An \hyper{import form} has the following form:
+一个\hyper{import form}有如下的形式：
 %
 \begin{scheme}
 (import \hyper{import spec} \dotsfoo)%
 \end{scheme}
 %
-A \hyper{top-level body} has the following form:
+一个\hyper{top-level body}有如下的形式：
 \begin{scheme}
 \hyper{top-level body form} \dotsfoo%
 \end{scheme}
 %
-A \hyper{top-level body form} is either a \hyper{definition} or an
+一个\hyper{top-level body form}或者是一个\hyper{definition}或者是一个
 \hyper{expression}.
 
-The \hyper{import form} is identical to the import clause in
-libraries (see section~\ref{librarysyntaxsection}), 
-and specifies a set of libraries to import.  A \hyper{top-level 
- body} is like a \hyper{library body} (see
-section~\ref{librarybodysection}), except that 
-definitions and expressions may occur in any order.  Thus, the syntax
-specified by \hyper{top-level body form} refers to the result of macro
-expansion.
+\hyper{import form}和库中的导入子句是相同的（见\ref{librarysyntaxsection}小节），且指定要导入的库的一个集合。一个\hyper{top-level body}就像一个\hyper{library body}（见\ref{librarybodysection}小节）一样，除了定义和表达式可以以任何次序出现。因此，\hyper{top-level body form}指定的语法引用了宏扩展的结果。
 
-When uses of {\cf begin}, {\cf let-syntax}, or {\cf letrec-syntax}
-from the \rsixlibrary{base} library
-occur in a top-level body prior to the first
-expression, they are spliced into the body; see section~\ref{begin}.
-Some or all of the body, including portions wrapped in {\cf begin},
-{\cf let-syntax}, or {\cf letrec-syntax}
-forms, may be specified by a syntactic abstraction
-(see section~\ref{macrosection}).
+当使用来自\rsixlibrary{base}库的{\cf begin}, {\cf let-syntax}, 或{\cf letrec-syntax}的时候，如果其先于第一个表达式出现在顶层程序的内部时，那么它们被拼接到内部中；见\ref{begin}小节。内部的一些或所有，包括{\cf begin}, {\cf let-syntax}, 或{\cf letrec-syntax}里面的部分，可以通过一个句法抽象指定（见\ref{macrosection}小节）。
 
-\section{Top-level program semantics}
+\section{顶层程序语义（semantics）}
 
-A top-level program is executed by treating the program similarly to a library, and
-evaluating its definitions and expressions.
-The semantics of a top-level body may be roughly explained by
-a simple translation into a library body: 
-Each \hyper{expression} that appears before a
-definition in
-the top-level body is converted into a dummy definition 
+一个顶层程序被执行的时候，程序就像一个库一样被对待，执行其定义和表达式。一个顶层内部的语义可以通过一个简单的转换将其转换到库内部来解释：在顶层内部中每一个出现在定义前的\hyper{expression}被转换为一个哑（dummy）定义
 %
 \begin{scheme}
 (define \hyper{variable} (begin \hyper{expression} \hyper{unspecified}))%
 \end{scheme}
 %
-where \hyper{variable} is a fresh identifier and \hyper{unspecified}
-is a side-effect-free expression returning an unspecified value.
-(It is generally impossible to determine which forms are 
-definitions and expressions without concurrently expanding the body, so
-the actual translation is somewhat more complicated; see
-chapter~\ref{expansionchapter}.)
+其中，\hyper{variable}是一个新鲜的标识符，\hyper{unspecified}是一个返回未定义值得无副作用的表达式。（如果不同时对内部进行扩展，那么，判断哪个形式是定义，哪个形式是表达式通常是不可能的，因此，实际的转换多少会更加复杂；见第\ref{expansionchapter}章。）
 
-On platforms that support it, a top-level program may access its command line 
-by calling the {\cf command-line} procedure (see library 
-section~\extref{lib:command-line}{Command-line access and exit values}).
+在支持它的平台上，一个顶层程序可以通过调用{\cf command-line}过程（见库的第\extref{lib:command-line}{Command-line access and exit values}章访问它的命令行。
 
-%%% Local Variables: 
+%%% Local Variables:
 %%% mode: latex
 %%% TeX-master: "r6rs"
-%%% End: 
+%%% End:

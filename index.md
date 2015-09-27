@@ -1529,7 +1529,7 @@ expand
 
 ## 8.1. 顶层程序语法 <!-- Top-level program syntax -->
 
-一个顶层程序是一个带分隔符的文本片段，通常是一个文件，其有如下的形式：
+顶层程序是带分隔符的文本片段，通常是一个文件，其有如下的形式：
 
 `<import form> <top-level body>`
 
