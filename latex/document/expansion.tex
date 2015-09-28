@@ -1,69 +1,35 @@
-\chapter{Expansion process}
+\chapter{扩展过程（Expansion process）}
 \label{expansionchapter}
 
-Macro uses (see section~\ref{macrosection}) are expanded into \textit{core
-forms}\mainindex{core form} at the start of evaluation (before compilation or interpretation)
-by a syntax \emph{expander}.
-The set of core forms is implementation-dependent, as is the
-representation of these forms in the expander's output.
-If the expander encounters a syntactic abstraction, it invokes
-the associated transformer to expand the syntactic abstraction, then
-repeats the expansion process for the form returned by the transformer.
-If the expander encounters a core form, it recursively
-processes its subforms that are in expression or definition context,
-if any, and reconstructs the form from the
-expanded subforms.
-Information about identifier bindings is maintained during expansion
-to enforce lexical scoping for variables and keywords.
+% <!-- 将前面的transformer翻译成转换器 -->
+宏使用（见第\ref{macrosection}小节）在求值开始的时候（在编译或解释之前）通过语法\emph{扩展器（expander）}被扩展为\textit{core forms（核心形式）}\mainindex{core form，核心形式}。核心形式的集合石实现定义的，在扩展器输出中这些形式的表示也是。如果扩展器遇到一个句法抽象，那么他会调用相关的转换器去扩展句法抽象，然后对转换器（transformer）返回的形式重复扩展过程。如果扩展器遇到一个核心形式，它会递归地处理表达式或定义上下文中它的子形式，如果有的话，且从被扩展的子形式中重建形式。关于标识符绑定的信息在为变量和关键词实施词法作用域扩展的时候被维持。
 
-To handle definitions, the expander processes the initial
-forms in a \hyper{body} (see section~\ref{bodiessection}) or
-\hyper{library body} (see section~\ref{librarybodysection})
-from left to
-right.  How the expander processes each form encountered 
-depends upon the kind of form.
+为了处理定义，扩展器从左向右地处理\hyper{body}（见\ref{bodiessection}小节）或\hyper{library body}（见\ref{librarybodysection}小节）中的初始形式。扩展器怎样处理每个遇到的形式取决于形式的种类。
 
 \begin{description}
-\item[macro use]
-The expander invokes the associated transformer to transform the macro
-use, then recursively performs whichever of these actions are appropriate
-for the resulting form.
+\item[宏使用]
+扩展器调用相关的转换器来转换宏使用，然后对产生的形式递归地执行适当的操作。
 
-\item[{\cf define-syntax} form]
-The expander expands and evaluates the right-hand-side expression and binds the
-keyword to the resulting transformer.
+\item[{\cf define-syntax}形式]
+扩展器扩展和求值右边的表达式，且绑定关键词到最终的转换器。
 
-\item[{\cf define} form]
-The expander records the fact that the defined identifier is a variable but defers
-expansion of the right-hand-side expression until after all of the
-definitions have been processed.
+\item[{\cf define}形式]
+扩展器记录这样的事实直到所有的定义都被处理，被定义的标识符是一个变量，而不是右边表达式的推迟扩展。
 
-\item[{\cf begin} form]
-The expander splices the subforms into the list of body forms it is
-processing.  (See section~\ref{begin}.)
+\item[{\cf begin}形式]
+扩展器将子形式拼接到它正在处理的内部形式的表中。（见\ref{begin}小节）
 
-\item[{\cf let-syntax} or {\cf letrec-syntax} form]
-The expander splic\-es the inner body forms into the list of (outer) body forms it is
-processing, arranging for the keywords bound by the {\cf let-syntax}
-and {\cf letrec-syntax} to be visible only in the inner body forms.
+\item[{\cf let-syntax}或{\cf letrec-syntax}形式]
+扩展器将里面的内部形式拼接到它正在处理的（外面的）内部形式的表中，使得通过{\cf let-syntax}和{\cf letrec-syntax}绑定的关键词只在里面的内部形式可见。
 
-\item[expression, i.e., nondefinition]
-The expander completes the expansion of the deferred right-hand-side expressions
-and the current and remaining expressions in the body, and then
-creates the equivalent of a {\cf letrec*} form from the defined variables,
-expanded right-hand-side expressions, and expanded body expressions.
+\item[表达式，也就是，非定义（nondefinition）]
+扩展器完成推迟的右边表达式和内部当前的即遗留的表达式的扩展，且然后从被定义的变量，被扩展的右边的表达式，和被扩展的内部表达式创建等价于{\cf letrec*}的形式。
 \end{description}
 
-For the right-hand side of the definition of a variable, expansion is
-deferred until after all of the definitions have been seen.  Consequently,
-each keyword and variable reference within the right-hand side
-resolves to the local binding, if any.
+对于一个变量定义的右边，扩展被推迟到所以的定义可见之后。因此，如果可以的话，右边的每个关键词和变量引用都解析到本地绑定。
 
-A definition in the sequence of forms must not define any identifier whose
-binding is used to determine the meaning of the undeferred portions of the
-definition or any definition that precedes it in the sequence of forms.
-For example, the bodies of the following expressions violate this
-restriction.
+% <!-- TODO -->
+在形式序列中的一个定义必须不能定义任意下列的标识符，其绑定被用作判断定义或形式序列中任何在其之前的定义的含义。比如，下列表达式的内部违反了这个限制：
 
 \begin{scheme}
 (let ()
@@ -85,7 +51,7 @@ restriction.
   (foo))%
 \end{scheme}
 
-The following do not violate the restriction.
+下面的没有违反这个限制：
 
 \begin{scheme}
 (let ([x 5])
@@ -107,8 +73,7 @@ The following do not violate the restriction.
   (foo))                \ev  -1%
 \end{scheme}
 
-The implementation should treat a violation of the restriction as a
-syntax violation.
+实现应当将违反限制当作语法错误对待。
 
 % Andre's proposed implementation:
 % To detect this violation, the expander can record each
@@ -120,12 +85,9 @@ syntax violation.
 % to determine if its current denotation has already been used
 % during the expansion of the body.
 
-Note that this algorithm does not directly reprocess any form.
-It requires a single left-to-right pass over the definitions followed by a
-single pass (in any order) over the body expressions and deferred
-right-hand sides.
+注意这个算法不直接地再处理任何形式。它要求整个定义中一个单独的从左到右的途径，其后是表达式和推迟的右手边里的一个单独的途径（任何顺序）。
 
-Example:
+例如：
 
 \begin{scheme}
 (lambda (x)
@@ -138,24 +100,9 @@ Example:
   (odd? (if (odd? x) (* x x) x)))%
 \end{scheme}
 
-In the example, the definition of {\cf defun} is encountered first, and the keyword
-{\cf defun} is associated with the transformer resulting from
-the expansion and evaluation of the corresponding right-hand side.
-A use of {\cf defun} is encountered next and expands into a
-{\cf define} form.
-Expansion of the right-hand side of this define form is deferred.
-The definition of {\cf odd?} is next and results in the association
-of the keyword {\cf odd?} with the transformer resulting from
-expanding and evaluating the corresponding right-hand side.
-A use of {\cf odd?} appears next and is expanded; the resulting
-call to {\cf not} is recognized as an expression
-because {\cf not} is bound as a variable.
-At this point, the expander completes the expansion of the current
-expression (the call to {\cf not}) and the deferred right-hand side of the
-{\cf even?} definition;
-the uses of {\cf odd?} appearing in these expressions are expanded
-using the transformer associated with the keyword {\cf odd?}.
-The final output is the equivalent of
+% <!-- TODO -->
+在这个例子中，第一次遇到{\cf defun}的定义，且关键词{\cf defun}与转换器相关，转换器从扩展和对应的右手边的求值得来。{\cf defun}的一个使用在接下来被遇到，且扩展到一个{\cf define}形式中。这个定义形式右手边的扩展是推迟的。{\cf odd?}的定义是下一个且是与其相关的关键词{\cf odd?}的结果，其转换器从对应的右手边的扩展和求值得来。% <!-- TODO -->
+{\cf odd?}的一个使用出现在旁边，且被扩展；作为结果的对{\cf not}的调用被认为是一个表达式，这是因为{\cf not}作为一个变量被绑定。此时，扩展器完成当前表达式（{\cf not}的调用）和被推迟的{\cf even?}定义右侧的扩展；出现在这些表达式中的{\cf odd?}的使用通过使用与{\cf odd?}关联的转换器扩展。最终的输出等价于：
 
 \begin{scheme}
 (lambda (x)
@@ -166,33 +113,11 @@ The final output is the equivalent of
     (not (even? (if (not (even? x)) (* x x) x)))))%
 \end{scheme}
 
-although the structure of the output is implementation-dependent.
+尽管输出的结构是实现定义的。
 
-Because definitions and expressions can be interleaved in a
-\hyper{top-level body} (see chapter~\ref{programchapter}),
-the expander's processing of a \hyper{top-level body} is somewhat
-more complicated.
-It behaves as described above for a \hyper{body} or
-\hyper{library body} with the following exceptions:
-When the expander finds a nondefinition,
-it defers its expansion and continues scanning for definitions.
-Once it reaches the end of the set of forms, it processes the
-deferred right-hand-side and body expressions, then
-generates the equivalent of a {\cf letrec*} form from the defined variables,
-expanded right-hand-side expressions, and expanded body expressions.
-For each body expression \hyper{expression} that appears before a variable definition
-in the body, a dummy binding is created at the corresponding place within
-the set of {\cf letrec*} bindings, with a fresh temporary variable on the
-left-hand side and the equivalent of {\cf (begin \hyper{expression}
-  \hyper{unspecified})},
-where \hyper{unspecified} is a side-effect-free expression returning
-an unspecified value,
-on the right-hand side, so that
-left-to-right evaluation order is preserved.
-The {\cf begin} wrapper allows \hyper{expression} to evaluate to an
-arbitrary number of values.
+因为定义被表达式在一个\hyper{top-level body}中可以交错地出现（见第\ref{programchapter}章），所以\hyper{top-level body}扩展器的处理有时更加复杂。它的行为想上面描述的\hyper{body}或\hyper{library body}以及以下例外：当扩展器发现一个非定义，它推迟其扩展并继续扫描定义。一旦它到达形式集合 的结尾，那么它处理推迟的右手边和内部表达式，然后从被定义的变量中生成等价于{\cf letrec*}的形式，扩展右手边表达式，且扩展内部表达式。对于每一个出现在内部变量定义之前的内部表达式\hyper{expression}，在对应的地方一个哑绑定被创建以{\cf letrec*}绑定的集合的形式，其左边是一个新鲜的临时变量，右边等价于{\cf (begin \hyper{expression} \hyper{unspecified})}，其中\hyper{unspecified}是没有副作用的，所以从左到右的求值顺序被保留。{\cf begin}的包装使得\hyper{expression}可以求值得到任意数量的值。
 
-%%% Local Variables: 
+%%% Local Variables:
 %%% mode: latex
 %%% TeX-master: "r6rs"
-%%% End: 
+%%% End:
