@@ -1,24 +1,13 @@
-\chapter{Primitive syntax}
+\chapter{基本语法（Primitive syntax）}
 
-After the {\cf import} form within a {\cf library} form or a top-level
-program, the forms
-that constitute the body of the library or the top-level program
-depend on the libraries that are
-imported. In particular, imported syntactic keywords determine 
-the available syntactic abstractions and whether each form is a 
-definition or expression. A few form types are
-always available independent of imported libraries, however,
-including constant literals, variable references, procedure calls,
- and macro uses.
+在一个{\cf library}形式或顶层程序的{\cf import}形式的后面，构成库或顶层程序内部的形式依赖于被导入的库。尤其，被导入的句法关键词决定可用的句法抽象以及每个形式是一个定义还是一个表达式。可是，一些形式总是可用的，它们独立于被导入的库，包括常量字面量，变量引用，过程调用，和宏的使用。
 
-\section{Primitive expression types}
+\section{基本表达式类型}
 \label{primitiveexpressionsection}
 
-The entries in this section all describe expressions, which may occur
-in the place of \hyper{expression} syntactic variables.  See
-also section~\ref{expressionsection}.
+本节的条目都是都是描述表达式，其可以出现在\hyper{expression}句法变量的地方。也可以参见第\ref{expressionsection}小节。
 
-\subsection*{Constant literals}\unsection
+\subsection*{常量字面量（Constant literals）}\unsection
 
 \begin{entry}{%
 \pproto{\hyper{number}}{\exprtype}
@@ -27,9 +16,7 @@ also section~\ref{expressionsection}.
 \pproto{\hyper{string}}{\exprtype}
 \pproto{\hyper{bytevector}}{\exprtype}}\mainindex{literal}
 
-An expression consisting of a representation of a number object, a
-boolean, a character, a string, or a bytevector, evaluates ``to
-itself''.
+一个由一个数字对象，或一个布尔，或一个字符，或一个字符串，或一个字节向量组成的表达式求值“等于它自己（to itself）”。
 
 \begin{scheme}
 145932     \ev  145932
@@ -38,23 +25,16 @@ itself''.
 \#vu8(2 24 123) \ev \#vu8(2 24 123)%
 \end{scheme}
 
-As noted in section~\ref{storagemodel}, the value of a literal
-expression is immutable.
+就像\ref{storagemodel}小节描述的那样，一个字面量表达式的值是不可改变的。
 \end{entry}
 
-\subsection*{Variable references}\unsection
+\subsection*{变量引用（Variable references）}\unsection
 \begin{entry}{%
 \pproto{\hyper{variable}}{\exprtype}}
 
-An expression consisting of a variable\index{variable}
-(section~\ref{variablesection}) is a variable reference if it is not a
-macro use (see below).  The value of
-the variable reference is the value stored in the location to which the
-variable is bound.  It is a syntax violation to reference
-an unbound\index{unbound} variable.
+由一个变量\index{variable，变量}组成的表达式（\ref{variablesection}小节）是一个变量引用，如果它不是一个宏使用（见下面）的话。这个变量引用的值是被存储在这个变量绑定的位置的值。引用一个未绑定的（unbound）\index{unbound，未绑定的}变量是一个语法错误。
 
-The following example examples assumes the base library
-has been imported:
+下面的例子假设基本库已经被导入：
 %
 \begin{scheme}
 (define x 28)
@@ -62,127 +42,69 @@ x   \ev  28%
 \end{scheme}
 \end{entry}
 
-\subsection*{Procedure calls}\unsection
+\subsection*{过程调用（Procedure calls）}\unsection
 
 \begin{entry}{%
 \pproto{(\hyper{operator} \hyperi{operand} \dotsfoo)}{\exprtype}}
 
-A procedure call consists of expressions for the procedure to be
-called and the arguments to be passed to it, with enclosing
-parentheses.  A form in an expression context is a procedure call if
-\hyper{operator} is not an identifier bound as a syntactic keyword
-(see section~\ref{macrosection} below).
+一个过程调用由被调用的过程表达式，传递给这个过程的参数以及两边的下括号组成。在一个表达式上下文中，如果\hyper{operator}不是一个作为句法关键字绑定的标识符（见下面的\ref{macrosection}小节），那么这个形式是一个过程调用。
 
-When a procedure call is evaluated, the operator and operand
-expressions are evaluated (in an unspecified order) and the resulting
-procedure is passed the resulting
-arguments.\mainindex{call}\mainindex{procedure call}
+当一个过程调用被求值的时候，操作和操作数被（以一个未定义的顺序）求值，且最终产生的过程接受最终产生的参数。\mainindex{call，调用}\mainindex{procedure call，过程调用}
 
-The following examples assume the \rsixlibrary{base} library
-has been imported:
+下面的例子假设\rsixlibrary{base}库已被导入：
 %
 \begin{scheme}%
 (+ 3 4)                          \ev  7
 ((if \schfalse + *) 3 4)         \ev  12%
 \end{scheme}
 %
-If the value of \hyper{operator} is not a procedure, an exception with
-condition type {\cf\&assertion} is raised.  Also, if \hyper{operator}
-does not accept as many arguments as there are \hyper{operand}s, an
-exception with condition type {\cf\&assertion} is raised.
+如果\hyper{operator}的值不是一个过程，那么一个条件类型是{\cf\&assertion}的异常被抛出。并且，如果一个\hyper{operator}接受的参数的数量不是\hyper{operand}的数量，那么一个条件类型是{\cf\&assertion}的异常被抛出。
 
-\begin{note} In contrast to other dialects of Lisp, the order of
-evaluation is unspecified, and the operator expression and the operand
-expressions are always evaluated with the same evaluation rules.
+\begin{note} 相比于其它的Lisp方言，求值的顺序是未定义的，且操作表达式和操作数表达式总是以相同的求值规则被求值。
 
-Although the order of evaluation is otherwise unspecified, the effect of
-any concurrent evaluation of the operator and operand expressions is
-constrained to be consistent with some sequential order of evaluation.
-The order of evaluation may be chosen differently for each procedure call.
+此外，尽管求值的顺序是未定义，但是对操作和操作数表达式进行的任何并发求值的结果必须与按某种顺序求值的结果一致。对每个过程调用的求值顺序可以有不同的选择。
 \end{note}
 
-\begin{note} In many dialects of Lisp, the form {\tt
-()} is a legitimate expression.  In Scheme, expressions written as
-list/pair forms must have at
-least one subexpression, so {\tt ()} is not a syntactically valid
-expression.
+\begin{note}在许多Lisp方言中，空组合式{\tt ()}是合法的表达式。在Scheme中，写成表/点对形式的表达式至少要包含一个子表达式，因此{\tt ()}不是一个语法上有效的表达式。
 \end{note}
 
 \end{entry}
 
-\section{Macros}
+\section{宏（Macros）}
 \label{macrosection}
 
-Libraries and top-level programs can define and use new kinds of derived expressions and
-definitions called {\em syntactic abstractions} or
-{\em macros}.\mainindex{syntactic abstraction}\mainindex{macro}
-A syntactic abstraction is created by binding a keyword to a
-{\em macro transformer} or, simply, {\em transformer}.
-\index{macro transformer}\index{transformer}
-The transformer determines
-how a use of the macro (called a \defining{macro use})
-is transcribed into a more primitive form.
+库的顶层程序可以定义和使用新的叫做{\em 句法抽象（syntactic abstraction）}或{\em 宏（macro）}\mainindex{syntactic abstraction，句法抽象}\mainindex{macro，宏}派生表达式和定义。一个句法抽象通过绑定一个关键词到一个{\em 宏转换（macro transformer）}，或简称为{\em 转换（transformer）}\index{macro transformer，宏转换}\index{transformer，转换}，来创建。转换决定一个宏的使用（被称为\defining{宏使用（macro use）}）怎样被转录我一个更加基本的形式。
 
-Most macro uses have the form:
+大部分宏有形式：
 \begin{scheme}
 (\hyper{keyword} \hyper{datum} \dotsfoo)%
 \end{scheme}%
-where \hyper{keyword} is an identifier that uniquely determines the
-kind of form.  This identifier is called the {\em syntactic
-keyword}\index{syntactic keyword}, or simply {\em
-keyword}\index{keyword}, of the macro\index{macro keyword}.
-The number of \hyper{datum}s and the syntax
-of each depends on the syntactic abstraction.
+其中\hyper{keyword}是唯一决定形式种类的标识符。这个标识符叫做宏的{\em 句法关键词（syntactic keyword）}\index{syntactic keyword，句法关键词}，或简称为宏的{\em 关键词}\index{keyword，关键词}。\hyper{datum}的数量和每一个的语法由句法抽象决定。
 
-Macro uses can also take the form of improper lists, singleton
-identifiers, or {\cf set!} forms, where the second subform of the
-{\cf set!} is the keyword (see section~\ref{identifier-syntax})
-library section~\extref{lib:make-variable-transformer}{{\cf make-variable-transformer}}):
+宏使用可以表现为不正确的表形式，单独的标识符或{\cf set!}形式，其中{\cf set!}形式的第二个子形式是关键字（见第\ref{identifier-syntax}小节，库的第\extref{lib:make-variable-transformer}{{\cf make-variable-transformer}}小节）：
 \begin{scheme}
 (\hyper{keyword} \hyper{datum} \dotsfoo . \hyper{datum})
 \hyper{keyword}
 (set! \hyper{keyword} \hyper{datum})%
 \end{scheme}
 
-The {\cf define-syntax}, {\cf let-syntax} and {\cf letrec-syntax}
-forms, described in sections~\ref{define-syntax} and \ref{let-syntax},
-create bindings for keywords, associate them with macro transformers,
-and control the scope within which they are visible.
+在\ref{define-syntax}和\ref{let-syntax}小节描述的{\cf define-syntax}, {\cf let-syntax} 和{\cf letrec-syntax}形式创建关键词的绑定，将它们与宏转换的形式联系起来，且控制它们可见的范作用域。
 
-The {\cf syntax-rules} and {\cf identifier-syntax} forms, described in
-section~\ref{syntaxrulessection}, create transformers via a pattern
-language.  Moreover, the {\cf syntax-case} form, described in library
-chapter~\extref{lib:syntaxcasechapter}{{\cf syntax-case}}, 
-allows creating transformers via arbitrary Scheme code.
+在\ref{syntaxrulessection}小节描述的{\cf syntax-rules} 和{\cf identifier-syntax}形式通过一个模式语言创建转换。并且，库的第\extref{lib:syntaxcasechapter}{{\cf syntax-case}}章描述的{\cf syntax-case}形式允许通过任意的Scheme代码创建转换。
 
-Keywords occupy the same name space as variables.
-That is, within the same
-scope, an identifier can be bound as a variable or keyword, or neither, but
-not both, and local bindings of either kind may shadow other bindings of
-either kind.
+关键词和变量占据相同的名字空间。也就是，在相同的作用域内，一个标识符可以被绑定到一个变量或一个关键词中的零个或一个，不能同时绑定到两个，且任何一种本地绑定可以覆盖任何一种其它的绑定。
 
-Macros defined using {\cf syntax-rules} and {\cf identifier-\hp{}syntax}
-are ``hygienic'' and ``referentially transparent'' and thus preserve
-Scheme's lexical scoping~\cite{Kohlbecker86,
-  hygienic,Bawden88,macrosthatwork,syntacticabstraction}:
-\mainindex{hygienic} \mainindex{referentially transparent}
+使用{\cf syntax-rules} 和{\cf identifier-syntax}定义的宏是“卫生的（hygienic）”和“引用透明的（referentially transparent）”，且因此保持了Scheme词法作用域的特点\cite{Kohlbecker86,hygienic,Bawden88,macrosthatwork,syntacticabstraction}：\mainindex{hygienic，卫生的} \mainindex{referentially transparent，引用透明的}
 
 \begin{itemize}
-\item If a macro transformer inserts a binding for an identifier
-(variable or keyword) not appearing in the macro use, the identifier is in effect renamed
-throughout its scope to avoid conflicts with other identifiers.
+\item 如果一个宏转换为一个没有出现在宏使用中的标识符（变量或关键词）插入一个绑定，就实际效果而言，该标识符在其整个作用域中将被改名使用，以避免与其他标识符冲突。
 
-\item If a macro transformer inserts a free reference to an
-identifier, the reference refers to the binding that was visible
-where the transformer was specified, regardless of any local
-bindings that may surround the use of the macro.
+\item 如果一个宏转换器插入了对某标识符的自由引用，那么，无论是否存在包围该宏的使用的局部绑定，该引用都将指向定义转换器时可见的绑定。
 \end{itemize}
 
-Macros defined using the {\cf syntax-case} facility are also
-hygienic unless {\cf datum\coerce{}syntax}
-(see library section~\extref{lib:conversionssection}{Syntax-object and datum conversions}) is used.
+使用{\cf syntax-case}工具定义的宏也是卫生的，除非{\cf datum->syntax}（见库的第\extref{lib:conversionssection}{Syntax-object and datum conversions}小节）被使用。
 
-%%% Local Variables: 
+%%% Local Variables:
 %%% mode: latex
 %%% TeX-master: "r6rs"
-%%% End: 
+%%% End:
