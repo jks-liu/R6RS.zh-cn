@@ -1,19 +1,15 @@
 %\vfill\eject
-\chapter{Base library}
+\chapter{基本库（Base library）}
 \label{baselibrarychapter}
 
-This chapter describes Scheme's \defrsixlibrary{base} library, which exports many of
-the procedure and syntax bindings that are traditionally associated
-with Scheme.
+本章描述Scheme的\defrsixlibrary{base}库，其导出了很多通常和Scheme一起的过程和语法绑定。
 
-Section~\ref{basetailcontextsection} defines the rules that identify
-tail calls and tail contexts in constructs from the \rsixlibrary{base}
-library.
+第\ref{basetailcontextsection}小节定义了来自\rsixlibrary{base}库的从结构上识别尾调用和尾上下文的规则。
 
-\section{Base types}
+\section{基本类型（Base types）}
 \label{disjointness}
 
-No object satisfies more than one of the following predicates:
+没有变量满足下列谓词中的多个：
 
 \begin{scheme}
 boolean?          pair?
@@ -23,42 +19,27 @@ vector?           procedure?
 null?%
 \end{scheme}
 
-These predicates define the base types {\em boolean}, {\em pair}, {\em
-symbol}, {\em number}, {\em char} (or {\em character}), {\em string}, {\em
-vector}, and {\em procedure}.  Moreover, the empty list is a special
-object of its own type.
-\mainindex{type}\schindex{boolean?}\schindex{pair?}\schindex{symbol?}
+这些谓词定义了基本的类型{\em 布尔}，{\em 点对}，{\em 符号}，{\em 数字}，{\em 字符}，{\em 字符串}，{\em 向量}，以及{\em 过程}。此外，空表是一个特殊的对象，它有自己的类型。
+\mainindex{type，类型}\schindex{boolean?}\schindex{pair?}\schindex{symbol?}
 \schindex{number?}\schindex{char?}\schindex{string?}\schindex{vector?}
-\schindex{procedure?}\index{empty list}\schindex{null?}
+\schindex{procedure?}\index{empty list，空表}\schindex{null?}
 
-Note that, although there is a separate boolean type, any Scheme value
-can be used as a boolean value for the purpose of a conditional test;
-see section~\ref{booleanvaluessection}.
+注意，尽管有一个单独的布尔类型，但是，任何Scheme值在条件测试中都可以被当作一个布尔值使用；见\ref{booleanvaluessection}小节。
 
-\section{Definitions}
+\section{定义（Definitions）}
 \label{defines}
 
-Definitions\mainindex{definition} may appear within a
-\meta{top-level body} (section~\ref{programsyntaxsection}),
-at the top of a \meta{library body} (section~\ref{librarysyntaxsection}),
-or at the top of a \meta{body} (section~\ref{bodiessection}).
+定义\mainindex{definition，定义}出现在一个\meta{top-level body}（\ref{programsyntaxsection}小节）中，\meta{library body}的最上面（\ref{librarysyntaxsection}小节），或\meta{body}的最上面（\ref{bodiessection}小节）。
 
-A \hyper{definition} may be a variable definition
-(section~\ref{variabledefinitionsection}) or
-keyword definition
-(section~\ref{variabledefinitionsection}).
-Macro uses that expand into definitions or groups of
-definitions (packaged in a {\cf begin}, {\cf let-syntax}, or
-{\cf letrec-syntax} form; see section~\ref{begin}) may also appear
-wherever other definitions may appear.
+一个\hyper{definition}可以是一个变量定义（\ref{variabledefinitionsection}小节），或一个关键词定义（\ref{variabledefinitionsection}小节）。扩展到定义或定义组（打包在一个{\cf begin}, {\cf let-syntax}, 或{\cf letrec-syntax}形式中；见\ref{begin}小节）中的宏使用也可以出现在任何其它定义可以出现的地方。
 
-\subsection{Variable definitions}
+\subsection{变量定义}
 \label{variabledefinitionsection}
 
-The {\cf define} form described in this section is a
-\hyper{definition}\mainindex{definition} used to create variable bindings
-and may appear anywhere other definitions may appear.
+本节描述的{\cf define}形式是一个用作创建变量绑定的\hyper{definition}\mainindex{definition，定义}，且可以出现在其它定义可以出现的任何地方。
 
+
+% TODO
 \begin{entry}{%
 \proto{define}{ \hyper{variable} \hyper{expression}}{\exprtype}
 \rproto{define}{ \hyper{variable}}{\exprtype}
@@ -66,8 +47,7 @@ and may appear anywhere other definitions may appear.
 \pproto{(define (\hyper{variable} .\ \hyper{formal}) \hyper{body})}{\exprtype}}
 
 
-The first from of {\cf define} binds \hyper{variable} to a new
-location before assigning the value of \hyper{expression} to it.
+{\cf define}的第一个形式绑定\hyper{variable}到一个新的位置，然后将\hyper{expression}的值赋值给这个位置。
 \begin{scheme}
 (define add3
   (lambda (x) (+ x 3)))
@@ -76,69 +56,45 @@ location before assigning the value of \hyper{expression} to it.
 (first '(1 2))                      \ev  1%
 \end{scheme}
 %
-The continuation of \hyper{expression} should not be invoked more than
-once.
+\hyper{expression}的继续不应该被调用多于一次。
 
-\implresp Implementations should detect that the
-continuation of \hyper{expression} is invoked more than once.
-If the implementation detects this, it must raise an
-exception with condition type {\cf\&assertion}.
+% TODO
+\implresp 实现应当检测\hyper{expression}的继续被调用多于一次的情况。如果实现检测到这个的话，它必须抛出一个条件类型是{\cf\&assertion}的异常。
 
-The second form of {\cf define} is equivalent to
+{\cf define}的第二种形式等价于
 \begin{scheme}
 (define \hyper{variable} \hyper{unspecified})%
 \end{scheme}
-where \hyper{unspecified} is a side-effect-free expression returning
-an unspecified value.
+其中\hyper{unspecified}是一个返回未定义值得无副作用的表达式。
 
-In the third form of {\cf define}, \hyper{formals} must be either a
-sequence of zero or more variables, or a sequence of one or more
-variables followed by a dot {\cf .} and another variable (as
-in a lambda expression, see section~\ref{lambda}).  This form is equivalent to
+在{\cf define}的第三个形式中，\hyper{formals}必须或者是零个或多个变量的序列，或者是一个或多个变量的序列，其跟着一个点{\cf .}和另一个变量（就像在一个lambda表达式中一样，见\ref{lambda}小节）。这个形式等价于
 \begin{scheme}
 (define \hyper{variable}
   (lambda (\hyper{formals}) \hyper{body}))\rm.%
 \end{scheme}
 
-In the fourth form of {\cf define}, 
-\hyper{formal} must be a single
-variable.  This form is equivalent to
+在{\cf define}的第四个形式中，\hyper{formal}必须是一个单独的变量。这个形式等价于
 \begin{scheme}
 (define \hyper{variable}
   (lambda \hyper{formal} \hyper{body}))\rm.%
 \end{scheme}
 \end{entry}
 
-\subsection{Syntax definitions}
+\subsection{语法定义（Syntax definitions）}
 \label{syntaxdefinitionsection}
 
-The {\cf define-syntax} form described in this section is a
-\hyper{definition}\mainindex{definition} used to create keyword bindings
-and may appear anywhere other definitions may appear.
+本节描述的{\cf define-syntax}形式是一个用作创建关键词绑定的\hyper{definition}\mainindex{definition，定义}，其可以出现在任何其它定义可以出现的地方。
 
 \begin{entry}{%
 \proto{define-syntax}{ \hyper{keyword} \hyper{expression}}{\exprtype}}
 
-Binds \hyper{keyword} to the value of
-\hyper{expression}, which must evaluate, at macro-expansion
-time, to a transformer.  Macro transformers can be created using the
-{\cf syntax-rules} and {\cf identifier-syntax} forms described in
-section~\ref{syntaxrulessection}.  See library
-section~\extref{lib:transformerssection}{Transformers} for a more
-complete description of transformers.
+绑定\hyper{keyword}到\hyper{expression}的值，其必须在宏扩展的阶段求值得到一个转换器。宏转换器可以使用\ref{syntaxrulessection}小节描述的{\cf syntax-rules}和{\cf identifier-syntax}形式创建。见库的第\extref{lib:transformerssection}{Transformers}小节，那儿有一个转换器更全面的描述。
 
-Keyword bindings established by {\cf define-syntax} are visible
-throughout the body in which they appear, except where shadowed by
-other bindings, and nowhere else, just like variable bindings established
-by {\cf define}.
-All bindings established by a set of definitions, whether
-keyword or variable definitions, are visible within the definitions
-themselves.
+通过{\cf define-syntax}建立的关键词绑定在其出现的整个内部都是可见的，除非被其它绑定覆盖外都是可见的，就像{\cf define}建立的变量绑定一样。通过一组定义建立的绑定，不管是关键词还是变量定义，在定义它们自己中是可见的。
 
-\implresp The implementation should detect if the value of
-\hyper{expression} cannot possibly be a transformer.
+\implresp 实现应该检测\hyper{expression}的值是不是一个适当的转换器。
 
-Example:
+例子：
 
 \begin{scheme}
 (let ()
@@ -151,11 +107,9 @@ Example:
   (even? 10))                       \ev \schtrue{}%
 \end{scheme}
 
-An implication of the left-to-right processing order
-(section~\ref{expansionchapter}) is that one definition can
-affect whether a subsequent form is also a definition.  
+从左到右的处理顺序（第\ref{expansionchapter}章）的言外之意是一个定义可以影响后续的形式是否也是一个定义。
 
-Example:
+例子：
 
 \begin{scheme}
 (let ()
@@ -166,28 +120,19 @@ Example:
   x) \ev 0%
 \end{scheme}
 
-The behavior is unaffected by any binding for
-{\cf bind-to-zero} that might appear outside of the {\cf let}
-expression.
+任何出现在{\cf let}表达式外面的{\cf bind-to-zero}的绑定都不会影响其行为。
 \end{entry}
 
-\section{Bodies}
+\section{内部（Bodies）}
 \label{bodiessection}
 
-\index{body}The \hyper{body} of a \ide{lambda}, \ide{let}, \ide{let*},
-\ide{let-values}, \ide{let*-values}, \ide{letrec}, or \ide{letrec*}
-expression, or that of a definition with a body
-consists of zero or more definitions followed by one or more
-expressions.
+\index{body，内部}\ide{lambda}, \ide{let}, \ide{let*}, \ide{let-values}, \ide{let*-values}, \ide{letrec}, 或\ide{letrec*}表达式的\hyper{body}，或由零个或多个跟着一个或多个表达式的定义。
 
 {\cf \hyper{definition} \ldots{} \hyperi{expression} \hyperii{expression} \ldots}
 
-Each identifier defined by a
-definition is local to the \hyper{body}.  That is, the identifier is
-bound, and the region of the binding is the
-entire \hyper{body} (see section~\ref{variablesection}).
+通过一个定义定义的标识符在\hyper{body}中局部的。也就是说，标识符被绑定到，且绑定的作用域是这个\hyper{body}（见第\ref{variablesection}小节）。
 
-Example:
+例子
 %
 \begin{scheme}
 (let ((x 5))
@@ -196,19 +141,9 @@ Example:
   (foo (+ x 3)))                \ev  45%
 \end{scheme}
 %
-When {\cf begin}, {\cf let-syntax}, or {\cf letrec-syntax} forms
-occur in a body prior to the first
-expression, they are spliced into the body; see section~\ref{begin}.
-Some or all of the body, including portions wrapped in {\cf begin},
-{\cf let-syntax}, or {\cf letrec-syntax}
-forms, may be specified by a macro use
-(see section~\ref{macrosection}).
+当{\cf begin}, {\cf let-syntax}, 或{\cf letrec-syntax}形式先于第一个表达式出现在内部的时候，它们被拼接到内部；见第\ref{begin}小节。内部的一些或所以<!-- TODO -->，包括{\cf begin}, {\cf let-syntax}, 或{\cf letrec-syntax}形式里面的部分，可以通过一个宏使用指定（见第\ref{macrosection}小节）。
 
-An expanded \hyper{body} (see chapter~\ref{expansionchapter})
-containing variable definitions can
-always be converted into an equivalent {\cf letrec*}
-expression.  For example, the {\cf let} expression in the above
-example is equivalent to
+一个包含变量定义的被扩展的\hyper{body}（见第\ref{expansionchapter}章）总是可以被转换成一个等价的{\cf letrec*}表达式。比如，上面例子中的{\cf let}表达式等价于
 
 \begin{scheme}
 (let ((x 5))
@@ -217,29 +152,21 @@ example is equivalent to
     (foo (+ x 3))))%
 \end{scheme}
 
-\section{Expressions}
+\section{表达式}
 \label{expressionsection}
 
-The entries in this section describe the expressions of the \rsixlibrary{base}
-library, which may occur in the position of the \hyper{expression}
-syntactic variable in addition to the primitive
-expression types as described in
-section~\ref{primitiveexpressionsection}.
+本节的条目描述\rsixlibrary{base}库中的表达式，除了第\ref{primitiveexpressionsection}小节描述的基本表达式类型，其可以出现在\hyper{expression}句法变量的位置中。
 
-\subsection{Quotation}\unsection
+\subsection{引用（Quotation）}\unsection
 \label{quotesection}
 
 \begin{entry}{%
 \proto{quote}{ \hyper{datum}}{\exprtype}}
 
-\syntax \hyper{Datum} should be a syntactic datum.
+\syntax \hyper{Datum}应该是一个句法数据。 % TODO
 
 \semantics
-{\cf (quote \hyper{datum})} evaluates to the datum value
-represented by \hyper{datum}
-(see
-section~\ref{datumsyntaxsection}).  This notation is used to include
-constants.
+{\cf (quote \hyper{datum})}的值是\hyper{datum}表示的数据值（见第\ref{datumsyntaxsection}小节）。这个符号被用作包含常量。 % TODO
 
 \begin{scheme}%
 (quote a)                     \ev  a
@@ -247,8 +174,7 @@ constants.
 (quote (+ 1 2))               \ev  (+ 1 2)%
 \end{scheme}
 
-As noted in section~\ref{abbreviationsection}, {\cf (quote \hyper{datum})}
-may be abbreviated as \singlequote\hyper{datum}:
+正如第\ref{abbreviationsection}小节所说，{\cf (quote \hyper{datum})}可以使用缩写\singlequote\hyper{datum}：
 
 \begin{scheme}
 '"abc"               \ev  "abc"
@@ -261,40 +187,27 @@ may be abbreviated as \singlequote\hyper{datum}:
 ''a                  \ev  (quote a)%
 \end{scheme}
 
-As noted in section~\ref{storagemodel}, constants are immutable.
+正如第\ref{storagemodel}小节所说，常量是不可变得。
 
 \begin{note}
-  Different constants that are the value of a {\cf quote} expression may
-  share the same locations.
+  一个{\cf quote}表达式值的不同常数可以共享相同的位置。
 \end{note}
 \end{entry}
 
-\subsection{Procedures}\unsection
+\subsection{过程}\unsection
 \label{lamba}
 
 \begin{entry}{%
 \proto{lambda}{ \hyper{formals} \hyper{body}}{\exprtype}}
 
 \syntax
-\hyper{Formals} must be a formal parameter list as described below,
-and \hyper{body} must be as described in section~\ref{bodiessection}.
+\hyper{Formals}必须是一个下面描述的形参（formal parameter）列表，且\hyper{body}必须和第\ref{bodiessection}小节描述的一样。
 
 \semantics
-\vest A \lambdaexp{} evaluates to a procedure.  The environment in
-effect when the \lambdaexp{} is evaluated is remembered as part of the
-procedure.  When the procedure is later called with some 
-arguments, the environment in which the \lambdaexp{} was evaluated is
-extended by binding the variables in the parameter list to
-fresh locations, and the resulting argument values are stored
-in those locations.  Then, the expressions in the body of the \lambdaexp{}
-(which may contain definitions and thus represent a {\cf
-  letrec*} form, see section~\ref{bodiessection}) are evaluated
-sequentially in the extended environment.
-The results of the last expression in the body are returned as
-the results of the procedure call.
+\vest \lambdaexp{}表达式的值是过程。当\lambdaexp{}表达式被求值时的有效环境被作为过程的一部分被记忆。当过程随后以一些参数被调用的时候，\lambdaexp{}表达式被求值时使用的环境通过绑定参数列表中的变量到新的位置的方式被扩展，且相应的实参值被存储到那些位置。然后，\lambdaexp{}表达式内部的表达式（其可能包含定义，因此可能表现为一个{\cf letrec*}形式，见第\ref{bodiessection}小节）在扩展的环境中被顺序地求值。内部最后一个表达式的结果作为过程调用的结果被返回。
 
 \begin{scheme}
-(lambda (x) (+ x x))      \ev  {\em{}a procedure}
+(lambda (x) (+ x x))      \ev  {\em{}一个过程}
 ((lambda (x) (+ x x)) 4)  \ev  8
 
 ((lambda (x)
@@ -313,30 +226,18 @@ the results of the procedure call.
 (add4 6)                        \ev  10%
 \end{scheme}
 
-\hyper{Formals} must have one of the following forms:
+\hyper{Formals}必须有下列的形式之一：
 
 \begin{itemize}
 \item {\tt(\hyperi{variable} \dotsfoo)}:
-The procedure takes a fixed number of arguments; when the procedure is
-called, the arguments are stored in the bindings of the
-corresponding variables.
+过程拥有固定数量的参数。当过程被调用时，参数将被存储在相应变量的绑定中。
 
 \item \hyper{variable}:
-The procedure takes any number of arguments; when the procedure is
-called, the sequence of arguments is converted into a newly
-allocated list, and the list is stored in the binding of the
-\hyper{variable}.
+过程拥有任意数量的参数。当过程被调用时，实参的序列被转换为一个新创建的表，该表存储在\hyper{variable}的绑定中。
 
 \item {\tt(\hyperi{variable} \dotsfoo{} \hyper{variable$_{n}$}\ {\bf.}\
 \hyper{variable$_{n+1}$})}:
-If a period {\cf .} precedes the last variable, then
-the procedure takes $n$ or more arguments, where $n$ is the
-number of parameters before the period (there must
-be at least one).
-The value stored in the binding of the last variable is a
-newly allocated
-list of the arguments left over after all the other 
-arguments have been matched up against the other parameters.
+如果一个由空格分隔的{\cf .}出现在最后一个变量之前，该过程就拥有$n$个或更多个参数，这里的$n$是句点前面形参的个数（至少要有一个）。存储在最后一个参数绑定中的值是一个新创建的表。除了已和其他形参匹配的所有其他实参外，剩余的实参都被存入该表中。
 \end{itemize}
 
 \begin{scheme}
@@ -345,28 +246,21 @@ arguments have been matched up against the other parameters.
  3 4 5 6)                       \ev  (5 6)%
 \end{scheme}
 
-Any \hyper{variable} must not appear more than once in
-\hyper{formals}.
+在\hyper{formals}中任何\hyper{variable}必须不能出现超过一次。
 \end{entry}
 
 
-\subsection{Conditionals}\unsection
+\subsection{条件表达式（Conditionals）}\unsection
 
 \begin{entry}{%
 \proto{if}{ \hyper{test} \hyper{consequent} \hyper{alternate}}{\exprtype}
 \rproto{if}{ \hyper{test} \hyper{consequent}}{\exprtype}}  %\/ if hyper = italic
 
 \syntax
-\hyper{Test}, \hyper{consequent}, and \hyper{alternate} must be 
-expressions.
+\hyper{Test}，\hyper{consequent}和\hyper{alternate}必须是表达式。
 
 \semantics
-An {\cf if} expression is evaluated as follows: first,
-\hyper{test} is evaluated.  If it yields a true value\index{true} (see
-section~\ref{booleanvaluessection}), then \hyper{consequent} is evaluated and
-its values are returned.  Otherwise \hyper{alternate} is evaluated and its
-values are returned.  If \hyper{test} yields \schfalse{} and no
-\hyper{alternate} is specified, then the result of the expression \isunspecified.
+{\cf if}表达式按如下方式计算：首先，计算\hyper{test}的值。如果产生一个真值\index{true，真值}（见第\ref{booleanvaluessection}小节），然后\hyper{consequent}被计算，且它的值被返回。否则，\hyper{alternate}被计算，且它的值被返回。如果\hyper{test}产生\schfalse{}且没有指定\hyper{alternate}，那么，表达式的结果是未定义的（\isunspecified）。
 
 \begin{scheme}
 (if (> 3 2) 'yes 'no)           \ev  yes
@@ -377,23 +271,17 @@ values are returned.  If \hyper{test} yields \schfalse{} and no
 (if \#f \#f)                    \ev \theunspecified%
 \end{scheme}
 
-The \hyper{consequent} and \hyper{alternate} expressions are in
-tail context if the {\cf if} expression itself is; see
-section~\ref{basetailcontextsection}.
+\hyper{consequent}和\hyper{alternate}表达式在尾上下文中，如果{\cf if}表达式它自己在的话；见第\ref{basetailcontextsection}小节。
 \end{entry}
 
 
-\subsection{Assignments}\unsection
+\subsection{赋值（Assignments）}\unsection
 \label{assignment}
 
 \begin{entry}{%
 \proto{set!}{ \hyper{variable} \hyper{expression}}{\exprtype}}
 
-\hyper{Expression} is evaluated, and the resulting value is stored in
-the location to which \hyper{variable} is bound.  \hyper{Variable} must
-be bound either in some region\index{region} enclosing the {\cf set!}\ expression
-or at the top level.  The result of the {\cf set!}
-expression \isunspecified.
+\hyper{Expression}被计算，且结果值被存进\hyper{variable}绑定的位置。\hyper{Variable}必须在包含{\cf set!}表达式的区域或顶层被绑定。{\cf set!}表达式的结果是未定义的。
 
 \begin{scheme}
 (let ((x 2))
@@ -402,16 +290,14 @@ expression \isunspecified.
   (+ x 1)) \ev  5%
 \end{scheme}
 
-It is a syntax violation if \hyper{variable} refers to an
-immutable binding.
+如果\hyper{variable}引用一个不可修改的绑定，那么这时一个语法错误。
 
 \begin{note}
-  The identifier {\cf set!} is exported with level $1$ as well.  See
-  section~\ref{identifier-syntax}.
+  标识符{\cf set!}同时以级别$1$被导出。见第\ref{identifier-syntax}小节。
 \end{note}
 \end{entry}
 
-\subsection{Derived conditionals}\unsection
+\subsection{派生（Derived）条件表达式}\unsection
 
 \begin{entry}{%
 \proto{cond}{ \hyperi{cond clause} \hyperii{cond clause} \dotsfoo}{\exprtype}
@@ -419,41 +305,20 @@ immutable binding.
 \litproto{else}}
 
 \syntax
-Each \hyper{cond clause} must be of the form
+每一个\hyper{cond clause}必须是形式
 \begin{scheme}
 (\hyper{test} \hyperi{expression} \dotsfoo)%
 \end{scheme}
-where \hyper{test} is an expression.  Alternatively, a \hyper{cond clause} may be
-of the form
-\begin{scheme}
+其中\hyper{test}是一个表达式。或有另一种选择，一个\hyper{cond clause}可以是形式\begin{scheme}
 (\hyper{test} => \hyper{expression})%
 \end{scheme}
-The last \hyper{cond clause} may be
-an ``{\cf else} clause'', which has the form
+最后一个\hyper{cond clause}可以是一个“{\cf else}子句”，其有形式
 \begin{scheme}
-(else \hyperi{expression} \hyperii{expression} \dotsfoo)\rm.%
+(else \hyperi{expression} \hyperii{expression} \dotsfoo)\rm。%
 \end{scheme}
 
 \semantics
-A {\cf cond} expression is evaluated by evaluating the \hyper{test}
-expressions of successive \hyper{cond clause}s in order until one of them
-evaluates to a true value\index{true} (see
-section~\ref{booleanvaluessection}).  When a \hyper{test} evaluates to a true
-value, then the remaining \hyper{expression}s in its \hyper{cond clause} are
-evaluated in order, and the results of the last \hyper{expression} in the
-\hyper{cond clause} are returned as the results of the entire {\cf cond}
-expression.  If the selected \hyper{cond clause} contains only the
-\hyper{test} and no \hyper{expression}s, then the value of the
-\hyper{test} is returned as the result.  If the selected \hyper{cond clause} uses the
-\ide{=>} alternate form, then the \hyper{expression} is evaluated.
-Its value must be a procedure.  This procedure should accept one argument; it is
-called on the value of the \hyper{test} and the values returned by this
-procedure are returned by the {\cf cond} expression.
-If all \hyper{test}s evaluate
-to \schfalse, and there is no {\cf else} clause, then 
-the conditional expression returns \unspecifiedreturn; if there is an {\cf else}
-clause, then its \hyper{expression}s are evaluated, and the values of
-the last one are returned.
+一个{\cf cond}表达式通过以下方式求值，按顺序连续地对\hyper{test}表达式进行求值直到它们其中一个的值是真值（见第\ref{booleanvaluessection}小节）。当一个\hyper{test}的值是真值的时候，就会顺序地对它\hyper{cond clause}中剩余的\hyper{expression}进行求值，且\hyper{cond clause}中最后一个\hyper{expression}的结果会作为整个{\cf cond}表达式的结果被返回。如果被选择的\hyper{cond clause}只包含\hyper{test}且没有\hyper{expression}，那么\hyper{test}的值会作为结果被返回。如果被选择的\hyper{cond clause}使用\ide{=>}辅助形式，那么\hyper{expression}被计算。它的值必须是一个过程。这个过程必须接受一个参数；它被以\hyper{test}的值调用，且过程返回的值作为{\cf cond}表达式的值返回。如果所有的\hyper{test}的值都是\schfalse，并且没有{\cf else}子句，那么条件表达式返回未定义的值（\unspecifiedreturn）；如果有一个{\cf else}子句，那么它的\hyper{expression}被计算，且最后一个的值被返回。
 
 \begin{scheme}
 (cond ((> 3 2) 'greater)
@@ -467,24 +332,21 @@ the last one are returned.
       (else \schfalse{}))         \ev  2%
 \end{scheme}
 
-For a \hyper{cond clause} of one of the following forms
+对于一个有下列的形式之一的\hyper{cond clause}
 %
 \begin{scheme}
 (\hyper{test} \hyperi{expression} \dotsfoo)
 (else \hyperi{expression} \hyperii{expression} \dotsfoo)%
 \end{scheme}
 %
-the last \hyper{expression} is in tail context if the {\cf cond} form
-itself is.  For a \hyper{cond clause} of the form
+最后一个\hyper{expression}在尾上下文中，如果{\cf cond}形式它自己在的话。一个如下形式的\hyper{cond clause}
 \begin{scheme}
 (\hyper{test} => \hyper{expression})%
 \end{scheme}
-the (implied) call to the procedure that results from the evaluation
-of \hyper{expression} is in a tail context if the {\cf cond} form
-itself is. See section~\ref{basetailcontextsection}.
 
-A sample definition of {\cf cond} in terms of simpler forms is in
-appendix~\ref{derivedformsappendix}.
+来自\hyper{expression}求值结果的过程的（隐式）调用在尾上下文中如果{\cf cond}形式它自己在的话。见第\ref{basetailcontextsection}小节。
+
+一个更简单形式的{\cf cond}的参考定义可以在附录\ref{derivedformsappendix}中被找到。
 \end{entry}
 
 
@@ -492,38 +354,22 @@ appendix~\ref{derivedformsappendix}.
 \proto{case}{ \hyper{key} \hyperi{case clause} \hyperii{case clause} \dotsfoo}{\exprtype}}
 
 \syntax
-\hyper{Key} must be an expression.  Each \hyper{case clause} must have one of
-the following forms:
+\hyper{Key}必须是一个表达式。每一个\hyper{case clause}必须有下列形式之一：
 \begin{scheme}
 ((\hyperi{datum} \dotsfoo) \hyperi{expression} \hyperii{expression} \dotsfoo)
 (else \hyperi{expression} \hyperii{expression} \dotsfoo)%
 \end{scheme}
 \schindex{else}
-The second form, which specifies an ``{\cf else} clause'',
-may only appear as the last \hyper{case clause}.
-Each \hyper{datum} is an external representation of some object.
-The data represented by the \hyper{datum}s need not be distinct.
+第二个形式，其指定一个“{\cf else}子句”，只可以作为最后一个\hyper{case clause}出现。每一个\hyper{datum}是一些对象的一个外部表示。\hyper{Datum}表示的数据不需要有区别。
 
 \semantics
-A {\cf case} expression is evaluated as follows.  \hyper{Key} is
-evaluated and its result is compared using {\cf eqv?} (see
-section~\ref{eqv?}) against the data
-represented by the \hyper{datum}s of each \hyper{case clause} in turn, proceeding
-in order from left to right through the set of clauses.  If the
-result of evaluating \hyper{key} is equivalent to a datum of a \hyper{case clause}, the
-corresponding \hyper{expression}s are evaluated from left
-to right and the results of the last expression in the \hyper{case clause} are
-returned as the results of the {\cf case} expression.  Otherwise, the
-comparison process continues.  If the result of
-evaluating \hyper{key} is different from every datum in each set, then if
-there is an {\cf else} clause its expressions are evaluated and the
-results of the last are the results of the {\cf case} expression;
-otherwise the {\cf case} expression returns \unspecifiedreturn.
+一个{\cf case}按如下求值。\hyper{key}被求值，且它的结果被和每个\hyper{case clause}中的\hyper{datum}表示的数据轮流比较，比较的依据是{\cf eqv?}（见第\ref{eqv?}小节），以从左到右的顺序在整个子句的集合中进行。如果求值后\hyper{key}的值等于一个\hyper{case clause}的数据，对应的表达式被从左向右地求值，且\hyper{case clause}最后一个表达式的结果将作为{\cf case}表达式的结果被返回。如果求值后的\hyper{key}的值和每个子句中的数据都不一样，那么如果有一个{\cf else}子句的话，它的表达式被计算且最后一个的结果作为{\cf case}表达式的结果被返回；否则{\cf case}表达式的返回未定义的值。
 
 \begin{scheme}
+; 本示例已根据勘误表修改
 (case (* 2 3)
   ((2 3 5 7) 'prime)
-  ((1 4 6 8 9) 'composite))     \ev  composite
+  ((4 6 8 9) 'composite))     \ev  composite
 (case (car '(c d))
   ((a) 'a)
   ((b) 'b))                     \ev  \theunspecified
@@ -533,9 +379,7 @@ otherwise the {\cf case} expression returns \unspecifiedreturn.
   (else 'consonant))            \ev  consonant%
 \end{scheme}
 
-The last \hyper{expression} of a \hyper{case clause} is in tail
-context if the {\cf case} expression itself is; see
-section~\ref{basetailcontextsection}.
+一个\hyper{case clause}的最后一个\hyper{expression}在尾上下文中，如果{\cf case}表达式它自己在的话；见第\ref{basetailcontextsection}小节。
 
 % A sample definition of {\cf case} in terms of simpler forms is in
 % appendix~\ref{derivedformsappendix}.
@@ -545,15 +389,9 @@ section~\ref{basetailcontextsection}.
 \begin{entry}{%
 \proto{and}{ \hyperi{test} \dotsfoo}{\exprtype}}
 
-\syntax The \hyper{test}s must be expressions.
+\syntax \hyper{Test}必须是一个表达式。
 
-\semantics If there are no \hyper{test}s, \schtrue{} is returned.
-Otherwise, the \hyper{test} expressions are evaluated from left to
-right until a \hyper{test} returns \schfalse{} or the last
-\hyper{test} is reached.  In the former case, the {\cf and} expression
-returns \schfalse{} without evaluating the remaining expressions.
-In the latter case, the last expression is evaluated and its values
-are returned.
+\semantics 如果没有\hyper{test}，\schtrue{}被返回。否则\hyper{test}表达式被从左向右地求值，直到一个\hyper{test}返回\schfalse{}，或到达最后一个\hyper{test}。前一种情况下，{\cf and}表达式在不计算剩余表达式的情况下返回\schfalse{}。后一种情况，最后一个表达式被计算且它的值被返回。
 
 \begin{scheme}
 (and (= 2 2) (> 2 1))           \ev  \schtrue
@@ -562,8 +400,7 @@ are returned.
 (and)                           \ev  \schtrue%
 \end{scheme}
 
-The {\cf and} keyword could be defined in terms of {\cf if} using {\cf
-  syntax-rules} (see section~\ref{syntaxrulessection}) as follows:
+{\cf and}关键词可以使用{\cf syntax-rules}（见第\ref{syntaxrulessection}小节）根据{\cf if}进行定义，如下所示：
 
 \begin{scheme}
 (define-syntax \ide{and}
@@ -574,24 +411,16 @@ The {\cf and} keyword could be defined in terms of {\cf if} using {\cf
      (if test1 (and test2 ...) \sharpfoo{f}))))%
 \end{scheme}
 
-The last \hyper{test} expression is in tail context if the {\cf and}
-expression itself is; see section~\ref{basetailcontextsection}.
+最后一个\hyper{test}表达式在尾上下文中，如果{\cf and}表达式它自己在的话；见第\ref{basetailcontextsection}小节。
 \end{entry}
 
 
 \begin{entry}{%
 \proto{or}{ \hyperi{test} \dotsfoo}{\exprtype}}
 
-\syntax The \hyper{test}s must be expressions.
+\syntax \hyper{Test}必须是表达式。
 
-\semantics If there are no \hyper{test}s, \schfalse{} is returned.
-Otherwise, the \hyper{test} expressions are evaluated from left to
-right until a \hyper{test} returns a true value \var{val}
-(see section~\ref{booleanvaluessection}) or the last
-\hyper{test} is reached.  In the former case, the {\cf or} expression
-returns \var{val} without evaluating the remaining expressions.
-In the latter case, the last expression is evaluated and its values
-are returned.
+\semantics 如果没有\hyper{test}，那么\schfalse{}被返回。否则，\hyper{test}按照从左到右的顺序被求值，直到一个\hyper{tesst}返回真值\var{val}（见第\ref{booleanvaluessection}小节），或到达最后一个\hyper{test}。在前一种情况，{\cf or}表达式在不计算剩余表达式的情况下返回\var{val}。后一种情况，最后一个表达式被求值，且它的值被返回。
 
 \begin{scheme}
 (or (= 2 2) (> 2 1))            \ev  \schtrue
@@ -600,8 +429,7 @@ are returned.
 (or '(b c) (/ 3 0))             \ev  (b c)%
 \end{scheme}
 
-The {\cf or} keyword could be defined in terms of {\cf if} using {\cf
-  syntax-rules} (see section~\ref{syntaxrulessection}) as follows:
+{\cf or}关键词可以使用{\cf syntax-rules}（见第\ref{syntaxrulessection}小节）根据{\cf if}进行定义，如下所示：
 
 \begin{scheme}
 (define-syntax \ide{or}
@@ -613,64 +441,30 @@ The {\cf or} keyword could be defined in terms of {\cf if} using {\cf
        (if x x (or test2 ...))))))%
 \end{scheme}
 
-The last \hyper{test} expression is in tail context if the {\cf or}
-expression itself is; see section~\ref{basetailcontextsection}.
+最后一个\hyper{test}表达式在尾上下文中，如果{\cf or}表达式它自己也在的话；见第\ref{basetailcontextsection}小节。
 \end{entry}
 
 
-\subsection{Binding constructs}
+\subsection{绑定结构（Binding constructs）}
 
-The binding constructs described in this section
-create local bindings for variables that are visible only in a
-delimited region.  The syntax of the 
-constructs
-{\cf let}, {\cf let*}, {\cf letrec}, and {\cf letrec*}
- is identical, but they differ in the regions\index{region}
-(see section~\ref{variablesection}) they establish
-for their variable bindings and in the order in which the values for
-the bindings are computed.  In a {\cf let} expression, the initial
-values are computed before any of the variables become bound; in a
-{\cf let*} expression, the bindings and evaluations are performed
-sequentially.  In a {\cf letrec} or {\cf letrec*}
-expression, all the bindings are in
-effect while their initial values are being computed, thus allowing
-mutually recursive definitions.  In a {\cf letrec} expression, the
-initial values are computed before being assigned to the variables;
-in a {\cf letrec*}, the evaluations and assignments are performed
-sequentially.
+本节描述的绑定结构为变量创建本地绑定，它们只可以在一个限定的区域可见。结构{\cf let}, {\cf let*}, {\cf letrec}, 和{\cf letrec*}的语法是一样的，但是它们为它们的变量绑定建立的作用域（region）\index{region，作用域}（见\ref{variablesection}小节）是不一样的，且绑定的值计算的顺序是不一样的。在一个{\cf let}表达式中，初始值被计算在任何变量被绑定之前；在一个{\cf let*}表达式中，绑定和求值依次地执行。在一个{\cf letrec}或{\cf letrec*}表达式中，当所有的绑定正在被计算的时候所以的绑定生效，因此允许相互递归的定义。在一个{\cf letrec}表达式中，初始值在赋值给变量之前被计算；在一个{\cf letrec*}中，计算和赋值依次地进行。
 
-In addition, the binding constructs {\cf let-values} and {\cf
-  let*-values} generalize {\cf let} and {\cf let*} to allow multiple
-variables to be bound to the results of expressions that evaluate to
-multiple values.
-They are analogous to {\cf let} and {\cf let*} in the
-way they establish regions: in a {\cf let-values} expression, the
-initial values are computed before any of the variables become bound;
-in a {\cf let*-values} expression, the bindings are performed
-sequentially. 
+此外，绑定结构{\cf let-values}和{\cf let*-values}使得{\cf let}和{\cf let*}更加通用，起允许多个变量绑定到值是多个值得表达式的结果。在建立作用域的方面，它们类似于{\cf let}和{\cf let*}：在一个{\cf let-values}表达式中，初始值被计算在任何变量被绑定之前；在一个{\cf let*-values}表达式中，绑定依次进行。
 
-Sample definitions of all the binding forms of this section in terms
-of simpler forms are in appendix~\ref{derivedformsappendix}.
+本节提到的所有绑定形式根据更简单形式的参考定义可以在附录\ref{derivedformsappendix}中找到。
 
 \begin{entry}{%
 \proto{let}{ \hyper{bindings} \hyper{body}}{\exprtype}}
 
 \syntax
-\hyper{Bindings} must have the form
+\hyper{Bindings}必须有形式
 \begin{scheme}
 ((\hyperi{variable} \hyperi{init}) \dotsfoo)\rm,%
 \end{scheme}
-where each \hyper{init} is an expression, and \hyper{body} 
-is as described in section~\ref{bodiessection}.  
-Any variable must not appear more than once in the \hyper{variable}s.
+其中，每一个\hyper{init}是一个表达式，且\hyper{body}如第\ref{bodiessection}小节描述。在\hyper{variable}中任何变量不能出现超过一次。
 
 \semantics
-The \hyper{init}s are evaluated in the current environment (in some
-unspecified order), the \hyper{variable}s are bound to fresh locations
-holding the results, the \hyper{body} is evaluated in the extended
-environment, and the values of the last expression of \hyper{body}
-are returned.  Each binding of a \hyper{variable} has \hyper{body} as its
-region.\index{region}
+\hyper{Init}在当前的环境被求值（以一个未定义的顺序），\hyper{variable}被绑定到存有结果的新鲜的位置，\hyper{body}在扩展后的环境被求值，且\hyper{body}的最后一个表达式的值被返回。每个\hyper{variable}的绑定都将\hyper{body}作为它的作用域。\index{region，作用域}
 
 \begin{scheme}
 (let ((x 2) (y 3))
@@ -682,7 +476,7 @@ region.\index{region}
     (* z x)))                   \ev  35%
 \end{scheme}
 
-See also named {\cf let}, section \ref{namedlet}.
+另参见命名{\cf let}，见第\ref{namedlet}小节。
 
 \end{entry}
 
@@ -692,20 +486,14 @@ See also named {\cf let}, section \ref{namedlet}.
 
 \nobreak
 \syntax
-\hyper{Bindings} must have the form
+\hyper{Bindings}必须是形式
 \begin{scheme}
-((\hyperi{variable} \hyperi{init}) \dotsfoo)\rm,%
+((\hyperi{variable} \hyperi{init}) \dotsfoo)\rm，%
 \end{scheme}
-where each \hyper{init} is an expression, and \hyper{body} 
-is as described in section~\ref{bodiessection}.
+其中，每一个\hyper{init}是一个表达式，且\hyper{body}如第\ref{bodiessection}小节描述。
 
 \semantics
-The {\cf let*} form is similar to {\cf let}, but the \hyper{init}s are
-evaluated and bindings created sequentially from left to right, with
-the region\index{region} of each binding including the bindings to
-its right as well as \hyper{body}.  Thus the second \hyper{init} is evaluated
-in an environment in which the first binding is visible and initialized,
-and so on.
+{\cf let*}形式类似于{\cf let}，但是\hyper{init}的求值和绑定的创建是从左向右顺序进行的，但其作用域不但包括\hyper{body}，还包括其右边的部分。因此，第二个\hyper{init}在第一个绑定可见且初始化的环境中被计算，以此类推。
 
 \begin{scheme}
 (let ((x 2) (y 3))
@@ -715,8 +503,7 @@ and so on.
 \end{scheme}
 
 \begin{note}
-  While the variables bound by a {\cf let} expression must be distinct,
-  the variables bound by a {\cf let*} expression need not be distinct.
+  通过{\cf let}表达式绑定的变量必须是不一样的，而通过{\cf let*}表达式绑定的变量则没有这个限制。
 \end{note}
 \end{entry}
 
@@ -724,24 +511,14 @@ and so on.
 \proto{letrec}{ \hyper{bindings} \hyper{body}}{\exprtype}}
 
 \syntax
-\hyper{Bindings} must have the form
+\hyper{Bindings}必须有形式
 \begin{scheme}
 ((\hyperi{variable} \hyperi{init}) \dotsfoo)\rm,%
 \end{scheme}
-where each \hyper{init} is an expression, and \hyper{body} 
-is as described in section~\ref{bodiessection}.  Any
-variable must not appear more than once in the
-\hyper{variable}s.
+其中，每一个\hyper{init}是一个表达式，且\hyper{body}如第\ref{bodiessection}小节描述。在\hyper{variable}中任何变量不能出现超过一次。
 
 \semantics
-The \hyper{variable}s are bound to fresh locations, the \hyper{init}s
-are evaluated in the resulting environment (in
-some unspecified order), each \hyper{variable} is assigned to the result
-of the corresponding \hyper{init}, the \hyper{body} is evaluated in the
-resulting environment, and the values of the last expression in
-\hyper{body} are returned.  Each binding of a \hyper{variable} has the
-entire {\cf letrec} expression as its region\index{region}, making it possible to
-define mutually recursive procedures.
+\hyper{variable}被绑定到新的位置，\hyper{init}在结果环境中被求值（以一些未定义的顺序），每一个\hyper{variable}被分配给对应的\hyper{init}的结果，\hyper{body}在结果环境中被求值，且\hyper{body}中最后一个表达式的值被返回。每个\hyper{variable}的绑定将整个{\cf letrec}表达式作为它的作用域\index{region，作用域}，这使得定义相互递归的过程成为可能。
 
 \begin{scheme}
 %(letrec ((x 2) (y 3))
@@ -758,53 +535,27 @@ define mutually recursive procedures.
             (if (zero? n)
                 \schfalse
                 (even? (- n 1))))))
-  (even? 88))   
+  (even? 88))
                 \ev  \schtrue%
 \end{scheme}
 
-It should be possible
-to evaluate each \hyper{init} without assigning or referring to the
-value of any \hyper{variable}.  In the most
-common uses of {\cf letrec}, all the \hyper{init}s are \lambdaexp{}s
-and the restriction is satisfied automatically.
-Another restriction is that the continuation of each \hyper{init} should not be invoked
-more than once.
+在不赋值或引用任何\hyper{variable}的值的情况下，计算每个\hyper{init}应该是可能的。在{\cf letrec}的大部分常规使用中，所有的\hyper{init}是\lambdaexp{}表达式，此时限制被自动满足。另一个限制是，每个\hyper{init}的继续不能被调用多于一次。
 
-\implresp Implementations must detect references to a \hyper{variable} during the
-evaluation of the \hyper{init} expressions (using one particular
-evaluation order and order of evaluating the \hyper{init} expressions).
-If an implementation detects such a violation of the
-restriction, it must raise an exception with condition type
-{\cf\&assertion}.
-Implementations may or may not detect that the continuation of each
-\hyper{init} is invoked more than once.  However, if the
-implementation detects this, it must raise an exception with condition
-type {\cf\&assertion}.
+\implresp 实现必须在\hyper{init}表达式求值（使用一个特定的求值顺序且顺序\hyper{init}表达式的值）期间检测\hyper{variable}的引用。如果实现检测到这样一个限制的违反，它必须抛出一个条件类型是{\cf\&assertion}的异常。实现可以也可以不检测每个\hyper{init}的继续是否被调用多于一次。可是，如果实现检测到的话，它必须抛出一个条件类型是{\cf\&assertion}的异常。
 \end{entry}
 
 \begin{entry}{%
 \proto{letrec*}{ \hyper{bindings} \hyper{body}}{\exprtype}}
 
 \syntax
-\hyper{Bindings} must have the form
+\hyper{Bindings}必须有形式
 \begin{scheme}
 ((\hyperi{variable} \hyperi{init}) \dotsfoo)\rm,%
 \end{scheme}
-where each \hyper{init} is an expression, and \hyper{body} 
-is as described in section~\ref{bodiessection}. 
-Any variable must not appear more than once in the
-\hyper{variable}s.
+其中，每一个\hyper{init}是一个表达式，且\hyper{body}如第\ref{bodiessection}小节描述。在\hyper{variable}中任何变量不能出现超过一次。
 
 \semantics
-The \hyper{variable}s are bound to fresh locations,
-each \hyper{variable} is assigned in left-to-right order to the
-result of evaluating the corresponding \hyper{init}, the \hyper{body} is
-evaluated in the resulting environment, and the values of the last
-expression in \hyper{body} are returned. 
-Despite the left-to-right evaluation and assignment order, each binding of
-a \hyper{variable} has the entire {\cf letrec*} expression as its
-region\index{region}, making it possible to define mutually recursive
-procedures.
+\hyper{Variable}被绑定到新鲜的位置，每个\hyper{variable}被按从左向右的顺序分配给对应的\hyper{init}的求值结果，\hyper{body}在结果环境中被求值，且\hyper{body}中最后一个表达式的值被返回。尽管求值和赋值的顺序是从左向右的，但是每一个\hyper{variable}的绑定将整个{\cf letrec*}表达式作为其作用域\index{region，作用域}，这使得定义相互递归的过程成为可能。
 
 \begin{scheme}
 (letrec* ((p
@@ -821,50 +572,23 @@ procedures.
                 \ev  5%
 \end{scheme}
 
-It must be possible
-to evaluate each \hyper{init} without assigning or referring to the value
-of the corresponding \hyper{variable} or the \hyper{variable} of any of
-the bindings that follow it in \hyper{bindings}.
-Another restriction is that the continuation of each \hyper{init} should not be invoked
-more than once.
+在不赋值或引用对应的\hyper{variable}或任何在\hyper{bindings}跟随它的任何绑定的\hyper{variable}的值的情况下，计算每个\hyper{init}必须是可能的。另一个限制是每个\hyper{init}的继续不能被调用多于一次。
 
-\implresp Implementations must, during the evaluation of an
-\hyper{init} expression, detect references to the
-value of the corresponding \hyper{variable} or the \hyper{variable} of
-any of the bindings that follow it in \hyper{bindings}.
-If an implementation detects such a
-violation of the restriction, it must raise an exception with
-condition type {\cf\&assertion}.  Implementations may or may not
-detect that the continuation of each \hyper{init} is invoked more than
-once.  However, if the implementation detects this, it must raise an
-exception with condition type {\cf\&assertion}.
+\implresp 实现必须在\hyper{init}表达式求值期间检测\hyper{variable}或任何在\hyper{bindings}跟随它的任何绑定的\hyper{variable}% TODO
+的引用。如果实现检测到这样一个限制的违反，它必须抛出一个条件类型是{\cf\&assertion}的异常。实现可以也可以不检测每个\hyper{init}的继续是否被调用多于一次。可是，如果实现检测到的话，它必须抛出一个条件类型是{\cf\&assertion}的异常。
 \end{entry}
 
 \begin{entry}{%
 \proto{let-values}{ \hyper{mv-bindings} \hyper{body}}{\exprtype}}
 
 \syntax
-\hyper{Mv-bindings} must have the form
+\hyper{Mv-bindings}必须有形式
 \begin{scheme}
 ((\hyperi{formals} \hyperi{init}) \dotsfoo)\rm,%
 \end{scheme}
-where each \hyper{init} is an expression, and \hyper{body} 
-is as described in section~\ref{bodiessection}.  
-Any variable must not appear more
-than once in the set of \hyper{formals}.
+其中，每一个\hyper{init}是一个表达式，且\hyper{body}如第\ref{bodiessection}小节描述。在\hyper{formals}集合中任何变量必须不能出现超过一次。
 
-\semantics The \hyper{init}s are evaluated in the current environment
-(in some unspecified order), and the variables occurring in the
-\hyper{formals} are bound to fresh locations containing the values
-returned by the \hyper{init}s, where the \hyper{formals} are matched
-to the return values in the same way that the \hyper{formals} in a
-\lambdaexp{} are matched to the arguments in a procedure call.
-Then, the \hyper{body} is evaluated in the extended environment, and the
-values of the last expression of \hyper{body} are returned.
-Each binding of a variable has \hyper{body} as its
-region.\index{region}
-If the \hyper{formals} do not match, an exception with condition type
-{\cf\&assertion} is raised.
+\semantics \hyper{Init}在当前的环境中被求值（以一些未定义的顺序），且出现在\hyper{formals}中的变量被绑定到包含\hyper{init}返回值的新鲜位置，其中\hyper{formals}匹配返回值就像\lambdaexp{}表达式中的\hyper{formals}在过程调用中匹配参数一样。然后，\hyper{body}在扩展后的环境中被求值，且\hyper{body}中最后一个表达式的值被返回。每个变量绑定将\hyper{body}作为它的作用域。\index{region，作用域}如果\hyper{formals}不匹配的话，那么一个条件类型是{\cf\&assertion}的异常被抛出。
 
 \begin{scheme}
 (let-values (((a b) (values 1 2))
@@ -885,22 +609,14 @@ If the \hyper{formals} do not match, an exception with condition type
 \proto{let*-values}{ \hyper{mv-bindings} \hyper{body}}{\exprtype}}
 
 \syntax
-\hyper{Mv-bindings} must have the form
+\hyper{Mv-bindings}必须有形式
 \begin{scheme}
 ((\hyperi{formals} \hyperi{init}) \dotsfoo)\rm,%
 \end{scheme}
-where each \hyper{init} is an expression, and \hyper{body} 
-is as described in section~\ref{bodiessection}.
-In each \hyper{formals}, any variable must not appear more than once.
+其中，每一个\hyper{init}是一个表达式，且\hyper{body}如第\ref{bodiessection}小节描述。在每个\hyper{formals}中，任何变量必须不能出现超过一次。
 
 \semantics
-The {\cf let*-values} form is similar to {\cf let-values}, but the \hyper{init}s are
-evaluated and bindings created sequentially from left to right, with
-the region\index{region} of the bindings of each \hyper{formals} including
-the bindings to its right as well as \hyper{body}. 
-Thus the second \hyper{init} is evaluated in an environment in which the
-bindings of the first \hyper{formals} is visible and initialized, and so
-on.
+{\cf let*-value}形式类似于{\cf let-value}，但是\hyper{init}被计算和绑定被创建是按从左到右的顺序进行的，每个\hyper{formals}绑定的作用域\index{region，作用域}除了\hyper{body}还包括它的右边。因此，第二个\hyper{init}在第一个\hyper{formals}可见且被初始化的环境中被求值，以此类推。
 
 \begin{scheme}
 (let ((a 'a) (b 'b) (x 'x) (y 'y))
@@ -910,14 +626,12 @@ on.
 \end{scheme}
 
 \begin{note}
-  While all of the variables bound by a {\cf let-values} expression
-  must be distinct, the variables bound by different \hyper{formals} of a
-  {\cf let*-values} expression need not be distinct.
+  通过{\cf let-values}表达式绑定的变量必须是不一样的，而通过{\cf let*-values}表达式的不同\hyper{formals}绑定的变量则没有这个限制。
 \end{note}
 
 \end{entry}
 
-\subsection{Sequencing}\unsection
+\subsection{顺序结构（Sequencing）}\unsection
 
 \begin{entry}{%
 \proto{begin}{ \hyper{form} \dotsfoo}{\exprtype}
@@ -935,7 +649,7 @@ context:
   {\cf begin} acts as a \defining{splicing} form---the forms inside
   the \hyper{body} are spliced into the surrounding body, as if the
   {\cf begin} wrapper were not actually present.
-  
+
   A {\cf begin} form in a \hyper{body} or \hyper{library body} must
   be non-empty if it appears after the first \hyper{expression}
   within the body.
@@ -993,7 +707,7 @@ The {\cf eqv?} procedure returns \schtrue{} if one of the following holds:
   according to the {\cf symbol=?} procedure (section~\ref{symbol=?}).
 
 \item \vari{Obj} and \varii{obj} are both exact\index{exact} number objects
-  and are numerically equal (see {\cf =}, 
+  and are numerically equal (see {\cf =},
   section~\ref{genericarithmeticsection}).
 
 \item \vari{Obj} and \varii{obj} are both inexact\index{inexact}
@@ -1253,9 +967,9 @@ Returns \schtrue{} if \var{obj} is a procedure, otherwise returns \schfalse.
 \begin{scheme}
 (procedure? car)            \ev  \schtrue
 (procedure? 'car)           \ev  \schfalse
-(procedure? (lambda (x) (* x x)))   
+(procedure? (lambda (x) (* x x)))
                             \ev  \schtrue
-(procedure? '(lambda (x) (* x x)))  
+(procedure? '(lambda (x) (* x x)))
                             \ev  \schfalse%
 \end{scheme}
 
@@ -1327,13 +1041,13 @@ may return either {\cf 0} (exact) or {\cf 0.0} (inexact).
 The specification of the numerical operations is written as though
 infinities and NaNs are representable, and specifies many operations
 with respect to these number objects in ways that are consistent with the
-IEEE-754 standard for binary floating-point arithmetic.  
+IEEE-754 standard for binary floating-point arithmetic.
 An implementation of Scheme may or may not represent infinities and
 NaNs; however,
 an implementation must raise a continuable exception with
 condition type {\cf\&no-infinities} or {\cf\&no-nans} (respectively;
 see library section~\extref{lib:flonumssection}{Flonums})
-whenever it is unable to represent an infinity or NaN as specified. 
+whenever it is unable to represent an infinity or NaN as specified.
 In this case, the continuation of the exception
 handler is the continuation that otherwise would have received
 the infinity or NaN value.  This requirement also applies to
@@ -1428,7 +1142,7 @@ imaginary part lies in the range from $-\pi$ (inclusive if $-0.0$ is
 distinguished, exclusive otherwise) to $\pi$ (inclusive).  $\log 0$ is
 undefined.
 
-The value of $\log z$ for non-real $z$ is defined in terms of log on real numbers as 
+The value of $\log z$ for non-real $z$ is defined in terms of log on real numbers as
 
 \begin{displaymath}
 \log z = \log |z| + (\mathrm{angle}~z)i
@@ -1460,17 +1174,17 @@ distinguish minus zero.
 \begin{tabular}{clll}
 & $y$ condition & $x$ condition & range of result $r$\\\hline
 & $y = 0.0$ & $x > 0.0$ & $0.0$\\
-$\ast$ & $y = +0.0$  & $x > 0.0$ & $+0.0$\\     
+$\ast$ & $y = +0.0$  & $x > 0.0$ & $+0.0$\\
 $\ast$ & $y = -0.0$ & $x > 0.0$ & $-0.0$\\
 & $y > 0.0$ & $x > 0.0$ & $0.0 < r < \frac{\pi}{2}$\\
 & $y > 0.0$ & $x = 0.0$ & $\frac{\pi}{2}$\\
 & $y > 0.0$ & $x < 0.0$ & $\frac{\pi}{2} < r < \pi$\\
 & $y = 0.0$ & $x < 0$ & $\pi$\\
 $\ast$ & $y = +0.0$ & $x < 0.0$ & $\pi$\\
-$\ast$ & $y = -0.0$ & $x < 0.0$ & $-\pi$\\      
+$\ast$ & $y = -0.0$ & $x < 0.0$ & $-\pi$\\
 &$y < 0.0$ & $x < 0.0$ & $-\pi< r< -\frac{\pi}{2}$\\
 &$y < 0.0$ & $x = 0.0$ & $-\frac{\pi}{2}$\\
-&$y < 0.0$ & $x > 0.0$ & $-\frac{\pi}{2} < r< 0.0$\\    
+&$y < 0.0$ & $x > 0.0$ & $-\frac{\pi}{2} < r< 0.0$\\
 &$y = 0.0$ & $x = 0.0$ & undefined\\
 $\ast$& $y = +0.0$ & $x = +0.0$ & $+0.0$\\
 $\ast$& $y = -0.0$ & $x = +0.0$& $-0.0$\\
@@ -1879,7 +1593,7 @@ consistent with the following examples:
 
 \domain{If all of the arguments are exact, then the divisors must all
   be nonzero.}
-With two or more arguments, this procedure returns the 
+With two or more arguments, this procedure returns the
 quotient of its arguments, associating to the left.  With one
 argument, however, it returns the multiplicative inverse
 of its argument.
@@ -2063,7 +1777,7 @@ number objects have sufficient precision.
 \rproto{atan}{ \vari{x} \varii{x}}{procedure}}
 
 These procedures compute the usual transcendental functions.  The {\cf
-  exp} procedure computes the base-$e$ exponential of \var{z}. 
+  exp} procedure computes the base-$e$ exponential of \var{z}.
 The {\cf log} procedure with a single argument computes the natural logarithm of
 \var{z} (not the base-ten logarithm); {\cf (log \vari{z}
   \varii{z})} computes the base-\varii{z} logarithm of \vari{z}.
@@ -2349,7 +2063,7 @@ Returns \schtrue{} if the booleans are the same.
 
 \end{entry}
 
- 
+
 \section{Pairs and lists}
 \label{listsection}
 
@@ -2445,7 +2159,7 @@ Returns the contents of the car field of \var{pair}.
 (car '(1 . 2))          \ev  1
 (car '())               \xev \exception{\&assertion}%
 \end{scheme}
- 
+
 \end{entry}
 
 
@@ -2459,7 +2173,7 @@ Returns the contents of the cdr field of \var{pair}.
 (cdr '(1 . 2))          \ev  2
 (cdr '())               \xev \exception{\&assertion}%
 \end{scheme}
- 
+
 \end{entry}
 
 
@@ -2617,11 +2331,11 @@ of pairs beyond this length.
 
 The {\cf map} procedure applies \var{proc} element-wise to the elements of the
 \var{list}s and returns a list of the results, in order.
-\var{Proc} is always called in the same dynamic environment 
+\var{Proc} is always called in the same dynamic environment
 as {\cf map} itself.
 The order in which \var{proc} is applied to the elements of the
 \var{list}s is unspecified.
-If multiple returns occur from {\cf map}, the 
+If multiple returns occur from {\cf map}, the
 values returned by earlier returns are not mutated.
 
 \begin{scheme}
@@ -2659,7 +2373,7 @@ The {\cf for-each} procedure applies \var{proc}
 element-wise to the elements of the
 \var{list}s for its side effects,  in order from the first elements to the
 last.
-\var{Proc} is always called in the same dynamic environment 
+\var{Proc} is always called in the same dynamic environment
 as {\cf for-each} itself.
 The return values of {\cf for-each} \areunspecified.
 
@@ -2694,7 +2408,7 @@ Implementations of {\cf for-each} may or may not tail-call
 
 Symbols are objects whose usefulness rests on the fact that two
 symbols are identical (in the sense of {\cf eq?}, {\cf eqv?} and {\cf equal?}) if and only if their
-names are spelled the same way. 
+names are spelled the same way.
 A symbol literal is formed using {\cf quote}.
 
 \begin{entry}{%
@@ -2716,14 +2430,14 @@ Returns \schtrue{} if \var{obj} is a symbol, otherwise returns \schfalse.
 \begin{entry}{%
 \proto{symbol->string}{ symbol}{procedure}}
 
-Returns the name of \var{symbol} as an immutable string.  
+Returns the name of \var{symbol} as an immutable string.
 
 \begin{scheme}
-(symbol->string 'flying-fish)     
+(symbol->string 'flying-fish)
                                   \ev  "flying-fish"
 (symbol->string 'Martin)          \ev  "Martin"
 (symbol->string
-   (string->symbol "Malvina"))     
+   (string->symbol "Malvina"))
                                   \ev  "Malvina"%
 \end{scheme}
 \end{entry}
@@ -2739,7 +2453,7 @@ are spelled the same.
 \begin{entry}{%
 \proto{string->symbol}{ string}{procedure}}
 
-Returns the symbol whose name is \var{string}. 
+Returns the symbol whose name is \var{string}.
 
 \begin{scheme}
 (eq? 'mISSISSIppi 'mississippi)  \lev  \schfalse
@@ -2785,7 +2499,7 @@ values~\cite{Unicode}.
   represent that same character). For example, Roman letters, Cyrillic
   letters, Hebrew consonants, and most Chinese characters fall into
   this category.
-  
+
   Unicode scalar values exclude the range \#xD800 to \#xDFFF, which
   are part of the range of Unicode \textit{code points}\mainindex{code
     point}.  However, the Unicode code points in this range,
@@ -2812,7 +2526,7 @@ Returns \schtrue{} if \var{obj} is a character, otherwise returns \schfalse.
   \left[\#x\textrm{E000}, \#x\textrm{10FFFF}\right]$.}
 
 Given a character, {\cf char\coerce{}integer} returns its Unicode scalar value
-as an exact integer object.  
+as an exact integer object.
 For a Unicode scalar value \var{sv}, {\cf integer\coerce{}char}
 returns its associated character.
 
@@ -2846,7 +2560,7 @@ according to their Unicode scalar values.
 \section{Strings}
 \label{stringsection}
 
-Strings are sequences of characters.  
+Strings are sequences of characters.
 
 \vest The {\em length} of a string is the number of characters that it
 contains.  This number is fixed when the
@@ -2960,10 +2674,10 @@ given strings.
 The {\cf string\coerce{}list} procedure returns a newly allocated list of the
 characters that make up the given string.  The {\cf
   list\coerce{}string} procedure
-returns a newly allocated string formed from the characters in 
+returns a newly allocated string formed from the characters in
 \var{list}. The {\cf string\coerce{}list}
 and {\cf list\coerce{}string} procedures are
-inverses so far as {\cf equal?}\ is concerned.  
+inverses so far as {\cf equal?}\ is concerned.
 \end{entry}
 
 \begin{entry}{%
@@ -2975,7 +2689,7 @@ The {\cf string-for-each} procedure applies \var{proc}
 element-wise to the characters of the
 \var{string}s for its side effects,  in order from the first characters to the
 last.
-\var{Proc} is always called in the same dynamic environment 
+\var{Proc} is always called in the same dynamic environment
 as {\cf string-for-each} itself.
 The return values of {\cf string-for-each} \areunspecified.
 
@@ -3019,7 +2733,7 @@ Like list constants, vector constants must be quoted:
 
 \begin{entry}{%
 \proto{vector?}{ obj}{procedure}}
- 
+
 Returns \schtrue{} if \var{obj} is a vector.  Otherwise the procedure
 returns \schfalse.
 \end{entry}
@@ -3122,7 +2836,7 @@ and returns \unspecifiedreturn.
 
 The {\cf vector-map} procedure applies \var{proc} element-wise to the elements of the
 \var{vector}s and returns a vector of the results, in order.
-\var{Proc} is always called in the same dynamic environment 
+\var{Proc} is always called in the same dynamic environment
 as {\cf vector-map} itself.
 The order in which \var{proc} is applied to the elements of the
 \var{vector}s is unspecified.
@@ -3149,7 +2863,7 @@ The {\cf vector-for-each} procedure applies \var{proc}
 element-wise to the elements of the
 \var{vector}s for its side effects,  in order from the first elements to the
 last.
-\var{Proc} is always called in the same dynamic environment 
+\var{Proc} is always called in the same dynamic environment
 as {\cf vector-for-each} itself.
 The return values of {\cf vector-for-each} \areunspecified.
 
@@ -3202,7 +2916,7 @@ library chapter~\extref{lib:exceptionsconditionschapter}{Exceptions
   field has as its value a list of the \var{irritant}s.
 \end{itemize}
 %
-Moreover, the condition created by {\cf error} has condition type 
+Moreover, the condition created by {\cf error} has condition type
 {\cf \&error}, and the condition created by {\cf assertion-\hp{}violation} has
 condition type {\cf \&assertion}.
 
@@ -3247,7 +2961,7 @@ object is implementation-dependent.
 \section{Control features}
 \label{controlsection}
 \label{valuessection}
- 
+
 This chapter describes various primitive procedures which control the
 flow of program execution in special ways.
 
@@ -3282,7 +2996,7 @@ to \var{proc} is also in a tail context.
 \proto{call/cc}{ proc}{procedure}}
 
 \label{continuations} \domain{\var{Proc} should accept one
-argument.} The procedure {\cf call-with-current-continuation} 
+argument.} The procedure {\cf call-with-current-continuation}
 (which is the same as the procedure {\cf call/cc}) packages
 the current continuation as an ``escape
 procedure''\mainindex{escape procedure} and passes it as an argument to
@@ -3352,7 +3066,7 @@ Delivers all of its arguments to its continuation.
 The {\cf values} procedure might be defined as follows:
 \begin{scheme}
 (define (values . things)
-  (call-with-current-continuation 
+  (call-with-current-continuation
     (lambda (cont) (apply cont things))))%
 \end{scheme}
 
@@ -3424,7 +3138,7 @@ More precisely, an escape procedure transfers control out of the
 dynamic extent of a set of zero or more active {\cf dynamic-wind}
 calls $x\ \dots$ and transfer control into the dynamic extent
 of a set of zero or more active {\cf dynamic-wind} calls
-$y\ \dots$.  
+$y\ \dots$.
 It leaves the dynamic extent of the most recent $x$ and calls without
 arguments the corresponding \var{after} procedure.
 If the \var{after} procedure returns, the escape procedure proceeds to
@@ -3542,7 +3256,7 @@ invoking the procedure named by \hyper{variable}.
 
 ``Backquote'' or ``quasiquote''\index{backquote} expressions are useful
 for constructing a list or vector structure when some but not all of the
-desired structure is known in advance.  
+desired structure is known in advance.
 
 \syntax \hyper{Qq template} should be as specified by the grammar at
 the end of this entry.
@@ -3628,7 +3342,7 @@ may be equivalent to either of the following expressions:
 %
 \begin{scheme}
 '((1 2) 3 4 five 6)
-(let ((a 3)) 
+(let ((a 3))
   (cons '(1 2)
         (cons a (cons 4 (cons 'five '(6))))))%
 \end{scheme}
@@ -3679,7 +3393,7 @@ un\-quo\-ta\-tion $D$} takes precedence.
 \section{Binding constructs for syntactic keywords}
 \label{bindsyntax}
 
-The {\cf let-syntax} and {\cf letrec-syntax} forms 
+The {\cf let-syntax} and {\cf letrec-syntax} forms
 bind keywords.
 Like a {\cf begin} form, a {\cf let-syntax} or {\cf letrec-syntax} form
 may appear in a definition context, in which case it is treated as a
@@ -3698,7 +3412,7 @@ expressions.
 ((\hyper{keyword} \hyper{expression}) \dotsfoo)%
 \end{scheme}
 Each \hyper{keyword} is an identifier,
-and each \hyper{expression} is 
+and each \hyper{expression} is
 an expression that evaluates, at macro-expansion
 time, to a \textit{transformer}\index{transformer}\index{macro transformer}.
 Transformers may be created by {\cf syntax-rules} or {\cf identifier-syntax}
@@ -3954,7 +3668,7 @@ and $F$ is a list or improper list of $n$
 elements whose first $k$ elements match $P_1$ through $P_k$,
 whose next $m-k$ elements each match $P_e$,
 whose next $n-m$ elements match $P_{m+1}$ through $P_n$,
-and 
+and
 whose $n$th and final cdr matches $P_x$.
 
 \item $P$ is of the form
@@ -4111,7 +3825,7 @@ expression.
 %
 \begin{scheme}
 (l\=ambda \hyper{formals}
-  \>\arbno{\hyper{definition}} 
+  \>\arbno{\hyper{definition}}
   \>\arbno{\hyper{expression}} \hyper{tail expression})%
 \end{scheme}
 %
@@ -4152,7 +3866,7 @@ are shown here.
 (begin \hyper{tail sequence})%
 \end{scheme}
 %
-A \hyper{cond clause} is 
+A \hyper{cond clause} is
 %
 \begin{scheme}
 (\hyper{test} \hyper{tail sequence})\textrm{,}%
@@ -4211,8 +3925,7 @@ case the effect of the {\cf let} is explicitly unspecified and
 implementation-dependent.)
 \end{note}
 
-%%% Local Variables: 
+%%% Local Variables:
 %%% mode: latex
 %%% TeX-master: "r6rs"
-%%% End: 
-
+%%% End:
