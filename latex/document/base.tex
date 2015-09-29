@@ -637,29 +637,13 @@ null?%
 \proto{begin}{ \hyper{form} \dotsfoo}{\exprtype}
 \rproto{begin}{ \hyper{expression} \hyper{expression} \dotsfoo}{\exprtype}}
 
-The \hyper{begin} keyword has two different roles, depending on its
-context:
+\hyper{Begin}关键词有两个不同的作用，取决于它的上下文：
 \begin{itemize}
-\item It may appear as a form in a \hyper{body} (see
-  section~\ref{bodiessection}), \hyper{library body} (see
-  section~\ref{librarybodysection}), or \hyper{top-level body} (see
-  chapter~\ref{programchapter}), or directly nested in a {\cf begin}
-  form that appears in a body.  In this case, the {\cf begin} form
-  must have the shape specified in the first header line.  This use of
-  {\cf begin} acts as a \defining{splicing} form---the forms inside
-  the \hyper{body} are spliced into the surrounding body, as if the
-  {\cf begin} wrapper were not actually present.
+\item 它可以作为一个形式出现在一个\hyper{body}中（见第\ref{bodiessection}小节），一个\hyper{library body}中（见第\ref{librarybodysection}小节），或一个\hyper{top-level body}（见第\ref{programchapter}章），或直接嵌套在一个内部的{\cf begin}形式中。在这种情况下，{\cf begin}形式必须有第一个标题行指定的形状。{\cf begin}的这种用法作为一种\defining{拼接（splicing）}形式—\hyper{body}里面的形式被拼接到内部周围，就好像原来的{\cf begin}包装不存在一样。
 
-  A {\cf begin} form in a \hyper{body} or \hyper{library body} must
-  be non-empty if it appears after the first \hyper{expression}
-  within the body.
-\item It may appear as an ordinary expression and must have the shape
-  specified in the second header line.  In this case, the
-  \hyper{expression}s are evaluated sequentially from left to right,
-  and the values of the last \hyper{expression} are returned.
-  This expression type is used to sequence side effects such as
-  assignments or input
-  and output.
+  \hyper{Body}或\hyper{library body}中的{\cf begin}形式必须是非空的，如果它在内部出现在第一个\hyper{expression}之后。
+
+\item 它可以作为一个普通的表达式出现，且必须有第二个标题行指定的形状。在这种情况下，\hyper{expression}被按从左到右的顺序求值，且最后一个\hyper{expression}的值被返回。这种表达式类型被用作按顺序排列副作用，如赋值或输入输出。
 \end{itemize}
 
 \begin{scheme}
@@ -670,20 +654,14 @@ context:
 
 (begin (display "4 plus 1 equals ")
        (display (+ 4 1)))      \ev  \unspecified
- \>{\em and prints}  4 plus 1 equals 5%
+ \>{\em 并打印}  4 plus 1 equals 5%
 \end{scheme}
 \end{entry}
 
-\section{Equivalence predicates}
+\section{等价谓词（Equivalence predicates）}
 \label{equivalencesection}
 
-A \defining{predicate} is a procedure that always returns a boolean
-value (\schtrue{} or \schfalse).  An \defining{equivalence predicate} is
-the computational analogue of a mathematical equivalence relation (it is
-symmetric, reflexive, and transitive).  Of the equivalence predicates
-described in this section, {\cf eq?}\ is the finest or most
-discriminating, and {\cf equal?}\ is the coarsest.  The {\cf eqv?} predicate is
-slightly less discriminating than {\cf eq?}.  \todo{Pitman doesn't like
+一个\defining{谓词}是一个总是返回布尔值（\schtrue{}或\schfalse{}）的过程。一个\defining{等价谓词}在计算上模拟数学上的等价关系（它是[对称的（symmetric），自反的（reflexive），且传递的（transitive）](/r6rs-translation-experience/#symmetric-reflexive-transitive)）。在本节表述的等价谓词中，{\cf eq?}是最好或最精细的，{\cf equal?}是最粗糙的。{\cf eqv?}比{\cf eq?}的辨别能力稍差。 \todo{Pitman doesn't like
 this paragraph.  Lift the discussion from the Maclisp manual.  Explain
 why there's more than one predicate.}
 
@@ -691,105 +669,57 @@ why there's more than one predicate.}
 \begin{entry}{%
 \proto{eqv?}{ \vari{obj} \varii{obj}}{procedure}}
 
-The {\cf eqv?} procedure defines a useful equivalence relation on objects.
-Briefly, it returns \schtrue{} if \vari{obj} and \varii{obj} should
-normally be regarded as the same object and \schfalse{} otherwise.  This relation is left slightly
-open to interpretation, but the following partial specification of
-{\cf eqv?} must hold for all implementations.
+{\cf eqv?}定义在对象上定义一个有用的等价关系。简单地说，它返回\schtrue{}，如果\vari{obj}和\varii{obj}在通常情况下被认为是相等的对象的话，否则返回\schfalse{}。这种关系不太好解释，但下面所列的{\cf eqv?}部分规范必须被所有的实现遵守。
 
-The {\cf eqv?} procedure returns \schtrue{} if one of the following holds:
+{\cf eqv?}过程在以下情况返回\schtrue{}：
 
 \begin{itemize}
-\item \vari{Obj} and \varii{obj} are both booleans and are the same
-  according to the {\cf boolean=?} procedure (section~\ref{boolean=?}).
+\item \vari{Obj}和\varii{obj}都是布尔，且根据{\cf boolean=?}过程它们是一样的（第\ref{boolean=?}小节）。
 
-\item \vari{Obj} and \varii{obj} are both symbols and are the same
-  according to the {\cf symbol=?} procedure (section~\ref{symbol=?}).
+\item \vari{Obj}和\varii{obj}都是符号，且根据{\cf symbol=?}过程它们是一样的（第\ref{symbol=?}小节）。
 
-\item \vari{Obj} and \varii{obj} are both exact\index{exact} number objects
-  and are numerically equal (see {\cf =},
-  section~\ref{genericarithmeticsection}).
+\item \vari{Obj}和\varii{obj}都是精确\index{exact，精确}数，且在数学上相等（见{\cf =}，第\ref{genericarithmeticsection}小节）。
 
-\item \vari{Obj} and \varii{obj} are both inexact\index{inexact}
-  number objects, are numerically
-  equal (see {\cf =}, section~\ref{genericarithmeticsection}), and
-  yield the same results (in the sense of {\cf eqv?}) when passed
-  as arguments to any other procedure that can be defined
-  as a finite composition of Scheme's standard arithmetic
-  procedures.
+\item \vari{Obj}和\varii{obj}都是非精确数字对象，且在数学上相等（见{\cf =}，第\ref{genericarithmeticsection}小节），且作为参数传递给任意其它可以通过Scheme标准算术过程定义的过程时产生的结果都是一样的（从{\cf eqv?}的意义上说），只要计算过程中不涉及非数。（本句已根据勘误表补全。）
 
-\item \vari{Obj} and \varii{obj} are both characters and are the same
-character according to the {\cf char=?} procedure
-(section~\ref{charactersection}).
+\item \vari{Obj}和\varii{obj}都是字符，且根据{\cf char=?}过程它们是一样的（见第\ref{charactersection}小节）。
 
-\item Both \vari{obj} and \varii{obj} are the empty list.
+\item \vari{Obj}和\varii{obj}都是空表。
 
-\item \vari{Obj} and \varii{obj} are objects such as pairs, vectors, bytevectors
-  (library chapter~\extref{lib:bytevectorschapter}{Bytevectors}),
-  strings, hashtables, records (library
-  chapter~\extref{lib:recordschapter}{Records}), ports (library
-  section~\extref{lib:portsiosection}{Port I/O}), or hashtables
-  (library chapter~\extref{lib:hashtablechapter}{Hash tables}) that
-  refer to the same locations in the store (section~\ref{storagemodel}).
+\item \vari{Obj}和\varii{obj}都是对象，比如点对，向量，字节向量（库的第\extref{lib:bytevectorschapter}{Bytevectors}章），字符串，记录（库的第\extref{lib:recordschapter}{Records}章），端口（库的第\extref{lib:portsiosection}{Port I/O}小节），或哈希表（库的第\extref{lib:hashtablechapter}{Hash tables}章），且指向相同的存储位置（第\ref{storagemodel}小节）。（原文中有一个重复的“哈希表”，已被删除。）
 
-\item \vari{Obj} and \varii{obj} are record-type descriptors that are
-  specified to be {\cf eqv?} in library
-  section~\extref{lib:recordsproceduralsection}{Procedural layer}.
+\item \vari{Obj}和\varii{obj}都是记录类型（record-type）描述符，它们在库的第\extref{lib:recordsproceduralsection}{Procedural layer}小节被指定为是{\cf eqv?}等价的。
 \end{itemize}
 
-The {\cf eqv?} procedure returns \schfalse{} if one of the following holds:
+{\cf eqv?}过程在以下情况返回\schfalse{}：
 
 \begin{itemize}
-\item \vari{Obj} and \varii{obj} are of different types
-(section~\ref{disjointness}).
+\item \vari{Obj}和\varii{obj}是不同的类型（第\ref{disjointness}小节）。
 
-\item \vari{Obj} and \varii{obj} are booleans for which the {\cf
-    boolean=?} procedure returns \schfalse.
+\item \vari{Obj}和\varii{obj}是布尔，但{\cf boolean=?}过程返回\schfalse{}。
 
-\item \vari{Obj} and \varii{obj} are symbols for which the {\cf
-    symbol=?} procedure returns \schfalse.
+\item \vari{Obj}和\varii{obj}是符号，但{\cf symbol=?}过程返回\schfalse{}。
 
-\item One of \vari{obj} and \varii{obj} is an exact number object but the other is
-        an inexact number object.
+\item \vari{Obj}和\varii{obj}一个是精确数字对象，另一个是非精确数字对象。
 
-\item \vari{Obj} and \varii{obj} are rational number objects for which the {\cf =} procedure
-  returns \schfalse{}.
+\item \vari{Obj}和\varii{obj}是有理数字对象，但{\cf =}过程返回\schfalse{}。
 
-\item \vari{Obj} and \varii{obj} yield different results (in the sense of
-  {\cf eqv?}) when passed as arguments to any other procedure
-  that can be defined as a finite composition of Scheme's
-  standard arithmetic procedures.
+\item \vari{Obj}和\varii{obj}作为参数传递给任意其它可以通过Scheme标准算术过程定义的过程时产生不一样的结果（从{\cf eqv?}的意义上说），只要计算过程中不涉及非数。（本句已根据勘误表补全。）
 
-\item \vari{Obj} and \varii{obj} are characters for which the {\cf char=?}
-  procedure returns \schfalse{}.
+\item \vari{Obj}和\varii{obj}是字符，但{\cf char=?}过程返回\schfalse{}。
 
-\item One of \vari{obj} and \varii{obj} is the empty list, but the other is not.
+\item \vari{Obj}和\varii{obj}一个是空表，但另一个不是。% <!-- TODO：和类型不同重复 -->
 
-\item \vari{Obj} and \varii{obj} are objects such as pairs, vectors,
-  bytevectors (library
-  chapter~\extref{lib:bytevectorschapter}{Bytevectors}), strings,
-  records (library
-  chapter~\extref{lib:recordschapter}{Records}), ports (library
-  section~\extref{lib:portsiosection}{Port I/O}), or hashtables
-  (library chapter~\extref{lib:hashtablechapter}{Hashtables}) that
-  refer to distinct locations.
+\item \vari{Obj}和\varii{obj}是对象，比如点对，向量，字节向量（库的第\extref{lib:bytevectorschapter}{Bytevectors}章），字符串，记录（库的第\extref{lib:recordschapter}{Records}章），端口（库的第\extref{lib:portsiosection}{Port I/O}小节），或哈希表（库的第\extref{lib:hashtablechapter}{Hashtables}章），但指向不同的位置。
 
-\item \vari{Obj} and \varii{obj} are pairs, vectors, strings, or
-  records, or hashtables, where the applying the same accessor (i.e.\
-  {\cf car}, {\cf cdr}, {\cf vector-ref}, {\cf string-ref}, or record
-  accessors) to both yields results for which {\cf eqv?} returns
-  \schfalse.
+\item \vari{Obj}和\varii{obj}是点对，向量，字符串，或记录，或哈希表，向其内部应用相同的访问器（也就是{\cf car}, {\cf cdr}, {\cf vector-ref}, {\cf string-ref}, 或记录访问器）但产生的值在{\cf eqv?}下返回\schfalse{}。
 
-\item \vari{Obj} and \varii{obj} are procedures that would behave differently
-(return different values or have different side effects) for some arguments.
+\item \vari{Obj}和\varii{obj}是过程，但对于某些参数有不同的行为（返回不同的值或有不同的副作用）。
 
 \end{itemize}
 
 \begin{note}
-  The {\cf eqv?} procedure returning \schtrue{} when \vari{obj} and
-  \varii{obj} are number objects does not imply that {\cf =} would also
-  return \schtrue{} when called with \vari{obj} and \varii{obj} as
-  arguments.
+  当\vari{obj}和\varii{obj}是数字对象时，{\cf eqv?}过程返回\schtrue{}并不意味着{\cf =}在相同的\vari{obj}和\varii{obj}参数下也返回\schtrue{}。
 \end{note}
 
 
@@ -805,10 +735,7 @@ The {\cf eqv?} procedure returns \schfalse{} if one of the following holds:
 (eqv? \#f 'nil)                  \ev  \schfalse%
 \end{scheme}
 
-The following examples illustrate cases in which the above rules do
-not fully specify the behavior of {\cf eqv?}.  All that can be said
-about such cases is that the value returned by {\cf eqv?} must be a
-boolean.
+下面的例子展示了上面的规则没有完全定义的{\cf eqv?}的行为。对于这些情况，我们只能说{\cf eqv?}的返回值必须是一个布尔。
 
 \begin{scheme}
 (let ((p (lambda (x) x)))
@@ -822,12 +749,7 @@ boolean.
 (eqv? +nan.0 +nan.0)             \ev \unspecified%
 \end{scheme}
 
-The next set of examples shows the use of {\cf eqv?}\ with procedures
-that have local state.  Calls to {\cf gen-counter} must return a
-distinct procedure every time, since each procedure has its own
-internal counter.  Calls to {\cf gen-loser} return procedures that
-behave equivalently when called.  However, {\cf eqv?} may
-not detect this equivalence.
+下面的例子集合展示了对有本地状态的过程使用{\cf eqv?}的情况。对{\cf gen-counter}的每一次调用都必须付汇一个不同的过程，因为每个过程都有它自己内部的计数。{\cf gen-loser}的调用返回的过程被调用的时候行为是一样的。然而，{\cf eqv?}可以不检测这种相等。
 
 \begin{scheme}
 (define gen-counter
@@ -856,13 +778,7 @@ not detect this equivalence.
   (eqv? f g)) \ev  \schfalse%
 \end{scheme}
 
-Implementations may
-share structure between constants where appropriate.
-Furthermore, a constant may be copied at any time by the implementation so
-as to exist simultaneously in different sets of locations, as noted in
-section~\ref{quote}.
-Thus the value of {\cf eqv?} on constants is sometimes
-implementation-dependent.
+实现可以在适当的时候在常量间共享结构。（根据勘误表，此处省略一句话。）因此，作用在常量上的{\cf eqv?}的返回值有时是实现定义的。
 
 \begin{scheme}
 (eqv? '(a) '(a))                 \ev  \unspecified
@@ -877,18 +793,9 @@ implementation-dependent.
 \begin{entry}{%
 \proto{eq?}{ \vari{obj} \varii{obj}}{procedure}}
 
-The {\cf eq?} predicate is similar to {\cf eqv?}\ except that in some cases it is
-capable of discerning distinctions finer than those detectable by
-{\cf eqv?}.
+{\cf eq?}谓词和{\cf eqv?}类似，除了在一些情况其识别差别的能力比{\cf eqv?}更加精细之外。
 
-The {\cf eq?}\ and {\cf eqv?} predicates are guaranteed to have the
-same behavior on symbols, booleans, the empty list, pairs, procedures,
-non-empty strings, bytevectors, and vectors, and records.  The
-behavior of {\cf eq?} on number objects and characters is
-implementation-dependent, but it always returns either \schtrue{} or
-\schfalse{}, and returns \schtrue{} only when {\cf eqv?}\ would also
-return \schtrue.  The {\cf eq?} predicate may also behave differently
-from {\cf eqv?} on empty vectors, empty bytevectors, and empty strings.
+{\cf eq?}和{\cf eqv?}确保在符号，布尔，空表，点对，过程，非空字符串，字节向量，和向量，以及记录的行为是一样的。{\cf eq?}在数字对象，字符上的行为是实现定义的，但是它总是或者返回\schtrue{}或者返回\schfalse{}，且只有当{\cf eqv?}返回\schtrue{}时它才有可能返回\schtrue{}。{\cf eq?}谓词在空表，空向量，空字节向量和空字符串上的行为也可以是不一样的。
 
 \begin{scheme}
 (eq? 'a 'a)                     \ev  \schtrue
@@ -899,7 +806,7 @@ from {\cf eqv?} on empty vectors, empty bytevectors, and empty strings.
 (eq? '() '())                   \ev  \schtrue
 (eq? 2 2)                       \ev  \unspecified
 (eq? \#\backwhack{}A \#\backwhack{}A) \ev  \unspecified
-(eq? car car)                   \ev  \schtrue
+(eq? car car)                   \ev  \unspecified （本条已根据勘误表修改）
 (let ((n (+ 2 3)))
   (eq? n n))      \ev  \unspecified
 (let ((x '(a)))
@@ -918,15 +825,9 @@ not confusing?  A table maybe?}
 \begin{entry}{%
 \proto{equal?}{ \vari{obj} \varii{obj}}{procedure}}
 
-The {\cf equal?}  predicate returns \schtrue{} if and only if the
-(possibly infinite) unfoldings of its arguments into regular trees are
-equal as ordered trees.
+{\cf equal?}谓词返回\schtrue{}当且仅当它的参数（可能无限地）到正则树（regular trees）的展开作为有序树是一样的（ordered trees）。% <!-- TODO -->
 
-The {\cf equal?} predicate treats pairs and vectors
-as nodes with outgoing edges, uses {\cf
-  string=?} to compare strings, uses {\cf
-  bytevector=?} to compare bytevectors (see library chapter~\extref{lib:bytevectorschapter}{Bytevectors}),
-  and uses {\cf eqv?} to compare other nodes.
+{\cf equal?}谓词对待点对和向量作为有出边（outgoing edges）的节点，使用{\cf string=?}比较字符串，使用{\cf bytevector=?}比较字节向量（见库的第\extref{lib:bytevectorschapter}{Bytevectors}章），且使用{\cf eqv?}比较其它节点。
 
 \begin{scheme}
 (equal? 'a 'a)                  \ev  \schtrue
@@ -951,18 +852,17 @@ as nodes with outgoing edges, uses {\cf
 \end{scheme}
 
 \begin{note}
-  The {\cf equal?} procedure must always terminate, even if its
-  arguments contain cycles.
+  {\cf equal?}必须总是可以终止的，哪怕它的参数存在循环。
 \end{note}
 
 \end{entry}
 
-\section{Procedure predicate}
+\section{过程谓词（Procedure predicate）}
 
 \begin{entry}{%
 \proto{procedure?}{ obj}{procedure}}
 
-Returns \schtrue{} if \var{obj} is a procedure, otherwise returns \schfalse.
+返回\schtrue{}如果\var{obj}是一个过程，否则返回\schfalse{}。
 
 \begin{scheme}
 (procedure? car)            \ev  \schtrue
@@ -975,25 +875,17 @@ Returns \schtrue{} if \var{obj} is a procedure, otherwise returns \schfalse.
 
 \end{entry}
 
-\section{Arithmetic}
+\section{算术（Arithmetic）}
 \label{genericarithmeticsection}
 
-The procedures described here implement arithmetic that is
-generic over
-the numerical tower described in chapter~\ref{numbertypeschapter}.
-The generic procedures described in this section
-accept both exact and inexact number objects as arguments,
-performing coercions and selecting the appropriate operations
-as determined by the numeric subtypes of their arguments.
+这里描述的过程实现了在第\ref{numbertypeschapter}章描述的数值塔上通用的算术。本节描述的通用过程既接受精确数也接受非精确数对象作为其参数，并根据它们参数的数值子类型执行强制转换和选取适当的操作。
 
-Library chapter~\extref{lib:numberchapter}{Arithmetic} describes
-libraries that define other numerical procedures.
+库的第\extref{lib:numberchapter}{Arithmetic}章描述了定义其它数值过程的库。
 
-\subsection{Propagation of exactness and inexactness}
+\subsection{精确性和非精确性的传播（Propagation）}
 \label{propagationsection}
 
-The procedures listed below must return the mathematically correct exact result
-provided all their arguments are exact:
+下面列出的过程在传递给它们的参数都是精确的时候必须返回数学上正确的精确结果：
 
 \begin{scheme}
 +            -            *
@@ -1004,8 +896,7 @@ truncate     round        rationalize
 real-part    imag-part    make-rectangular%
 \end{scheme}
 
-The procedures listed below must return the correct exact result
-provided all their arguments are exact, and no divisors are zero:
+下面列出的过程当传递给它们的参数都是精确的且没有除数是零的时候必须返回正确的精确结果：
 
 \begin{scheme}
 /
@@ -1013,74 +904,36 @@ div          mod           div-and-mod
 div0         mod0          div0-and-mod0%
 \end{scheme}
 
-Moreover, the procedure {\cf expt} must return the correct exact
-result provided its first argument is an exact real number object and
-its second argument is an exact integer object.
+此外，过程{\cf expt}必须返回正确的精确结果，当传递给它的第一个参数是一个精确的实数对象且第二个参数是一个精确的整数对象。
 
-The general rule is that the generic operations return the correct
-exact result when all of their arguments are exact and the result is
-mathematically well-defined, but return an inexact result when any
-argument is inexact.  Exceptions to this rule include
-{\cf sqrt}, {\cf exp}, {\cf log},
-{\cf sin}, {\cf cos}, {\cf tan},
-{\cf asin}, {\cf acos}, {\cf atan},
-{\cf expt}, {\cf make-polar}, {\cf magnitude}, and {\cf angle}, which
-may (but are not required to) return inexact results even when
-given exact arguments, as indicated in the specification of these
-procedures.
+通用的规则是，一般操作返回正确精确的结果，当所有传递给它们的参数都是精确的且结果是数学上明确定义的，但是当任何一个参数是非精确的时候返回一个非精确结果。这条规则的例外包括{\cf sqrt}, {\cf exp}, {\cf log}, {\cf sin}, {\cf cos}, {\cf tan}, {\cf asin}, {\cf acos}, {\cf atan}, {\cf expt}, {\cf make-polar}, {\cf magnitude}, 和{\cf angle}，其甚至可以（但不要求）在传递精确参数的时候返回非精确的结果，如这些过程的规范所示。
 
-One general exception to the rule above is that an implementation may
-return an exact result despite inexact arguments if that exact result
-would be the correct result for all possible substitutions of exact
-arguments for the inexact ones.  An example is {\cf (* 1.0 0)} which
-may return either {\cf 0} (exact) or {\cf 0.0} (inexact).
+上面规则的一个普遍的例外是，一个实现可以返回一个精确结果尽管其参数是非精确的，但这个精确的结果对于所有可能的对这个非精确参数的精确替代，都应该是正确的。一个例子是{\cf (* 1.0 0)}，其可以返回{\cf 0}（精确地）或{\cf 0.0}（非精确的）。
 
-\subsection{Representability of infinities and NaNs}
+\subsection{无穷大和非数的表示性}
 \label{infinitiesnanssection}
 
-The specification of the numerical operations is written as though
-infinities and NaNs are representable, and specifies many operations
-with respect to these number objects in ways that are consistent with the
-IEEE-754 standard for binary floating-point arithmetic.
-An implementation of Scheme may or may not represent infinities and
-NaNs; however,
-an implementation must raise a continuable exception with
-condition type {\cf\&no-infinities} or {\cf\&no-nans} (respectively;
-see library section~\extref{lib:flonumssection}{Flonums})
-whenever it is unable to represent an infinity or NaN as specified.
-In this case, the continuation of the exception
-handler is the continuation that otherwise would have received
-the infinity or NaN value.  This requirement also applies to
-conversions between number objects and external representations, including
-the reading of program source code.
+数值操作的规范被书写就好像无穷大和非数是可以表示的，且指定许多操作，这些操作和数字对象相关，其在方法上和IEEE-754的二进制浮点算术标准相一致。Scheme的一个实现可以也可以不表示无穷大和非数；可是，一个实现必须抛出一个可继续的条件类型是{\cf\&no-infinities}或{\cf\&no-nans}（分别地见库的第\extref{lib:flonumssection}{Flonums}小节）的异常，在任何不能表示一个按规范说明的无穷大或非数的时候。在这种情况下，异常处理程序的继续是一个可以接受无穷大或非数的继续。这个要求也适用于数字对象和外部表示之间的转换，包括读取程序源代码。
 
-\subsection{Semantics of common operations}
+\subsection{常用操作的语义（Semantics）}
 
-Some operations are the semantic basis for several arithmetic
-procedures.  The behavior of these operations is described in this
-section for later reference.
+一些操作是几个算术过程的语义基础。本节描述的这些操作的行为用作以后的参考。
 
-\subsubsection{Integer division}
+\subsubsection{整数除法（Integer division）}
 \label{integerdivision}
 
-Scheme's operations for performing integer
-division rely on mathematical operations $\mathrm{div}$,
-$\mathrm{mod}$, $\mathrm{div}_0$, and
-$\mathrm{mod}_0$, that are defined as follows:
+Scheme执行整数除法的操作依赖于数学操作$\mathrm{div}$, $\mathrm{mod}$, $\mathrm{div}_0$, 和$\mathrm{mod}_0$，它们定义如下：
 
-$\mathrm{div}$, $\mathrm{mod}$, $\mathrm{div}_0$, and $\mathrm{mod}_0$
-each accept two real numbers $x_1$ and $x_2$ as operands, where
-$x_2$ must be nonzero.
+$\mathrm{div}$, $\mathrm{mod}$, $\mathrm{div}_0$, 和$\mathrm{mod}_0$每个都接受两个实数$x_1$和$x_2$ 做为操作数，其中$x_2$ 必须是非零。
 
-$\mathrm{div}$ returns an integer, and $\mathrm{mod}$ returns a real.
-Their results are specified by
+$\mathrm{div}$返回一个整数，$\mathrm{mod}$返回一个实数。它们的结果规定如下：
 %
 \begin{eqnarray*}
 x_1~\mathrm{div}~x_2 &=& n_d\\
 x_1~\mathrm{mod}~x_2 &=& x_m
 \end{eqnarray*}
 %
-where
+其中
 %
 \begin{displaymath}
 \begin{array}{c}
@@ -1089,7 +942,7 @@ x_1 = n_d \cdot x_2 + x_m\\
 \end{array}
 \end{displaymath}
 %
-Examples:
+例子：
 \begin{eqnarray*}
 123~\mathrm{div}~10    &=&  12\\
 123~\mathrm{mod}~10    &=&  3\\
@@ -1101,16 +954,14 @@ Examples:
 -123~\mathrm{mod}~\textrm{$-10$}   &=&  7
 \end{eqnarray*}
 %
-$\mathrm{div}_0$ and $\mathrm{mod}_0$ are like $\mathrm{div}$ and
-$\mathrm{mod}$, except the result of $\mathrm{mod}_0$ lies within a
-half-open interval centered on zero.  The results are specified by
+$\mathrm{div}_0$和$\mathrm{mod}_0$与$\mathrm{div}$和$\mathrm{mod}$类似，除了$\mathrm{mod}_0$的结果在一个以零为中点的半开的区间中。它们的结果规定如下：
 %
 \begin{eqnarray*}
 x_1~\mathrm{div}_0~x_2 &=& n_d\\
 x_1~\mathrm{mod}_0~x_2 &=& x_m
 \end{eqnarray*}
 %
-where:
+其中
 %
 \begin{displaymath}
 \begin{array}{c}
@@ -1119,7 +970,7 @@ x_1 = n_d \cdot x_2 + x_m\\
 \end{array}
 \end{displaymath}
 %
-Examples:
+例子：
 %
 \begin{eqnarray*}
 123~\mathrm{div}_0~10    &=&  12\\
@@ -1132,7 +983,7 @@ Examples:
 -123~\mathrm{mod}_0~\textrm{$-10$}   &=&  -3
 \end{eqnarray*}
 
-\subsubsection{Transcendental functions}
+\subsubsection{超越函数（Transcendental functions）}
 \label{transcendentalfunctions}
 
 In general, the transcendental functions $\log$, $\sin^{-1}$
