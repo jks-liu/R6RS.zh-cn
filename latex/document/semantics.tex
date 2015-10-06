@@ -1,59 +1,34 @@
 %!TEX root = r6rs.tex
 
-This appendix presents a non-normative, formal, operational semantics for Scheme, that is based on an earlier semantics~\cite{mf:scheme-op-sem}. It does not cover the entire language. The notable missing features are the macro system, I/O, and the numerical tower. The precise list of features included is given in section~\ref{sec:semantics:grammar}.
+本附录为Scheme提供了一个非正式的，形式的，操作语义，其基于一个早期的语义\cite{mf:scheme-op-sem}。它没有覆盖整个语言。明显没有包含的特性是宏系统，I/O，和数值塔。包含特性的精确列表在第\ref{sec:semantics:grammar}小节给出。
 
-The core of the specification is a single-step term rewriting relation that indicates how an (abstract) machine behaves. In general, the report is not a complete specification, giving implementations freedom to behave differently, typically to allow optimizations. This underspecification shows up in two ways in the semantics. 
+规范的核心是一个单步术语重写的关系，其指出一个（抽象的）机器行为。通常，报告不是完整的规范，已给予实现不同行为的自由，特别是在可以优化的时候。这种不指明在语义中以两种方式展示。
 
-The first is reduction rules that reduce to special ``\textbf{unknown:} \textit{string}'' states (where the string provides a description of the unknown state). The intention is that rules that reduce to such states can be replaced with arbitrary reduction rules. The precise specification of how to replace those rules is given in section~\ref{sec:semantics:underspecification}.
+第一个是减少规则，其减少到特定的“\textbf{未知：}\textit{字符串}”状态（其中字符串提供未知状态的一个描述）。意图是减少到这种状态的规则可以用任意的减少规则取代。怎样代替这些规则的精确规范在第\ref{sec:semantics:underspecification}小节被给出。
 
-The other is that the single-step relation relates one program to
-multiple different programs, each corresponding to a legal transition
-that an abstract machine might take. Accordingly we use the transitive
-closure of the single step relation $\rightarrow^*$ to define the
-semantics, \calS, as a function from programs (\calP)
-to sets of observable results (\calR):
+另一个是单步关系涉及到一个程序到多个程序，每一个对应于一个抽象机器可以做的合法的转换。相应地，我们使用单步关系$\rightarrow^*$的传递闭包来定义语义，\calS{}，作为一个从程序（\calP{}）到观察结果集合（\calR）的函数。
 \begin{center}
 \begin{tabular}{l}
 $\calS : \calP \longrightarrow 2^{\calR}$ \\
 $\calS(\calP) = \{ \scrO(\calA) \mid \calP \rightarrow^* \calA \}$
 \end{tabular}
 \end{center}
-where the function $\scrO$ turns an answer ($\calA$) from the semantics into an observable result. Roughly, $\scrO$ is the identity function on simple base values, and returns a special tag for more complex values, like procedure and pairs.
 
-So, an implementation conforms to the semantics if, for every program $\calP$, the implementation produces one of the results in $\calS(\calP)$ or, if the implementation loops forever, then there is an infinite reduction sequence starting at $\calP$, assuming that the reduction relation $\rightarrow$ has been adjusted to replace the \textbf{unknown:} states.
+其中函数$\scrO$将一个答案（$\calA${}）从语义转换到一个观察结果。大概的说，$\scrO$在简单的基本值上是恒等函数，对于更加复杂的值，像过程和点对，则返回特定的标签。
 
-The precise definitions of $\calP$, $\calA$, $\calR$, and $\scrO$ are also given in section~\ref{sec:semantics:grammar}.
+所以，一个实现符合这样的语义如果，对所有的程序$\calP$，实现产生$\calS(\calP)$中结果的一个或，如果实现无限循环，那么有一个无限的减少序列以$\calP$开始，假设减少关系$\rightarrow$已经被调整去取代\textbf{未知：}状态。
 
-To help understand the semantics and how it behaves, we have
-implemented it in PLT Redex. The implementation is available at the
-report's website: \url{http://www.r6rs.org/}. All of the reduction
-rules and the metafunctions shown in the figures in this semantics
-were generated automatically from the source code.
+$\calP$，$\calA$，$\calR$和$\scrO$的精确定义也在第\ref{sec:semantics:grammar}小节被给出。
 
-\section{Background}
+为帮助理解语义和它的行为，我们在PLT Redex中实现了它。我们可以在这篇报告的官方网站发现这个实现：\url{http://www.r6rs.org/}。在本语义图表中展示的所有的减少规则和元方程都是从源代码自动生成的。
 
-We assume the reader has a basic familiarity with context-sensitive
-reduction semantics. Readers unfamiliar with this system may wish to
-consult Felleisen and Flatt's monograph~\cite{ff:monograph} or Wright
-and Felleisen~\cite{wf:type-soundness} for a thorough introduction,
-including the relevant technical background, or an introduction to PLT
-Redex~\cite{mfff:plt-redex} for a somewhat lighter one.
+\section{背景}
 
-As a rough guide, we define the operational semantics of a language
-via a relation on program terms, where the relation corresponds to a
-single step of an abstract machine. The relation is defined using
-evaluation contexts, namely terms with a distinguished place in them,
-called \emph{holes}\index{hole}, where the next step of evaluation
-occurs. We say that a term $e$ decomposes into an evaluation
-context $E$ and another term $e'$ if $e$ is the
-same as $E$ but with the hole replaced by $e'$. We write
-$E[e']$ to indicate the term obtained by replacing the hole in
-$E$ with $e'$.
+我们假设读者对上下文敏感的减少语义有基础的了解。对此系统不了解的读者可能想要查阅Felleisen和Flatt的专题著作\cite{ff:monograph}或Wright和Felleisen\cite{wf:type-soundness}的一个全面的介绍，其包括相关的技术背景，或者轻松一点的PLT Redex\cite{mfff:plt-redex}的一个介绍。
 
-For example, assuming that we have defined a grammar containing
-non-terminals for evaluation contexts ($E$), expressions
-($e$), variables ($x$), and values ($v$), we
-would write:
+作为一个简单的指南，我们通过程序术语的关系定义一个语言的操作语义，其中这个关系对应于一个抽象机器的单步。这个关系使用求值上下文定义，也就是它们当中有区别地方的术语，叫做\emph{孔（holes）}\index{hole，孔}，求值的下一步在这里进行。我们说一个术语$e$分解成一个表达式上下文$E$和宁一个术语$e'$，如果$e$和$E$是一样的但孔被$e'$代替。我们写成$E[e']$来指示术语在$E$中用$e'$来代替孔。
+
+比如，我们为表达式上下文（$E$），表达式（$e$），变量（$x$），和值（$v$）定义了一个包含了非终结符的语法。我们可以这样写：
 %
 \begin{displaymath}
   \begin{array}{l}
@@ -63,92 +38,49 @@ would write:
   \end{array}
 \end{displaymath}
 %
-to define the $\beta_v$ rewriting rule (as a part of the $\rightarrow$
-single step relation). We use the names of the non-terminals (possibly
-with subscripts) in a rewriting rule to restrict the application of
-the rule, so it applies only when some term produced by that grammar
-appears in the corresponding position in the term. If the same
-non-terminal with an identical subscript appears multiple times, the
-rule only applies when the corresponding terms are structurally
-identical (nonterminals without subscripts are not constrained to
-match each other). Thus, the occurrence of $E_1$ on both the
-left-hand and right-hand side of the rule above means that the context
-of the application expression does not change when using this rule.
-The ellipses are a form of Kleene star, meaning that zero or more
-occurrences of terms matching the pattern proceeding the ellipsis may
-appear in place of the the ellipsis and the pattern preceding it. We
-use the notation $\{ x_1 \cdots \mapsto v_1 \cdots \} e_1$ for
-capture-avoiding substitution; in this case it means that each
-$x_1$ is replaced with the corresponding $v_1$ in
-$e_1$. Finally, we write side-conditions in parentheses beside
-a rule; the side-condition in the above rule indicates that the number
-of $x_1$s must be the same as the number of $v_1$s.
-Sometimes we use equality in the side-conditions; when we do it merely
-means simple term equality, i.e., the two terms must have the
-same syntactic shape.
+去定义$\beta_v$重写规则（作为$\rightarrow$单步关系的一部分）。我们在重写规则中使用非终结符的名字（可能和下标一起使用）来限制规则的应用，所以只有当一些语法产生的条款出现在条款中对应的位置时，它才起作用。如果相同的非终结符和相同的下标出现多次，那么规则只有当相应的条款在结构上是一样的时候才起作用（没有下标的非终结符不强迫相互匹配。因此，上面规则中，$E_1$同时出现在左手边和右手边意味着应用表达式的上下文在使用这条规则的时候没有改变。省略号是Kleene星号的一个形式，意味着零个或多个省略号之前%<!-- TODO: proceeding应该是preceding。 -->
+的匹配模式条款的事件可以出现在省略号和它之前模式的位置。我们使用符号$\{ x_1 \cdots \mapsto v_1 \cdots \} e_1$表示捕获避免的替代；在这种情况下它意味着每一个$x_1$在$e_1$中被替代成相应的$v_1$。最后，除了规则，我们在小括号中写附加条件（side-conditions）；上面规则的附加条件指示$x_1$的数量必须和$v_1$的数量相等。我们有时在附加条件中使用等式；当我们这样做时仅仅意味着简单的条目相等，也就是说，这两个条目必须有相同的句法形状。
 
 
 \addtocounter{figure}{1} % get the figure counter in sync with the section counter
 \subfigurestart{}
 \beginfig
 \input{r6-fig-grammar-parti.tex}
-\caption{Grammar for programs and observables}\label{fig:grammar}
+\caption{程序和观测（observables）的语法}\label{fig:grammar}
 \endfig
 
-Making the evaluation context $E$ explicit in the rule allows
-us to define relations that manipulate their context. As a simple
-example, we can add another rule that signals a violation when a
-procedure is applied to the wrong number of arguments by discarding
-the evaluation context on the right-hand side of a rule:
+在规则中指明求值上下文$E$允许我们定义操作它们上下文的关系。作为一个简单的例子，我们可以添加另一条规则，其在程序应用错误数量参数的时候通过丢弃规则右手边求值上下文的方式产生错误：
 %
 \begin{displaymath}
   \begin{array}{l}
     E[\texttt{((}\sy{lambda}~\texttt{(}x_1 \cdots\texttt{)}~e\texttt{)}~v_1~\cdots\texttt{)}] \rightarrow
     \\
-    \textrm{\textbf{violation:} wrong argument count} ~~~~~ (\#x_1 \neq \#v_1)
+    \textrm{\textbf{violation:} 错误的参数数量} ~~~~~ (\#x_1 \neq \#v_1)
   \end{array}
 \end{displaymath}
 %
-Later we take advantage of the explicit evaluation context in more
-sophisticated ways.
+以后，我们会以更复杂的方式利用显示的求值上下文。
 
 
-
-\section{Grammar}\label{sec:semantics:grammar}
+\section{语法}\label{sec:semantics:grammar}
 
 \beginfig
 \subfigureadjust{}
 \input{r6-fig-grammar-partii.tex}
-\caption{Grammar for evaluation contexts}\label{fig:ec-grammar}
+\caption{求值上下文（evaluation contexts）的语法}\label{fig:ec-grammar}
 \endfig
 \subfigurestop{}
 
-Figure~\ref{fig:grammar} shows the grammar for the subset of the
-report this semantics models. Non-terminals are written in
-\textit{italics} or in a calligraphic font ($\calP$
-$\calA$, $\calR$, and $\calRv$) and literals are 
-written in a \texttt{monospaced} font.
+图\ref{fig:grammar}展示了本报告语义模型的子集。非终结符被写成\textit{斜体}或一种艺术字体（$\calP$，$\calA$，$\calR$和$\calRv$）且字面量被写成\texttt{等宽}}字体。
 
-The $\calP$ non-terminal represents possible program states. The
-first alternative is a program with a store and an expression. 
-The second alternative is an uncaught exception, and the third is
-used to indicate a place where the model does not completely specify
-the behavior of the primitives it models (see section~\ref{sec:semantics:underspecification} for details of those situations). 
-The $\calA$ non-terminal
-represents a final result of a program. It is just like $\calP$
-except that expression has been reduced to some sequence of values.
+非终结符$\calP$表示可能的程序状态。第一个选择是有一个存储和一个表达式的程序。第二个选择是一个未捕获的异常，及第三个被用作指示它建模的模型没有完全指定原语行为的地方（那些情况具体的细节见第\ref{sec:semantics:underspecification}小节）。非终结符$\calA$表示程序的最终结果。它和$\calP$是一样的除了表达式已经被减少到一些值得序列之外。
 
-The $\calR$ and $\calRv$ non-terminals specify the observable results of a program. Each $\calR$ is either a sequence of values that correspond to the values produced by the program that terminates normally, or a tag indicating an uncaught exception was raised, or \sy{unknown} if the program encounters a situation the semantics does not cover. The $\calRv$ non-terminal specifies what the observable results are for a particular value: a pair, the empty list, a symbol, a self-quoting value (\schtrue, \schfalse, and numbers), a condition, or a procedure.
+非终结符$\calR$和$\calRv$表示程序的可观测结果。每个$\calR$或者是一个对应于正常终止的程序产生的值的值的序列，或者是一个指示未捕获异常被抛出的标签，或者是\sy{unknown}如果程序到达一个本语义没有指明的情况的话。非终结符$\calRv$指明对于一个特定的值来说可观测的结果是什么：一个点对，空表，一个符号，一个自引用的值（\schtrue{}，\allowbreak{}\schfalse{}\allowbreak{}和数字），一个条件，或一个过程。
 
-The \nt{sf} non-terminal generates individual elements of the
-store. The store holds all of the mutable state of a program. It is
-explained in more detail along with the rules that manipulate it.
+非终结符\nt{sf}产生存储的一个单独元素。存储保持一个程序所有的可变状态。它，连同操作它的规则一起，被更加详细地解释了。
 
-Expressions ($\mathit{es}$) include quoted data, \sy{begin} expressions, \sy{begin0} expressions%
-\footnote{ \sy{begin0} is not part of the standard, but we include it
-  to make the rules for \va{dynamic-wind} and \va{letrec} easier to read. Although
-  we model it directly, it can be defined in terms of other forms we
-  model here that do come from the standard:
+表达式($\mathit{es}$)包括被引用的数据，\sy{begin}表达式，\sy{begin0}表达式%
+\footnote{ \sy{begin0}不是标准的一部分，但为了\va{dynamic-wind}和\va{letrec}的规则更加易读，我们包含了它。尽管我们直接给它建模，但是它可以根据我们在此定义的来自标准的其它形式被定义：
 \begin{displaymath}
   \begin{array}{rcl}\tt
     \texttt{(}\sy{begin0}~e_1~e_2~\cdots\texttt{)} &=&
@@ -161,22 +93,15 @@ Expressions ($\mathit{es}$) include quoted data, \sy{begin} expressions, \sy{beg
     \end{array}
   \end{array}
 \end{displaymath}
-}, application expressions, \sy{if} expressions, \sy{set!}
-expressions, variables, non-procedure values (\nt{nonproc}), primitive
-procedures (\nt{pproc}), lambda expressions, \sy{letrec} and \sy{letrec*} expressions. 
+}，应用表达式，\sy{if}表达式，\sy{set!}表达式，变量，非过程值（\nt{nonproc}），基本过程（\nt{pproc}），lambda表达式，\sy{letrec}和\sy{letrec*}表达式。
 
-The last few expression forms are only generated for intermediate states (\sy{dw} for \sy{dynamic-wind}, \sy{throw} for continuations, \sy{unspecified} for the result of the assignment operators, \sy{handlers} for exception handlers, and \sy{l!} and \sy{reinit} for \sy{letrec}), and should not appear in an initial program. Their use is described in the relevant sections of this appendix.
+最后几个表达式形式仅仅是为了中间状态生成的（\sy{dw}为了\sy{dynamic-wind}，\sy{throw}为了继续，\sy{unspecified}为了赋值操作的规则，\sy{handlers}为了异常处理，及\sy{l!}和\sy{reinit}为了\sy{letrec}），且在初始程序中不应该出现。它们的使用在本附录的相关章节被描述。
 
-The \nt{f} non-terminal describes the formals for \sy{lambda} expressions. (The \sy{dot} is used instead of a period for procedures that accept an arbitrary number of arguments, in order to avoid meta-circular confusion in our PLT Redex model.) 
+非终结符\nt{f}描述\sy{lambda}表达式的形式。（\sy{dot}代替（西文）句号来描述接受任意数量参数的过程，这是为了避免和我们PLT Redex模型中的元圆（meta-circular）相混淆。）
 
-The \nt{s} non-terminal covers all datums, which can be either non-empty sequences (\nt{seq}), the empty sequence, self-quoting values (\nt{sqv}), or symbols. Non-empty sequences are either just a sequence of datums, or they are terminated with a dot followed by either a symbol or a self-quoting value. Finally the self-quoting values are numbers and the booleans \semtrue{} and \semfalse{}.
+非终结符\nt{s}覆盖所有的数据，其可以是非空序列（\nt{seq}），空序列，自引用值（\nt{sqv}），或符号。非空序列或者仅是一个数据的序列，或者以一个点终结，这个点或者跟着一个符号，或者跟着一个自引用值。最后，自引用值是数字和布尔\semtrue{}与\semfalse{}。
 
-The \nt{p} non-terminal represents programs that have no quoted
-data. Most of the reduction rules rewrite \nt{p} to \nt{p},
-rather than $\calP$ to $\calP$, since quoted data is first
-rewritten into calls to the list construction functions before
-ordinary evaluation proceeds. In parallel to \nt{es}, \nt{e} represents
-expressions that have no quoted expressions.
+非终结符\nt{p}表示没有引用数据的程序。大部分消去规则重写\nt{p}到\nt{p}，而不是$\calP$到$\calP$，这是因为在平常的求值之前被引用的数据第一次被重写成表构造函数的调用。平行于\nt{es}，\nt{e}表示没有被引用表达式的表达式。
 
 \beginfig
 \begin{center}
@@ -187,35 +112,24 @@ expressions that have no quoted expressions.
 \caption{Quote}\label{fig:quote}
 \endfig
 
-The values ($v$) are divided into four categories:
+值（$v$）被分成四类：
 %
 \begin{itemize}
-\item Non-procedures (\nt{nonproc}) include pair pointers
-  (\va{pp}), the empty list (\va{null}), symbols, self-quoting values
-  (\nt{sqv}), and conditions. Conditions represent
-  the report's condition values, but here just contain a message and
-  are otherwise inert.
-\item User procedures (\texttt{(}\sy{lambda} \nt{f} \nt{e} \nt{e} $\cdots$\texttt{)}) include multi-arity lambda expressions and lambda expressions with dotted parameter lists,
-\item Primitive procedures (\nt{pproc}) include
+\item 非过程（\nt{nonproc}）包括点对指针（\va{pp}），空表（\va{null}），符号，自引用值（\nt{sqv}），和条件。条件表示报告的条件值，但这儿只包含一条信息且其它情况无效。
+\item 用户过程（\texttt{(}\sy{lambda} \nt{f} \nt{e} \nt{e} $\cdots$\texttt{)}）包括多参数的lambda表达式和伴随点参数列表的表达式。
+\item 基本函数（\nt{pproc}）包括
 
 \begin{itemize}
 \item
- arithmetic procedures
-  (\nt{aproc}): \va{+}, \va{-}, \va{/}, and \va{*}, 
-\item 
-  procedures of one
-  argument (\nt{proc1}): \va{null?}, \va{pair?}, \va{car}, \va{cdr},
-  \va{call/cc}, \va{procedure?}, \va{condition?}, \va{unspecified?}, \va{raise}, and \va{raise-continuable}, 
-  \item
-  procedures of
-  two arguments (\nt{proc2}): \va{cons}, \va{set-car!}, \va{set-cdr!}, \va{eqv?},
-  and \va{call-with-values}, 
-  \item as well as \va{list}, \va{dynamic-wind},
-  \va{apply}, \va{values}, and \va{with-exception-handler}.
+ 算术过程（\nt{aproc}）：\va{+}, \va{-}, \va{/}, 和\va{*}，
+\item
+ 一个参数的过程（\nt{proc1}）：\va{null?}, \va{pair?}, \va{car}, \va{cdr}, \va{call/cc}, \va{procedure?}, \va{condition?}, \va{unspecified?}, \va{raise}, 和\va{raise-continuable},
+\item
+ 两个参数的过程（\nt{proc2}）：\va{cons}, \va{set-car!}, \va{set-cdr!}, \va{eqv?}, 和\va{call-with-values},
+\item
+ 以及\va{list}, \va{dynamic-wind}, \va{apply}, \va{values}, 和\va{with-exception-handler}。
 \end{itemize}
-\item Finally, continuations are represented as \sy{throw} expressions
-  whose body consists of the context where the continuation was
-  grabbed.
+\item 最后，继续被表示为\sy{throw}表达式，其内部由捕获继续的上下文组成。
 \end{itemize}
 %
 The next three set of non-terminals in figure~\ref{fig:grammar} represent pairs (\nt{pp}), which are divided into immutable pairs (\nt{ip}) and mutable pairs (\nt{mp}). The final set of non-terminals in figure~\ref{fig:grammar}, \nt{sym},
@@ -247,13 +161,13 @@ They eliminate the store, and replace complex values with simple tags that indic
 
 \section{Quote}\label{sec:semantics:quote}
 
-The first reduction rules that apply to any program is the 
-rules in figure~\ref{fig:quote} that eliminate quoted expressions. 
+The first reduction rules that apply to any program is the
+rules in figure~\ref{fig:quote} that eliminate quoted expressions.
 The first two rules erase the quote for quoted expressions that do not introduce any pairs.
 The last two rules lift quoted datums to the top of the expression so
 they are evaluated only once, and turn the datums into calls to either \va{cons} or \va{consi}, via the metafunctions $\mathscr{Q}_i$ and $\mathscr{Q}_m$.
 
-Note that the left-hand side of the \rulename{6qcons} and \rulename{6qconsi} rules are identical, meaning that if one rule applies to a term, so does the other rule. 
+Note that the left-hand side of the \rulename{6qcons} and \rulename{6qconsi} rules are identical, meaning that if one rule applies to a term, so does the other rule.
 Accordingly, a quoted expression may be lifted out into a sequence of \va{cons} expressions, which create mutable pairs, or into a sequence of \va{consi} expressions, which create immutable pairs (see section~\ref{sec:semantics:lists} for the rules on how that happens).
 
 These rules apply before any other because of the contexts in which they, and all of the other rules, apply. In particular, these rule applies in the
@@ -303,7 +217,7 @@ ordinary hole \hole{} appears where the usual kinds of
 evaluation can occur. The hole \holes{} appears in contexts that
 allow multiple values and \holeone{} appears in
 contexts that expect a single value. Accordingly, the rule
-\rulename{6promote} only applies in \holes{} contexts, and 
+\rulename{6promote} only applies in \holes{} contexts, and
 \rulename{6demote} only applies in \holeone{} contexts.
 
 To see how the evaluation contexts are organized to ensure that
@@ -358,7 +272,7 @@ but is not of the form $\texttt{(}\sy{lambda}~\texttt{()}~e\texttt{)}$, the rule
 
 \section{Exceptions}
 
-The workhorses for the exception system are $$\texttt{(}\sy{handlers}~\nt{proc}~\cdots{}~\nt{e}\texttt{)}$$ expressions and the \nt{G} and \nt{PG} evaluation contexts (shown in figure~\ref{fig:ec-grammar}). 
+The workhorses for the exception system are $$\texttt{(}\sy{handlers}~\nt{proc}~\cdots{}~\nt{e}\texttt{)}$$ expressions and the \nt{G} and \nt{PG} evaluation contexts (shown in figure~\ref{fig:ec-grammar}).
 The \sy{handlers} expression records the
 active exception handlers (\nt{proc} $\cdots$) in some expression (\nt{e}). The
 intention is that only the nearest enclosing \sy{handlers} expression
@@ -479,12 +393,12 @@ The rules in figure~\ref{fig:Cons} handle lists. The first two rules handle \va{
 
 The next two rules, \rulename{6cons} and \rulename{6consi}, allocate new \va{cons} cells.
 They both move $\texttt{(}\va{cons}~v_1~v_2\texttt{)}$ into the store, bound to a fresh
-pair pointer (see also section~\ref{sec:semantics:quote} for a description of ``fresh''). 
+pair pointer (see also section~\ref{sec:semantics:quote} for a description of ``fresh'').
 The \rulename{6cons} uses a \nt{mp} variable, to indicate the pair is mutable, and the \rulename{6consi} uses a \nt{ip} variable to indicate the pair is immutable.
 
 The rules \rulename{6car} and \rulename{6cdr} extract the components of a pair from the store when presented with a pair pointer (the \nt{pp} can be either \nt{mp} or \nt{ip}, as shown in figure~\ref{fig:grammar}).
 
-The rules \rulename{6setcar} and \rulename{6setcdr} handle assignment of mutable pairs. 
+The rules \rulename{6setcar} and \rulename{6setcdr} handle assignment of mutable pairs.
 They replace the contents of the appropriate location in the store with the new value, and reduce to \va{unspecified}. See section~\ref{sec:semantics:underspecification} for an explanation of how \va{unspecified} reduces.
 
 \beginfig
@@ -499,12 +413,12 @@ The next four rules handle the \va{null?} predicate and the \va{pair?} predicate
 
 \section{Eqv}
 
-The rules for \va{eqv?} are shown in figure~\ref{fig:Eqv}. The first two rules cover most of the behavior of \va{eqv?}. 
-The first says that when the two arguments to \va{eqv?} are syntactically identical, then \va{eqv?} produces \semtrue{} and the second says that when the arguments are not syntactically identical, then \va{eqv?} produces \semfalse{}. 
-The structure of \nt{v} has been carefully designed so that simple term equality corresponds closely to \va{eqv?}'s behavior. 
+The rules for \va{eqv?} are shown in figure~\ref{fig:Eqv}. The first two rules cover most of the behavior of \va{eqv?}.
+The first says that when the two arguments to \va{eqv?} are syntactically identical, then \va{eqv?} produces \semtrue{} and the second says that when the arguments are not syntactically identical, then \va{eqv?} produces \semfalse{}.
+The structure of \nt{v} has been carefully designed so that simple term equality corresponds closely to \va{eqv?}'s behavior.
 For example, pairs are represented as pointers into the store and \va{eqv?} only compares those pointers.
 
-The side-conditions on those first two rules ensure that they do not apply when simple term equality does not match the behavior of \va{eqv?}. There are two situations where it does not match: comparing two conditions and comparing two procedures. For the first, the report does not specify \va{eqv?}'s behavior, except to say that it must return a boolean, so the remaining two rules (\rulename{6eqct}, and \rulename{6eqcf}) allow such comparisons to return \semtrue{} or \semfalse{}. Comparing two procedures is covered in section~\ref{sec:semantics:underspecification}. 
+The side-conditions on those first two rules ensure that they do not apply when simple term equality does not match the behavior of \va{eqv?}. There are two situations where it does not match: comparing two conditions and comparing two procedures. For the first, the report does not specify \va{eqv?}'s behavior, except to say that it must return a boolean, so the remaining two rules (\rulename{6eqct}, and \rulename{6eqcf}) allow such comparisons to return \semtrue{} or \semfalse{}. Comparing two procedures is covered in section~\ref{sec:semantics:underspecification}.
 
 \section{Procedures and application}
 
@@ -540,14 +454,14 @@ any eventual assignment to the parameter. Once all of the parameters
 have been substituted away, the rule \rulename{6app0} applies and
 evaluation of the body of the procedure begins.
 
-At first glance, the rule \rulename{6appN} appears superfluous, since it seems like the rules could just reduce first by \rulename{6appN!} and then look up the variable when it is evaluated. 
-There are two reasons why we keep the \rulename{6appN}, however. 
+At first glance, the rule \rulename{6appN} appears superfluous, since it seems like the rules could just reduce first by \rulename{6appN!} and then look up the variable when it is evaluated.
+There are two reasons why we keep the \rulename{6appN}, however.
 The first is purely conventional: reducing applications via substitution is taught to us at an early age and is commonly used in rewriting systems in the literature.
 The second reason is more technical:  the
 \rulename{6mark} rule requires that \rulename{6appN} be applied once $\nt{e}_i$ has been reduced to a value. \rulename{6appN!} would
 lift the value into the store and put a variable reference into the application, leading to another use of \rulename{6mark}, and another use of \rulename{6appN!}, which continues forever.
 
-The rule \rulename{6$\mu$app} handles a well-formed application of a function with a dotted parameter lists. 
+The rule \rulename{6$\mu$app} handles a well-formed application of a function with a dotted parameter lists.
 It such an application into an application of an
 ordinary procedure by constructing a list of the extra arguments. Similarly, the rule \rulename{6$\mu$app1} handles an application of a procedure that has a single variable as its parameter list.
 
@@ -565,8 +479,8 @@ The next two rules \rulename{6proct} and \rulename{6procf} handle applications o
 \endfig
 \subfigurestop{}
 
-The rules in figure~\ref{fig:Apply} 
-cover \va{apply}. 
+The rules in figure~\ref{fig:Apply}
+cover \va{apply}.
 The first rule, \rulename{6applyf}, covers the case where the last argument to
 \va{apply} is the empty list, and simply reduces by erasing the
 empty list and the \va{apply}. The second rule, \rulename{6applyc}
@@ -574,7 +488,7 @@ covers a well-formed application of \va{apply} where \va{apply}'s final argument
 reduces by extracting the components of the pair from the store and
 putting them into the application of \va{apply}. Repeated
 application of this rule thus extracts all of the list elements passed
-to \va{apply} out of the store. 
+to \va{apply} out of the store.
 
 The remaining five rules cover the
 various violations that can occur when using \va{apply}. The first one covers the case where \va{apply} is supplied with a cyclic list. The next four cover applying a
@@ -591,7 +505,7 @@ too few arguments to \va{apply}.
 \caption{Call/cc and dynamic wind}\label{fig:Call-cc--and--dynamic-wind}
 \endfig
 
-The specification of \va{dynamic-wind} uses 
+The specification of \va{dynamic-wind} uses
 $\texttt{(}\sy{dw}~x~e~e~e\texttt{)}$
 expressions to record which dynamic-wind \var{thunk}s are active at
 each point in the computation. Its first argument is an identifier
@@ -648,7 +562,7 @@ procedures from its argument and the $\mathscr{S}$ metafunction extracts all of 
 $H$ to work through their arguments, one \sy{dw} at a time.
 In each case, the metafunctions are careful to keep the right
 \sy{dw} context around each of the procedures in case a continuation
-jump occurs during one of their evaluations. 
+jump occurs during one of their evaluations.
 Since $\mathscr{R}$,
 receives the destination context, it keeps the intermediate
 parts of the context in its result.
@@ -682,7 +596,7 @@ The \rulename{6dt} rule covers the case where a variable is referred
 to before the value of a init expression is filled in, which must
 always raise an exception.
 
-A \va{reinit} expression is used to detect a program that captures a continuation in an initialization expression and returns to it, as shown in the three rules \rulename{6init}, \rulename{6reinit}, and \rulename{6reinite}. The \va{reinit} form accepts an identifier that is bound in the store to a boolean as its argument. Those are identifiers are initially \semfalse{}. When \va{reinit} is evaluated, it checks the value of the variable and, if it is still \semfalse{}, it changes it to \semtrue{}. If it is already \semtrue{}, then \va{reinit} either just does nothing, or it raises an exception, in keeping with the two legal behaviors of \va{letrec} and \va{letrec*}. 
+A \va{reinit} expression is used to detect a program that captures a continuation in an initialization expression and returns to it, as shown in the three rules \rulename{6init}, \rulename{6reinit}, and \rulename{6reinite}. The \va{reinit} form accepts an identifier that is bound in the store to a boolean as its argument. Those are identifiers are initially \semfalse{}. When \va{reinit} is evaluated, it checks the value of the variable and, if it is still \semfalse{}, it changes it to \semtrue{}. If it is already \semtrue{}, then \va{reinit} either just does nothing, or it raises an exception, in keeping with the two legal behaviors of \va{letrec} and \va{letrec*}.
 
 The last two rules in figure~\ref{fig:Letrec} put together \sy{l!} and \sy{reinit}. The \rulename{6letrec} rule reduces a \sy{letrec} expression to an application expression, in order to capture the unspecified order of evaluation of the init expressions. Each init expression is wrapped in a \sy{begin0} that records the value of the init and then uses \sy{reinit} to detect continuations that return to the init expression. Once all of the init expressions have been evaluated, the procedure on the right-hand side of the rule is invoked, causing the value of the init expression to be filled in the store, and evaluation continues with the body of the original \sy{letrec} expression.
 
@@ -708,7 +622,7 @@ So, the remaining rules just specify the minimal behavior that we know that a va
 %\section*{Acknowledgments}
 %Thanks to Michael Sperber for many helpful discussions of specific points in the semantics, for spotting many mistakes and places where the formal semantics diverged from the informal semantics, and for generally making it possible for us to keep up with changes to the informal semantics as it developed. Thanks also to Will Clinger for a careful reading of the semantics and its explanation.
 
-%%% Local Variables: 
+%%% Local Variables:
 %%% mode: latex
 %%% TeX-master: "r6rs"
-%%% End: 
+%%% End:
