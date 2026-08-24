@@ -719,17 +719,17 @@
     (reduction-relation
      lang
      (--> (in-hole P (eqv? proc proc))
-          (unknown "equivalence of procedures")
+          (unknown "过程的等价")
           "6ueqv")
      (--> (in-named-hole single P (values v_1 ...))
-          (unknown ,(format "context expected one value, received ~a" (length (term (v_1 ...)))))
+          (unknown ,(format "上下文期待一个值，接受到~a" (length (term (v_1 ...)))))
           "6uval"
           (side-condition (not (= (length (term (v_1 ...))) 1))))
      (--> (in-hole P (in-hole U unspecified))
-          (unknown "unspecified result")
+          (unknown "未定义的结果")
           "6udemand")
      (--> (store (sf ...) unspecified)
-          (unknown "unspecified result")
+          (unknown "未定义的结果")
           "6udemandtl")
      
      (--> (in-hole P_1 (begin unspecified e_1 e_2 ...))

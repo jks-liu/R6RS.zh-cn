@@ -141,7 +141,7 @@ null?%
   (foo (+ x 3)))                \ev  45%
 \end{scheme}
 %
-当{\cf begin}, {\cf let-syntax}, 或{\cf letrec-syntax}形式先于第一个表达式出现在内部的时候，它们被拼接到内部；见第\ref{begin}小节。内部的一些或所以<!-- TODO -->，包括{\cf begin}, {\cf let-syntax}, 或{\cf letrec-syntax}形式里面的部分，可以通过一个宏使用指定（见第\ref{macrosection}小节）。
+当{\cf begin}, {\cf let-syntax}, 或{\cf letrec-syntax}形式先于第一个表达式出现在内部的时候，它们被拼接到内部；见第\ref{begin}小节。内部的一些或所以，包括{\cf begin}, {\cf let-syntax}, 或{\cf letrec-syntax}形式里面的部分，可以通过一个宏使用指定（见第\ref{macrosection}小节）。% TODO
 
 一个包含变量定义的被扩展的\hyper{body}（见第\ref{expansionchapter}章）总是可以被转换成一个等价的{\cf letrec*}表达式。比如，上面例子中的{\cf let}表达式等价于
 
@@ -661,7 +661,7 @@ null?%
 \section{等价谓词（Equivalence predicates）}
 \label{equivalencesection}
 
-一个\defining{谓词}是一个总是返回布尔值（\schtrue{}或\schfalse{}）的过程。一个\defining{等价谓词}在计算上模拟数学上的等价关系（它是[对称的（symmetric），自反的（reflexive），且传递的（transitive）](/r6rs-translation-experience/#symmetric-reflexive-transitive)）。在本节表述的等价谓词中，{\cf eq?}是最好或最精细的，{\cf equal?}是最粗糙的。{\cf eqv?}比{\cf eq?}的辨别能力稍差。 \todo{Pitman doesn't like
+一个\defining{谓词}是一个总是返回布尔值（\schtrue{}或\schfalse{}）的过程。一个\defining{等价谓词}在计算上模拟数学上的等价关系（它是\href{https://r6rs.mrliu.org/r6rs-translation-experience\#symmetric-reflexive-transitive}{对称的（symmetric），自反的（reflexive），且传递的（transitive）}）。在本节表述的等价谓词中，{\cf eq?}是最好或最精细的，{\cf equal?}是最粗糙的。{\cf eqv?}比{\cf eq?}的辨别能力稍差。 \todo{Pitman doesn't like
 this paragraph.  Lift the discussion from the Maclisp manual.  Explain
 why there's more than one predicate.}
 
@@ -708,7 +708,7 @@ why there's more than one predicate.}
 
 \item \vari{Obj}和\varii{obj}是字符，但{\cf char=?}过程返回\schfalse{}。
 
-\item \vari{Obj}和\varii{obj}一个是空表，但另一个不是。% <!-- TODO：和类型不同重复 -->
+\item \vari{Obj}和\varii{obj}一个是空表，但另一个不是。% TODO：和类型不同重复
 
 \item \vari{Obj}和\varii{obj}是对象，比如点对，向量，字节向量（库的第\extref{lib:bytevectorschapter}{Bytevectors}章），字符串，记录（库的第\extref{lib:recordschapter}{Records}章），端口（库的第\extref{lib:portsiosection}{Port I/O}小节），或哈希表（库的第\extref{lib:hashtablechapter}{Hashtables}章），但指向不同的位置。
 
@@ -825,7 +825,7 @@ not confusing?  A table maybe?}
 \begin{entry}{%
 \proto{equal?}{ \vari{obj} \varii{obj}}{procedure}}
 
-{\cf equal?}谓词返回\schtrue{}当且仅当它的参数（可能无限地）到正则树（regular trees）的展开作为有序树是一样的（ordered trees）。% <!-- TODO -->
+{\cf equal?}谓词返回\schtrue{}当且仅当它的参数（可能无限地）到正则树（regular trees）的展开作为有序树是一样的（ordered trees）。% TODO
 
 {\cf equal?}谓词对待点对和向量作为有出边（outgoing edges）的节点，使用{\cf string=?}比较字符串，使用{\cf bytevector=?}比较字节向量（见库的第\extref{lib:bytevectorschapter}{Bytevectors}章），且使用{\cf eqv?}比较其它节点。
 
@@ -986,29 +986,21 @@ x_1 = n_d \cdot x_2 + x_m\\
 \subsubsection{超越函数（Transcendental functions）}
 \label{transcendentalfunctions}
 
-In general, the transcendental functions $\log$, $\sin^{-1}$
-(arcsine), $\cos^{-1}$ (arccosine), and $\tan^{-1}$ are multiply
-defined.  The value of $\log z$ is defined to be the one whose
-imaginary part lies in the range from $-\pi$ (inclusive if $-0.0$ is
-distinguished, exclusive otherwise) to $\pi$ (inclusive).  $\log 0$ is
-undefined.
+通常，超越函数$\log$, $\sin^{-1}$
+(arcsine), $\cos^{-1}$ (arccosine), 和$\tan^{-1}$是多重定义的。$\log z$被定义为虚部的值域是$-\pi$（包括，如果区分$-0.0$的话，否则不包括）到$\pi$（包括）。$\log 0$是未定义的。
 
-The value of $\log z$ for non-real $z$ is defined in terms of log on real numbers as
+对于非实数的$z$，$\log z$根据实数上的log定义如下
 
 \begin{displaymath}
 \log z = \log |z| + (\mathrm{angle}~z)i
 \end{displaymath}
 %
-where $\mathrm{angle}~z$ is the angle of $z = a\cdot e^{ib}$ specified
-as:
+其中$\mathrm{angle}~z$是$z = a\cdot e^{ib}$按如下方式指定的角
 $$\mathrm{angle}~z = b+2\pi n$$
-with $-\pi \leq \mathrm{angle}~z\leq \pi$ and $\mathrm{angle}~z =
-b+2\pi n$ for some integer $n$.
+其中，$-\pi \leq \mathrm{angle}~z\leq \pi$，且对某些整数$n$，$\mathrm{angle}~z = b+2\pi n$。
 
-With the one-argument version of $\log$ defined this way, the values
-of the two-argument-version of $\log$, $\sin^{-1} z$, $\cos^{-1} z$,
-$\tan^{-1} z$, and the two-argument version of $\tan^{-1}$ are
-according to the following formul\ae:
+在一个参数log定义版本的基础上，两参数版本$\log$, $\sin^{-1} z$, $\cos^{-1} z$,
+$\tan^{-1} z$, 和两参数版本$\tan^{-1}$的值可以根据下列公式定义：
 \begin{eqnarray*}
 \log z~b &=& \frac{\log z}{\log b}\\
 \sin^{-1} z &=& -i \log (i z + \sqrt{1 - z^2})\\
@@ -1017,13 +1009,11 @@ according to the following formul\ae:
 \tan^{-1} x~y &=& \mathrm{angle}(x+ yi)
 \end{eqnarray*}
 
-The range of $\tan^{-1} x~y$ is as in the following table. The
-asterisk (*) indicates that the entry applies to implementations that
-distinguish minus zero.
+$\tan^{-1} x~y$的值域如下表所示。星号（*）指示这个条目适用于区别负零的实现。
 
 \begin{center}
 \begin{tabular}{clll}
-& $y$ condition & $x$ condition & range of result $r$\\\hline
+& $y$ 条件 & $x$ 条件 & 结果$r$的值域\\\hline
 & $y = 0.0$ & $x > 0.0$ & $0.0$\\
 $\ast$ & $y = +0.0$  & $x > 0.0$ & $+0.0$\\
 $\ast$ & $y = -0.0$ & $x > 0.0$ & $-0.0$\\
@@ -1036,7 +1026,7 @@ $\ast$ & $y = -0.0$ & $x < 0.0$ & $-\pi$\\
 &$y < 0.0$ & $x < 0.0$ & $-\pi< r< -\frac{\pi}{2}$\\
 &$y < 0.0$ & $x = 0.0$ & $-\frac{\pi}{2}$\\
 &$y < 0.0$ & $x > 0.0$ & $-\frac{\pi}{2} < r< 0.0$\\
-&$y = 0.0$ & $x = 0.0$ & undefined\\
+&$y = 0.0$ & $x = 0.0$ & 未定义\\
 $\ast$& $y = +0.0$ & $x = +0.0$ & $+0.0$\\
 $\ast$& $y = -0.0$ & $x = +0.0$& $-0.0$\\
 $\ast$& $y = +0.0$ & $x = -0.0$ & $\pi$\\
@@ -1046,9 +1036,9 @@ $\ast$& $y = -0.0$ & $x = 0$    & $-\frac{\pi}{2}$
 \end{tabular}
 \end{center}
 
-\subsection{Numerical operations}
+\subsection{数值操作}
 
-\subsubsection{Numerical type predicates}
+\subsubsection{数值类型谓词}
 
 \begin{entry}{%
 \proto{number?}{ obj}{procedure}
@@ -1057,28 +1047,13 @@ $\ast$& $y = -0.0$ & $x = 0$    & $-\frac{\pi}{2}$
 \proto{rational?}{ obj}{procedure}
 \proto{integer?}{ obj}{procedure}}
 
-These numerical type predicates can be applied to any kind of
-argument.  They return \schtrue{} if the object is a number object
-of the named type, and \schfalse{} otherwise.
-In general, if a type predicate is true of a number object then all higher
-type predicates are also true of that number object.  Consequently, if a type
-predicate is false of a number object, then all lower type predicates are
-also false of that number object.
+这些数值类型谓词可以被应用于任何类型的参数。如果对象是命名类型的数字对象，它们返回\schtrue{}，否则返回\schfalse{}。通常，如果一个类型谓词对一个数字对象返回真，那么，所有更高的类型谓词对那些数字对象也返回真。因此，如果一个类型谓词对一个数字对象返回假，那么，所有更低的类型谓词对那些数字对象也返回假。
 
-If \var{z} is a complex number object, then {\cf (real? \var{z})} is true if
-and only if {\cf (zero? (imag-part \var{z}))} and {\cf (exact?
-  (imag-part \var{z}))} are both true.
+如果\var{z}是一个复数对象，那么{\cf (real? \var{z})}为真，当且仅当{\cf (zero? (imag-part \var{z}))}和{\cf (exact? (imag-part \var{z}))}同时为真。
 
-If \var{x} is a real number object, then {\cf (rational? \var{x})} is true if
-and only if there exist exact integer objects \vari{k} and \varii{k} such that
-{\cf (= \var{x} (/ \vari{k} \varii{k}))} and {\cf (= (numerator
-  \var{x}) \vari{k})} and {\cf (= (denominator \var{x}) \varii{k})} are
-all true.  Thus infinities and NaNs are not rational number objects.
+如果\var{x}是一个实数对象，那么{\cf (rational? \var{x})}为真，当且仅当存在精确的整数对象\vari{k}和\varii{k}使得{\cf (= \var{x} (/ \vari{k} \varii{k}))}和{\cf (= (numerator \var{x}) \vari{k})}和{\cf (= (denominator \var{x}) \varii{k})}都为真。因此，无限大和非数不是有理数对象。
 
-If \var{q} is a rational number objects, then {\cf (integer?
-\var{q})} is true if and only if {\cf (= (denominator
-\var{q}) 1)} is true.  If \var{q} is not a rational number object,
-then {\cf (integer? \var{q})} is \schfalse.
+如果\var{q}是一个有理数字对象，那么，{\cf (integer? \var{q})}为真，当且仅当如果{\cf (= (denominator \var{q}) 1)}为真。如果\var{q}不是一个有利数字对象，那么{\cf (integer? \var{q})}是\schfalse{}。
 
 \begin{scheme}
 (complex? 3+4i)                        \ev  \schtrue{}
@@ -1106,10 +1081,7 @@ then {\cf (integer? \var{q})} is \schfalse.
 \end{scheme}
 
 \begin{note}
-Except for {\cf number?}, the behavior of these type predicates
-on inexact number objects is
-unreliable, because any inaccuracy may
-affect the result.
+除了{\cf number?}之外，这些类型谓词的行为在非精确数字对象上是不可靠的，因为任何不精确都可以影响结果。
 \end{note}
 \end{entry}
 
@@ -1118,16 +1090,7 @@ affect the result.
 \proto{rational-valued?}{ obj}{procedure}
 \proto{integer-valued?}{ obj}{procedure}}
 
-These numerical type predicates can be applied to any kind of
-argument.  The {\cf real-valued?} procedure
-returns \schtrue{} if the object is a number object and is equal in the
-sense of {\cf =} to some real number object, or if the object is a NaN, or a
-complex number object whose real part is a NaN and whose imaginary
-part is zero
-in the sense of {\cf zero?}.  The {\cf rational-valued?} and {\cf
-  integer-valued?} procedures return \schtrue{} if the object is a
-number object and is equal in the sense of {\cf =} to some object of the
-named type, and otherwise they return \schfalse{}.
+这些数值类型谓词可被应用于任何类型的参数。{\cf real-valued?}过程返回\schtrue{}，如果这个对象是一个数字对象且在{\cf =}的意义上等于某个实数对象，或如果这个对象是一个非数，或一个实部是非数虚部在{\cf zero?}的意义上是零的复数对象。{\cf rational-valued?}和{\cf integer-valued?}过程返回\schtrue{}，如果这个对象是一个数字对象，且在{\cf =}的意义下等于名字中的类型的某些对象，否则返回\schfalse{}。
 
 \begin{scheme}
 (real-valued? +nan.0)                  \ev  \schtrue{}
@@ -1154,17 +1117,11 @@ named type, and otherwise they return \schfalse{}.
 \end{scheme}
 
 \begin{note}
-  These procedures test whether a given number object can be coerced
-  to the specified type without loss of numerical accuracy.
-  Specifically, the behavior of these predicates differs from the
-  behavior of {\cf real?}, {\cf rational?}, and {\cf integer?} on
-  complex number objects whose imaginary part is inexact zero.
+这些过程测试一个给定的数字对象在住损失数值精度的情况下是否可以被正确地转换为指定的类型。特别地，这些谓词的行为和{\cf real?}, {\cf rational?}, 和{\cf integer?}在虚部是非精确的零的复数对象上的行为是不一样的。
 \end{note}
 
 \begin{note}
-The behavior of these type predicates on inexact number objects is
-unreliable, because any inaccuracy may
-affect the result.
+这些类型谓词在非精确数字对象上的行为是不可靠的，这是因为任何的非精确可能影响结果。
 \end{note}
 \end{entry}
 
@@ -1172,9 +1129,7 @@ affect the result.
 \proto{exact?}{ z}{procedure}
 \proto{inexact?}{ z}{procedure}}
 
-These numerical predicates provide tests for the exactness of a
-quantity.  For any number object, precisely one of these predicates is
-true.
+这些数值谓词给出了量的精确性的测试。对任意的数字对象，有且只有一个谓词的值为真。
 
 \begin{scheme}
 (exact? 5)                   \ev  \schtrue{}
@@ -1182,44 +1137,26 @@ true.
 \end{scheme}
 \end{entry}
 
-\subsubsection{Generic conversions}
+\subsubsection{通用转换}
 
 \begin{entry}{%
 \proto{inexact}{ z}{procedure}
 \proto{exact}{ z}{procedure}}
 
-The {\cf inexact} procedure returns an inexact representation of \var{z}.  If
-inexact number objects of the appropriate type have bounded precision, then
-the value returned is an inexact number object that is nearest to the
-argument.  If an exact argument has no reasonably close inexact
-equivalent, an exception with condition type
-{\cf\&implementation-violation} may be
-raised.
+{\cf inexact}过程返回\var{z}的非精确表示。如果适当类型的非精确数字对象被绑定了精度，那么，返回值是一个接近参数的非精确数字对象。如果一个精确参数没有合理地接近非精确等价物，那么一个条件类型是{\cf\&implementation-restriction}（此异常类型已根据勘误表修改）的异常可以被抛出。
 
 \begin{note}
-  For a real number object whose magnitude is finite but so large that it has
-  no reasonable finite approximation as an inexact number, a
-  reasonably close inexact equivalent may be {\cf +inf.0} or {\cf
-    -inf.0}.  Similarly, the inexact representation of a complex
-  number object whose components are finite may have infinite components.
+对于一个量级有限的实数对象，如果它大到以至于没有合理的作为一个非精确数的合理的近似，一个合理的非精确等价物可以是{\cf +inf.0}或{\cf -inf.0}。类似地，一个各部分都是有限的复数对象的非精确表示可以有无限的部分。
 \end{note}
 
-The {\cf exact} procedure returns an exact representation of \var{z}.  The value
-returned is the exact number object that is numerically closest to the
-argument; in most cases, the result of this procedure should be
-numerically equal to its argument.  If an inexact argument has no
-reasonably close exact equivalent, an exception with condition type
-{\cf\&implementation-violation} may be
-raised.
+{\cf exact}过程返回\var{z}的一个精确表示。返回值是数值上最接近于参数的精确数字对象；在大部分情况下，这个过程的结果应当在数值上等于它的参数。如果一个非精确参数没有合理的精确等价物，那么一个条件类型是{\cf\&implementation-restriction}（此异常类型已根据勘误表修改）的异常可以被抛出。
 
-These procedures implement the natural one-to-one correspondence
-between exact and inexact integer objects throughout an
-implementation-dependent range.
+这些过程在一个实现定义的范围中实现了精确和非精确整数对象的自然的一一对应。
 
-The {\cf inexact} and {\cf exact} procedures are idempotent.
+{\cf inexact}和{\cf exact}过程是\href{https://r6rs.mrliu.org/r6rs-translation-experience\#idempotent}{幂等（idempotent）}的。
 \end{entry}
 
-\subsubsection{Arithmetic operations}
+\subsubsection{算术操作}
 
 \begin{entry}{%
 \proto{=}{ \vari{z} \varii{z} \variii{z} \dotsfoo}{procedure}
@@ -1228,10 +1165,7 @@ The {\cf inexact} and {\cf exact} procedures are idempotent.
 \proto{<=}{ \vari{x} \varii{x} \variii{x} \dotsfoo}{procedure}
 \proto{>=}{ \vari{x} \varii{x} \variii{x} \dotsfoo}{procedure}}
 
-These procedures return \schtrue{} if their arguments are
-(respectively): equal, monotonically increasing, monotonically
-decreasing, monotonically nondecreasing, or monotonically
-nonincreasing, and \schfalse{} otherwise.
+这些过程返回\schtrue{}，如果它们的参数（分别地）：相等，单调递增，单调递减，单调非递减，单调非递增，其它情况返回\schfalse{}。
 
 \begin{scheme}
 (= +inf.0 +inf.0)           \ev  \schtrue{}
@@ -1239,39 +1173,36 @@ nonincreasing, and \schfalse{} otherwise.
 (= -inf.0 -inf.0)           \ev  \schtrue{}%
 \end{scheme}
 
-For any real number object \var{x} that is neither infinite nor NaN:
+对于任何的既不是无穷大也不是非数的实数对象\var{x}（以下条目已根据勘误表修改）：
 
 \begin{scheme}
 (< -inf.0 \var{x} +inf.0))        \ev  \schtrue{}
 (> +inf.0 \var{x} -inf.0))        \ev  \schtrue{}%
 \end{scheme}
 
-For any number object \var{z}:
+对任何数字对象\var{z}：
 %
 \begin{scheme}
 (= +nan.0 \var{z})               \ev  \schfalse{}%
 \end{scheme}
 %
-For any real number object \var{x}:
+对任何实数对象\var{x}，
 %
 \begin{scheme}
 (< +nan.0 \var{x})               \ev  \schfalse{}
 (> +nan.0 \var{x})               \ev  \schfalse{}%
 \end{scheme}
 
-These predicates must be transitive.
+这些谓词必须是\href{https://r6rs.mrliu.org/r6rs-translation-experience\#symmetric-reflexive-transitive}{传递的}。
 
 \begin{note}
-The traditional implementations of these predicates in Lisp-like
-languages are not transitive.
+这些谓词在类Lisp语言的传统实现中不是传递的。
 \end{note}
 
 \begin{note}
-While it is possible to compare inexact number objects using these
-predicates, the results may be unreliable because a small inaccuracy
-may affect the result; this is especially true of {\cf =} and {\cf zero?} (below).
+尽管用这些谓词比较非精确数字对象是可以的，但是，结果可能是不可靠的，这时因为很小的不精确都可能影响结果；对{\cf =}和{\cf zero?}（下面）尤其是这样。
 
-When in doubt, consult a numerical analyst.
+如果有疑问的话，请咨询数值分析师。
 \end{note}
 \end{entry}
 
@@ -1285,15 +1216,7 @@ When in doubt, consult a numerical analyst.
 \proto{infinite?}{ x}{procedure}
 \proto{nan?}{ x}{procedure}}
 
-These numerical predicates test a number object for a particular property,
-returning \schtrue{} or \schfalse{}.  The {\cf zero?}
-procedure
-tests if the number object is {\cf =} to zero, {\cf positive?} tests whether it is
-greater than zero, {\cf negative?} tests whether it is less than zero, {\cf
-  odd?} tests whether it is odd, {\cf even?} tests whether it is even, {\cf
-  finite?} tests whether it is not an infinity and not a NaN, {\cf
-  infinite?} tests whether it is an infinity, {\cf nan?} tests whether it is a
-NaN.
+这些数值谓词测试一个数字对象的一个特定的属性，返回\schtrue{}或\schfalse{}。{\cf zero?}过程测试数字对象是否{\cf =}零，{\cf positive?}测试是否大于零，{\cf negative?}测试是否小于零，{\cf odd?}测试是否是奇数，{\cf even?}测试是否是偶数，{\cf finit?}测试是否既不是无穷大也不是一个非数，{\cf infinite?}测试是否是一个无穷大，{\cf nan?}测试是否是一个非数。
 
 \begin{scheme}
 (zero? +0.0)                  \ev  \schtrue{}
@@ -1311,8 +1234,7 @@ NaN.
 \end{scheme}
 
 \begin{note}
-  As with the predicates above, the results may be unreliable because
-  a small inaccuracy may affect the result.
+就上面的谓词而言，结果可能是不可靠的，这时因为一个晓得不精确都可以影响结果。
 \end{note}
 \end{entry}
 
@@ -1320,14 +1242,14 @@ NaN.
 \proto{max}{ \vari{x} \varii{x} \dotsfoo}{procedure}
 \proto{min}{ \vari{x} \varii{x} \dotsfoo}{procedure}}
 
-These procedures return the maximum or minimum of their arguments.
+这些过程返回它们参数的最大值和最小值。
 
 \begin{scheme}
 (max 3 4)                              \ev  4
 (max 3.9 4)                            \ev  4.0%
 \end{scheme}
 
-For any real number object \var{x}:
+对于任何不是非数的实数对象\var{x}（本句已根据勘误表修改）：
 
 \begin{scheme}
 (max +inf.0 \var{x})                         \ev  +inf.0
@@ -1335,13 +1257,7 @@ For any real number object \var{x}:
 \end{scheme}
 
 \begin{note}
-If any argument is inexact, then the result is also inexact (unless
-the procedure can prove that the inaccuracy is not large enough to affect the
-result, which is possible only in unusual implementations).  If {\cf min} or
-{\cf max} is used to compare number objects of mixed exactness, and the numerical
-value of the result cannot be represented as an inexact number object without loss of
-accuracy, then the procedure may raise an exception with condition
-type {\cf\&implementation-restriction}.
+如果每个参数都是非精确的，那么结果也是非精确的（除非过程可以证明误差没有大到可以影响结果，这只有在不寻常的实现中才有可能）。如果{\cf min}和{\cf max}被用作比较混合有不同精确性的对象，且结果的数值值也不能在不丢失准确的情况下被表示成一个非精确数，那么这个过程抛出一个条件类型是{\cf\&implementation-restriction}的异常。
 \end{note}
 
 \end{entry}
@@ -1350,7 +1266,7 @@ type {\cf\&implementation-restriction}.
 \proto{+}{ \vari{z} \dotsfoo}{procedure}
 \proto{*}{ \vari{z} \dotsfoo}{procedure}}
 
-These procedures return the sum or product of their arguments.
+这些过程返回它们的参数的和和积。
 
 \begin{scheme}
 (+ 3 4)                                \ev  7
@@ -1370,32 +1286,29 @@ These procedures return the sum or product of their arguments.
 (* 1.0 0)                              \ev  0 \textnormal{\textit{or}} 0.0%
 \end{scheme}
 
-For any real number object \var{x} that is neither infinite nor NaN:
+对任何既不是无穷大也不是非数的实数对象\var{x}：
 
 \begin{scheme}
 (+ +inf.0 \var{x})                           \ev  +inf.0
 (+ -inf.0 \var{x})                           \ev  -inf.0%
 \end{scheme}
 
-For any real number object \var{x}:
+对任何实数对象\var{x}：
 
 \begin{scheme}
 (+ +nan.0 \var{x})                           \ev  +nan.0%
 \end{scheme}
 
-For any real number object \var{x} that is not an exact 0:
+对任何不是精确的0的\var{x}：
 
 \begin{scheme}
 (* +nan.0 \var{x})                           \ev  +nan.0%
 \end{scheme}
 
-If any of these procedures are applied to mixed non-rational real and
-non-real complex arguments, they either raise an exception with
-condition type {\cf\&implementation-restriction} or return an
-unspecified number object.
+% TODO：这时什么意思？
+如果这些过程中任何一个被用于混合了非有理实数和非实数复数参数，它们或者抛出一个条件类型是{\cf\&implementation-restriction}的异常或者返回一个未定义的数字对象。
 
-Implementations that distinguish $-0.0$ should adopt behavior
-consistent with the following examples:
+区别$-0.0$的实现必须接受和下面例子一致行为：
 
 \begin{scheme}
 (+ 0.0 -0.0)  \ev 0.0
@@ -1407,11 +1320,9 @@ consistent with the following examples:
 
 \begin{entry}{%
 \proto{-}{ z}{procedure}
-\rproto{-}{ \vari{z} \varii{z} \dotsfoo}{procedure}}
+\rproto{-}{ \vari{z} \varii{z} \dotsfoo}{procedure（已根据勘误表修改）}}
 
-With two or more arguments, this procedures returns the difference of
-its arguments, associating to the left.  With one argument, however,
-it returns the additive inverse of its argument.
+有两个或多个参数时，这个过程以左结合的方式返回它参数的差。有一个参数时，它返回它参数的加法逆元。
 
 \begin{scheme}
 (- 3 4)                                \ev  -1
@@ -1420,13 +1331,10 @@ it returns the additive inverse of its argument.
 (- +inf.0 +inf.0)                      \ev  +nan.0%
 \end{scheme}
 
-If this procedure is applied to mixed non-rational real and
-non-real complex arguments, it either raises an exception with
-condition type {\cf\&implementation-restriction} or returns an
-unspecified number object.
+% TODO：这时什么意思？
+如果这个过程被用于混合了非有理实数和非实数复数参数，它们或者抛出一个条件类型是{\cf\&implementation-restriction}的异常或者返回一个未定义的数字对象。
 
-Implementations that distinguish $-0.0$ should adopt behavior
-consistent with the following examples:
+区别$-0.0$的实现必须接受和下面例子一致行为：
 
 \begin{scheme}
 (- 0.0)       \ev -0.0
@@ -1440,14 +1348,10 @@ consistent with the following examples:
 
 \begin{entry}{%
 \proto{/}{ z}{procedure}
-\rproto{/}{ \vari{z} \varii{z} \dotsfoo}{procedure}}
+\rproto{/}{ \vari{z} \varii{z} \dotsfoo}{procedure（已根据勘误表修改）}}
 
-\domain{If all of the arguments are exact, then the divisors must all
-  be nonzero.}
-With two or more arguments, this procedure returns the
-quotient of its arguments, associating to the left.  With one
-argument, however, it returns the multiplicative inverse
-of its argument.
+\domain{如果所有的参数都是精确的，那么除数必须是非零。}
+有两个或多个参数时，这个过程以左结合的方式返回它参数的商。有一个参数时，它返回它参数的除法逆元。
 
 \begin{scheme}
 (/ 3 4 5)                              \ev  3/20
@@ -1464,16 +1368,14 @@ of its argument.
 (/ 0.0 0.0)                            \ev  +nan.0%
 \end{scheme}
 
-If this procedure is applied to mixed non-rational real and
-non-real complex arguments, it either raises an exception with
-condition type {\cf\&implementation-restriction} or returns an
-unspecified number object.
+% TODO：这时什么意思？
+如果这个过程被用于混合了非有理实数和非实数复数参数，它们或者抛出一个条件类型是{\cf\&implementation-restriction}的异常或者返回一个未定义的数字对象。
 \end{entry}
 
 \begin{entry}{%
 \proto{abs}{ x}{procedure}}
 
-Returns the absolute value of its argument.
+返回它参数的绝对值。
 
 \begin{scheme}
 (abs -7)                               \ev  7
@@ -1490,27 +1392,23 @@ Returns the absolute value of its argument.
 \proto{div0}{ \vari{x} \varii{x}}{procedure}
 \proto{mod0}{ \vari{x} \varii{x}}{procedure}}
 
-These procedures implement number-theoretic integer division and
-return the results of the corresponding mathematical operations
-specified in section~\ref{integerdivision}.  In each case, \vari{x}
-must be neither infinite nor a NaN, and \varii{x} must be nonzero;
-otherwise, an exception with condition type {\cf\&assertion} is raised.
+这些过程实现了数论整数除法，且返回对应于第\ref{integerdivision}小节指定的数学运算的结果。如果\vari{x}和\varii{x}是精确的，\varii{x}必须是非零。在这些过程实现了数论整数除法，且返回对应于第\ref{integerdivision}小节中的数学要求不能被任何数字对象满足的情况下，或者一个条件类型是{\cf\&implementation-restriction}的异常被抛出，或者未定义的数字对象（对于{\cf div}，{\cf mod}, {\cf div0}和{\cf mod0}来说是一个，对于{\cf div-and-mod}和{\cf div0-and-mod0}来说是两个）被返回（本段已根据勘误表修改）。
 
 \begin{scheme}
 (div \vari{x} \varii{x})         \ev \(\vari{x}~\mathrm{div}~\varii{x}\)
 (mod \vari{x} \varii{x})         \ev \(\vari{x}~\mathrm{mod}~\varii{x}\)
-(div-and-mod \vari{x} \varii{x})     \ev \(\vari{x}~\mathrm{div}~\varii{x}, \vari{x}~\mathrm{mod}~\varii{x}\)\\\>\>\>; \textrm{two return values}
+(div-and-mod \vari{x} \varii{x})     \ev \(\vari{x}~\mathrm{div}~\varii{x}, \vari{x}~\mathrm{mod}~\varii{x}\)\\\>\>\>; \textrm{两个返回值}
 (div0 \vari{x} \varii{x})        \ev \(\vari{x}~\mathrm{div}_0~\varii{x}\)
 (mod0 \vari{x} \varii{x})        \ev \(\vari{x}~\mathrm{mod}_0~\varii{x}\)
-(div0-and-mod0 \vari{x} \varii{x})   \lev \(\vari{x}~\mathrm{div}_0~\varii{x}, \vari{x}~\mathrm{mod}_0~\varii{x}\)\\\>\>; \textrm{two return values}%
+(div0-and-mod0 \vari{x} \varii{x})   \lev \(\vari{x}~\mathrm{div}_0~\varii{x}, \vari{x}~\mathrm{mod}_0~\varii{x}\)\\\>\>; \textrm{两个返回值}%
 \end{scheme}
+\end{entry}
 
 \begin{entry}{%
 \proto{gcd}{ \vari{n} \dotsfoo}{procedure}
 \proto{lcm}{ \vari{n} \dotsfoo}{procedure}}
 
-These procedures return the greatest common divisor or least common
-multiple of their arguments.  The result is always non-negative.
+这些过程返回它们参数的最大公因数或最小公倍数。结果总是非负的。
 
 \begin{scheme}
 (gcd 32 -36)                           \ev  4
@@ -1525,10 +1423,7 @@ multiple of their arguments.  The result is always non-negative.
 \proto{numerator}{ q}{procedure}
 \proto{denominator}{ q}{procedure}}
 
-These procedures return the numerator or denominator of their
-argument; the result is computed as if the argument was represented as
-a fraction in lowest terms.  The denominator is always positive.  The
-denominator of $0$ is defined to be $1$.
+这些过程返回它们参数的分子或分母；结果根据其参数的最简分数计算。分母总是正的。0的分母被定义为1。
 
 \begin{scheme}
 (numerator (/ 6 4))                    \ev  3
@@ -1544,26 +1439,13 @@ denominator of $0$ is defined to be $1$.
 \proto{truncate}{ x}{procedure}
 \proto{round}{ x}{procedure}}
 
-These procedures return inexact integer objects for inexact arguments that are
-not infinities or NaNs, and exact integer objects for exact rational
-arguments.  For such arguments, {\cf floor} returns the largest
-integer object not larger than \var{x}.  The {\cf ceiling} procedure returns the smallest
-integer object not smaller than \var{x}.  The {\cf truncate} procedure returns the integer
-object closest to \var{x} whose absolute value is not larger than the
-absolute value of \var{x}.  The {\cf round} procedure returns the
-closest integer object to
-\var{x}, rounding to even when \var{x} represents a number halfway between two
-integers.
+对于不是无穷大或非零的非精确参数，这些过程返回非精确的整数对象。对于这些参数，{\cf floor}过程返回不大于\var{x}的最大整数对象。{\cf ceiling}过程返回不小于\var{x}的最小整数对象。{\cf truncate}过程返回绝对值不大于\var{x}绝对值的最接近\var{x}的整数对象。{\cf round}过程返回最接近\var{x}的整数对象，当\var{x}正好在两个整数的中间位置时舍入到偶数。
 
 \begin{note}
-If the argument to one of these procedures is inexact, then the result
-is also inexact.  If an exact value is needed, the
-result should be passed to the {\cf exact} procedure.
+如果这些过程中的一个参数是非精确的，那么结果也是非精确的。如果需要一个精确的值，结果应该被传递给{\cf exact}过程。
 \end{note}
 
-Although infinities and NaNs are not integer objects, these procedures return
-an infinity when given an infinity as an argument, and a NaN when
-given a NaN.
+尽管无穷大和非数不是整数对象，这些过程会返回一个无穷大当给一个无穷大参数时，返回一个非数当给一个非数时。
 
 \begin{scheme}
 (floor -4.3)                           \ev  -5.0
@@ -1589,29 +1471,18 @@ given a NaN.
 \begin{entry}{%
 \proto{rationalize}{ \vari{x} \varii{x}}{procedure}}
 
-The {\cf rationalize} procedure returns the a number object
-representing the {\em simplest} rational
-number differing from \vari{x} by no more than \varii{x}.    A rational number $r_1$ is
-{\em simpler} \mainindex{simplest rational} than another rational number
-$r_2$ if $r_1 = p_1/q_1$ and $r_2 = p_2/q_2$ (in lowest terms) and $|p_1|
-\leq |p_2|$ and $|q_1| \leq |q_2|$.  Thus $3/5$ is simpler than $4/7$.
-Although not all rationals are comparable in this ordering (consider $2/7$
-and $3/5$) any interval contains a rational number that is simpler than
-every other rational number in that interval (the simpler $2/5$ lies
-between $2/7$ and $3/5$).  Note that $0 = 0/1$ is the simplest rational of
-all.
+{\cf retionalize}过程返回一个与\vari{x}和差值不大于\varii{x}的{\em 最简}有理数（{\em simplest} rational number）（本句已根据勘误表修改）。有理数$r_1$比有理数$r_2${\em 更简单（simpler）}\mainindex{simplest rational}意味着$r_1 = p_1/q_1$，$r_2 = p_2/q_2$（以最简分数表示），且$|p_1| \leq |p_2|$，且$|q_1| \leq |q_2|$。因此3/5比4/7更简单。尽管不是所有的有理数都可以用这种顺序比较（考虑2/7和3/5），但是\href{https://r6rs.mrliu.org/r6rs-translation-experience\#simplest-rational-number}{任何区间都包含一个比区间中的任何其它有理数都简单的有理数}（比较简单的2/5位于2/7和3/5之间）。注意0 = 0/1是所有有理数中最简单的一个。
 %
 \begin{scheme}
 (rationalize (exact .3) 1/10)          \lev 1/3
-(rationalize .3 1/10)                  \lev \sharpsign{}i1/3  ; \textrm{approximately}
+(rationalize .3 1/10)                  \lev \sharpsign{}i1/3  ; \textrm{大约}
 
 (rationalize +inf.0 3)                 \ev  +inf.0
 (rationalize +inf.0 +inf.0)            \ev  +nan.0
 (rationalize 3 +inf.0)                 \ev  0.0%
 \end{scheme}
 %
-The first two examples hold only in implementations whose inexact real
-number objects have sufficient precision.
+前两个例子只在非精确实数对象有足够精度时有效。
 
 \end{entry}
 
@@ -1627,19 +1498,9 @@ number objects have sufficient precision.
 \proto{atan}{ z}{procedure}
 \rproto{atan}{ \vari{x} \varii{x}}{procedure}}
 
-These procedures compute the usual transcendental functions.  The {\cf
-  exp} procedure computes the base-$e$ exponential of \var{z}.
-The {\cf log} procedure with a single argument computes the natural logarithm of
-\var{z} (not the base-ten logarithm); {\cf (log \vari{z}
-  \varii{z})} computes the base-\varii{z} logarithm of \vari{z}.
-The {\cf asin}, {\cf acos}, and {\cf atan} procedures compute arcsine,
-arccosine, and arctangent, respectively.  The two-argument variant of
-{\cf atan} computes {\cf (angle (make-rectangular \varii{x}
-\vari{x}))}.
+这些过程计算通常的超越函数。{\cf exp}过程计算以{\em e}为基数的\var{z}的指数。有一个参数的{\cf log}过程计算\var{z}的自然对数（不是以十为基数的对数）；{\cf (log \vari{z} \varii{z})}计算以\varii{z}为基数的\vari{z}的对数。{\cf asin}，{\cf acos}和{\cf atan}过程分别计算反正弦，反余弦和反正切。两个参数版本的{\cf atan}计算{\cf (angle (make-rectangular \varii{x} \vari{x}))}。
 
-See section~\ref{transcendentalfunctions} for the underlying
-mathematical operations. These procedures may return inexact results
-even when given exact arguments.
+基本的数学运算见第\ref{transcendentalfunctions}小节。当传递非精确数作为参数的时候这些过程可以返回非精确的结果。
 
 \begin{scheme}
 (exp +inf.0)                   \ev +inf.0
@@ -1647,28 +1508,23 @@ even when given exact arguments.
 (log +inf.0)                   \ev +inf.0
 (log 0.0)                      \ev -inf.0
 (log 0)                        \xev \exception{\&assertion}
-(log -inf.0)                   \lev +inf.0+3.141592653589793i\\\> ; \textrm{approximately}
-(atan -inf.0)                  \lev -1.5707963267948965 ; \textrm{approximately}
-(atan +inf.0)                  \lev 1.5707963267948965 ; \textrm{approximately}
-(log -1.0+0.0i)                \lev 0.0+3.141592653589793i ; \textrm{approximately}
-(log -1.0-0.0i)                \lev 0.0-3.141592653589793i ; \textrm{approximately}\\\>; \textrm{if -0.0 is distinguished}%
+(log -inf.0)                   \lev +inf.0+3.141592653589793i\\\> ; \textrm{大约}
+(atan -inf.0)                  \lev -1.5707963267948965 ; \textrm{大约}
+(atan +inf.0)                  \lev 1.5707963267948965 ; \textrm{大约}
+(log -1.0+0.0i)                \lev 0.0+3.141592653589793i ; \textrm{大约}
+(log -1.0-0.0i)                \lev 0.0-3.141592653589793i ; \textrm{大约}\\\>; \textrm{如果区别-0.0的话}%
 \end{scheme}
 \end{entry}
 
 \begin{entry}{%
 \proto{sqrt}{ z}{procedure}}
 
-Returns the principal square root of \var{z}.  For rational \var{z},
-the result has either positive real part, or zero real part and
-non-negative imaginary part.  With $\log$ defined as in
-section~\ref{transcendentalfunctions}, the value of {\cf (sqrt
-  \var{z})} could be expressed as $e^{\frac{\log z}{2}}$.
+返回\var{z}的主平方根。对于实数\var{z}，结果或者是正的实部，或者是零实部和非负的虚部。根据第\ref{transcendentalfunctions}小节定义的{\cf log}，{\cf (sqrt \var{z})}的值可以被表示成$e^{\frac{\log z}{2}}$。
 
-The {\cf sqrt} procedure may return an inexact result even when given an exact
-argument.
+当传递的参数是一个精确的参数时，{\cf sqrt}过程可以返回一个非精确的结果。
 
 \begin{scheme}
-(sqrt -5)                   \lev  0.0+2.23606797749979i ; \textrm{approximately}
+(sqrt -5)                   \lev  0.0+2.23606797749979i ; \textrm{大约}
 (sqrt +inf.0)               \ev  +inf.0
 (sqrt -inf.0)               \ev  +inf.0i%
 \end{scheme}
@@ -1677,42 +1533,29 @@ argument.
 \begin{entry}{%
 \proto{exact-integer-sqrt}{ k}{procedure}}
 
-The {\cf exact-integer-sqrt} procedure returns two non-negative exact
-integer objects $s$ and $r$ where $\var{k} = s^2 +
-r$ and $\var{k} < (s+1)^2$.
+{\cf exact-integer-sqrt}过程返回两个非负精确整数对象$s$和$r$，其中$\var{k} = s^2 + r$且$\var{k} < (s+1)^2$。
 
 \begin{scheme}
-(exact-integer-sqrt 4) \ev 2 0\\\>\>\>; \textrm{two return values}
-(exact-integer-sqrt 5) \ev 2 1\\\>\>\>; \textrm{two return values}
+(exact-integer-sqrt 4) \ev 2 0\\\>\>\>; \textrm{两个返回值}
+(exact-integer-sqrt 5) \ev 2 1\\\>\>\>; \textrm{两个返回值}
 \end{scheme}
 \end{entry}
 
 \begin{entry}{%
 \proto{expt}{ \vari{z} \varii{z}}{procedure}}
 
-Returns \vari{z} raised to the power \varii{z}.  For nonzero \vari{z},
-this is $e^{z_2 \log z_1}$.
-$0.0^{z}$ is $1.0$ if $\var{z} = 0.0$, and $0.0$ if {\cf
-  (real-part \var{z})} is positive.  For other cases in which
-the first argument is zero, either an exception is raised with
-condition type {\cf\&implementation-restriction}, or an unspecified
-number object is returned.
+返回\vari{z}的\varii{z}次幂。对于非零的\vari{z}，是$e^{z_2 \log z_1}$。$0.0^{z}$是1.0如果\var{z} = 0.0，或0.0如果{\cf (real-part \var{z})}是正的。在其它第一个参数是零的情况下，或者抛出一个条件类型是{\cf\&implementation-restriction}的异常，或者一个未定义的数字对象呗返回。
 
-For an exact real number object \vari{z} and an exact
-integer object \varii{z}, {\cf (expt \vari{z}
-\varii{z})} must return an exact result.  For all other
-values of \vari{z} and \varii{z}, {\cf (expt \vari{z}
-\varii{z})} may return an inexact result, even when both
-\vari{z} and \varii{z} are exact.
+对一个精确的实数对象\vari{z}和一个精确的整数对象\varii{z}，{\cf (expt \vari{z} \varii{z})}必须返回一个精确的结果。对于其它所有的\vari{z}和\varii{z}，{\cf (expt \vari{z} \varii{z})}可以返回一个非精确的结果，甚至当\vari{z}和\varii{z}都是精确的时候。
 
 \begin{scheme}
 (expt 5 3)                  \ev  125
 (expt 5 -3)                 \ev  1/125
 (expt 5 0)                  \ev  1
 (expt 0 5)                  \ev  0
-(expt 0 5+.0000312i)        \ev  0
-(expt 0 -5)                 \ev  \unspecified
-(expt 0 -5+.0000312i)       \ev  \unspecified
+(expt 0 5+.0000312i)        \ev  0.0\quad\textrm{（本条已根据勘误表修改）}
+(expt 0 -5)                 \ev  \textrm{未定义}
+(expt 0 -5+.0000312i)       \ev  \textrm{未定义}
 (expt 0 0)                  \ev  1
 (expt 0.0 0.0)              \ev  1.0%
 \end{scheme}
@@ -1726,74 +1569,56 @@ values of \vari{z} and \varii{z}, {\cf (expt \vari{z}
 \proto{magnitude}{ z}{procedure}
 \proto{angle}{ z}{procedure}}
 
-Suppose $a_1$, $a_2$, $a_3$, and $a_4$ are real
-numbers, and $c$ is a complex number such that the
-following holds:
+假设$a_1$，$a_2$，$a_3$和$a_4$是实数，且$c$是一个复数，那么下面的式子成立：
 %
 \begin{displaymath}
 c = a_1 + a_2 i = a_3 e^{i a_4}
 \end{displaymath}
 
-Then, if \vari{x}, \varii{x}, \variii{x}, and \variv{x} are number
-objects representing $a_1$, $a_2$, $a_3$, and $a_4$, respectively,
-{\cf (make-rectangular \vari{x} \varii{x})} returns $c$, and {\cf
-  (make-polar \variii{x} \variv{x})} returns $c$.
+如果\vari{x}，\varii{x}，\variii{x}和\variv{x}分别是表示$a_1$，$a_2$，$a_3$和$a_4$的数字对象，那么，{\cf (make-rectangular \vari{x} \varii{x})}返回$c$，{\cf (make-polar \variii{x} \variv{x})}也返回$c$。
 %
 \begin{scheme}
-(make-rectangular 1.1 2.2) \lev 1.1+2.2i ; \textrm{approximately}
-(make-polar 1.1 2.2) \lev 1.1@2.2 ; \textrm{approximately}
+(make-rectangular 1.1 2.2) \lev 1.1+2.2i ; \textrm{大约}
+(make-polar 1.1 2.2) \lev 1.1@2.2 ; \textrm{大约}
 \end{scheme}
 %
-Conversely, if $-\pi \leq a_4 \leq \pi$, and if $z$ is a number object
-representing $c$, then {\cf (real-part \var{z})} returns $a_1$ {\cf
-  (imag-part \var{z})} returns $a_2$, {\cf (magnitude \var{z})}
-returns $a_3$, and {\cf (angle \var{z})} returns $a_4$.
+对应地，如果$-\pi \leq a_4 \leq \pi$，且如果\var{z}是一个表示$c$的数字对象，那么{\cf (real-part \var{z})}返回$a_1$，{\cf (imag-part \var{z})}返回$a_2$，{\cf (magnitude \var{z})}返回$a_3$，{\cf (angle \var{z})}返回$a_4$。
 
 \begin{scheme}
-(real-part 1.1+2.2i)              \ev 1.1 ; \textrm{approximately}
-(imag-part 1.1+2.2i)              \ev 2.2i ; \textrm{approximately}
-(magnitude 1.1@2.2)              \ev 1.1 ; \textrm{approximately}
-(angle 1.1@2.2)                  \ev 2.2 ; \textrm{approximately}
+(real-part 1.1+2.2i)              \ev 1.1 ; \textrm{大约}
+(imag-part 1.1+2.2i)              \ev 2.2 ; \textrm{大约（本条已根据勘误表修改）}
+(magnitude 1.1@2.2)              \ev 1.1 ; \textrm{大约}
+(angle 1.1@2.2)                  \ev 2.2 ; \textrm{大约}
 
-(angle -1.0)         \lev 3.141592653589793 ; \textrm{approximately}
-(angle -1.0+0.0i)    \lev 3.141592653589793 ; \textrm{approximately}
-(angle -1.0-0.0i)    \lev -3.141592653589793 ; \textrm{approximately}\\\>; \textrm{if -0.0 is distinguished}
+(angle -1.0)         \lev 3.141592653589793 ; \textrm{大约}
+(angle -1.0+0.0i)    \lev 3.141592653589793 ; \textrm{大约}
+(angle -1.0-0.0i)    \lev -3.141592653589793 ; \textrm{大约}\\\>; \textrm{如果区别-0.0的话}
 (angle +inf.0)       \ev 0.0
-(angle -inf.0)       \lev 3.141592653589793 ; \textrm{approximately}%
+(angle -inf.0)       \lev 3.141592653589793 ; \textrm{大约}%
 \end{scheme}
 
-Moreover, suppose \vari{x}, \varii{x} are such that either \vari{x}
-or \varii{x} is an infinity, then
+此外，假设\vari{x}和\varii{x}是这样的，\vari{x}，\varii{x}其中一个是无穷大，那么
 %
 \begin{scheme}
 (make-rectangular \vari{x} \varii{x}) \ev \var{z}
 (magnitude \var{z})              \ev +inf.0%
 \end{scheme}
-\end{entry}
 
-The {\cf make-polar}, {\cf magnitude}, and
-{\cf angle} procedures may return inexact results even when given exact
-arguments.
+{\cf make-polar}，{\cf magnitude}和{\cf angle}过程可以返回非精确的结果甚至当传递精确参数的时候。
 
 \begin{scheme}
-(angle -1)                    \lev 3.141592653589793 ; \textrm{approximately}
+(angle -1)                    \lev 3.141592653589793 ; \textrm{大约}
 \end{scheme}
 \end{entry}
 
-\subsubsection{Numerical Input and Output}
+\subsubsection{数值输入和输出}
 
 \begin{entry}{%
 \proto{number->string}{ z}{procedure}
 \rproto{number->string}{ z radix}{procedure}
 \rproto{number->string}{ z radix precision}{procedure}}
 
-\var{Radix} must be an exact integer object, either 2, 8, 10, or 16.  If
-omitted, \var{radix} defaults to 10.  If a \var{precision} is
-specified, then \var{z} must be an inexact complex number object,
-\var{precision} must be an exact positive integer object, and \var{radix}
-must be 10.  The {\cf number->string} procedure takes a number object and a
-radix and returns as a string an external representation of the given
-number object in the given radix such that
+\var{Radix（基数）}必须是一个精确的整数对象，可以是2，8，10或16。如果省略的话，\var{radix}默认是10。如果一个\var{precision（精度）}被指定的话，那么\var{z}必须是一个非精确的复数对象，\var{precision}必须是一个精确的整数对象，且\var{radix}必须是10。{\cf number->string}过程接受一个数字对象和一个基数且在给定的基数下返回一个作为传入的数字对象的外部表示的字符串，使得
 %
 \begin{scheme}
 (let ((number \var{z}) (radix \var{radix}))
@@ -1803,45 +1628,24 @@ number object in the given radix such that
         number))%
 \end{scheme}
 %
-is true.  If no possible result makes this expression
-true, an exception with condition type
-{\cf\&implementation-\hp{}restriction} is raised.
+为真。如果没有可能的结果让这个表达式为真，那么一个条件类型是{\cf\&implementation-\hp{}restriction}的异常被抛出。
 
 \begin{note}
-The error case can occur only when \var{z} is not a complex number object
-or is a complex number object with a non-rational real or imaginary part.
+错误情况只会出现在当\var{z}不是一个复数对象或是一个实部或虚部是非有理的时候。
 \end{note}
 
-If a \var{precision} is specified, then the representations of the
-inexact real components of the result, unless they are infinite or
-NaN, specify an explicit \meta{mantissa width} \var{p}, and \var{p} is the
-least $\var{p} \geq \var{precision}$ for which the above expression is
-true.
+如果一个\var{precision}被指定，那么结果的非精确实部的表示指定一个显式的\meta{mantissa width}\var{p}，除非它们是无穷大或非数，且为了上面的表达式为真\var{p}至少是$\var{p} \geq \var{precision}$。
 
-If \var{z} is inexact, the radix is 10, and the above expression and
-condition can be satisfied by a result that contains a decimal point,
-then the result contains a decimal point and is expressed using the
-minimum number of digits (exclusive of exponent, trailing zeroes, and
-mantissa width) needed to make the above expression and condition
-true~\cite{howtoprint,howtoread}; otherwise the format of the result
-is unspecified.
+如果\var{z}是非精确的，基数是10，且上面的表达式和条件可以被一个包含小数点的结果满足，那么这个结果包含小数点且使用能让上面表达式和条件为真的最少的数字表示~\cite{howtoprint,howtoread}（不包括指数，尾部的零，和位数宽度）；否则结果的格式是未定义的。
 
-The result returned by {\cf number->string} never contains an explicit
-radix prefix.
+{\cf number->string}的结果从不包含一个显式的基数前缀。
 \end{entry}
 
 \begin{entry}{%
 \proto{string->number}{ string}{procedure}
 \rproto{string->number}{ string radix}{procedure}}
 
-Returns a number object with maximally precise representation expressed by the
-given \var{string}.  \var{Radix} must be an exact integer object, either 2, 8, 10,
-or 16.  If supplied, \var{radix} is a default radix that may be overridden
-by an explicit radix prefix in \var{string} (e.g., {\tt "\#o177"}).  If \var{radix}
-is not supplied, then the default radix is 10.  If \var{string} is not
-a syntactically valid notation for a number object or a notation for a
-rational number object with a zero denominator, then {\cf string->number}
-returns \schfalse{}.
+返回\var{string}表示的最大精度的数字对象。\var{Radix}必须是一个必须是一个精确的整数对象，可以是2，8，10或16。如果提供的话，\var{radix}是可以被字符串中的显式的基数前缀（比如，{\tt "\#o177"}）覆盖的默认基数。如果\var{radix}没有被提供，那么默认的基数是10.如果\var{string}不是一个语法上合法的数字对象的表示或者不是一个零分母的实数对象的符号，那么{\cf string->number}返回\schfalse{}。
 %
 \begin{scheme}
 (string->number "100")                 \ev  100
@@ -1854,31 +1658,26 @@ returns \schfalse{}.
 \end{scheme}
 
 \begin{note}
-  The {\cf string->number} procedure always returns a number object or
-  \schfalse{}; it never raises an exception.
+（已根据勘误表修改）：如果{\cf string->number}的参数是一个字符串，且指定了一个合法的基数，它必须返回一个数字对象或\schfalse{}；它不可以抛出一个异常。
+
+（也就是说，{\cf string->number}可以在它的参数不是一个字符串时抛出一个异常。）
 \end{note}
 \end{entry}
 
 
-\section{Booleans}
+\section{布尔}
 \label{booleansection}
 
-The standard boolean objects for true and false have external representations
-\schtrue{} and \schfalse.\sharpindex{t}\sharpindex{f} However, of all
-objects, only \schfalse{} counts as false in
-conditional expressions.  See section~\ref{booleanvaluessection}.
+标准布尔对象真和假又外部表示\schtrue{}和\schfalse{}。\sharpindex{t}\sharpindex{f}然而，所有的对象当中，只有\schfalse{}在条件表达式中被认为是假。见第\ref{booleanvaluessection}小节。
 
 \begin{note}
-Programmers accustomed to other dialects of Lisp should be aware that
-Scheme distinguishes both \schfalse{} and the empty list \index{empty list}
-from each other and from the symbol \ide{nil}.
+习惯于其它Lisp方言的程序员应当注意Scheme区分\schtrue{}和空表\index{empty list}，同时也区分符号\ide{nil}。
 \end{note}
 
 \begin{entry}{%
 \proto{not}{ obj}{procedure}}
 
-Returns \schtrue{} if \var{obj} is \schfalse, and returns
-\schfalse{} otherwise.
+如果\var{obj}是\schfalse{}返回\schtrue{}，否则返回\schfalse{}。
 
 \begin{scheme}
 (not \schtrue)   \ev  \schfalse
@@ -1896,82 +1695,61 @@ Returns \schtrue{} if \var{obj} is \schfalse, and returns
 \begin{entry}{%
 \proto{boolean?}{ obj}{procedure}}
 
-Returns \schtrue{} if \var{obj} is either \schtrue{} or
-\schfalse{} and returns \schfalse{} otherwise.
+如果\var{obj}是\schtrue{}或{\cf f}返回\schtrue{}，否则返回\schfalse{}。
 
 \begin{scheme}
 (boolean? \schfalse)  \ev  \schtrue
 (boolean? 0)          \ev  \schfalse
 (boolean? '())        \ev  \schfalse%
 \end{scheme}
+\end{entry}
 
 \begin{entry}{%
 \proto{boolean=?}{ \vari{bool} \varii{bool} \variii{bool}
   \dotsfoo}{procedure}}
 
-Returns \schtrue{} if the booleans are the same.
+如果所有的布尔是一样的话返回\schtrue{}。
 \end{entry}
 
-\end{entry}
 
-
-\section{Pairs and lists}
+\section{点对和表}
 \label{listsection}
 
-A \defining{pair} is a
-compound structure with two fields called the car and cdr fields (for
-historical reasons).  Pairs are created by the procedure {\cf cons}.
-The car and cdr fields are accessed by the procedures {\cf car} and
-{\cf cdr}.
+一个\defining{点对}是一个有两个域的组合结构，这两个域叫做car和cdr域（由于历史原因）。点对通过过程{\cf cons}创建。car和cdr域可以通过过程{\cf car}和{\cf cdr}访问。
 
-Pairs are used primarily to represent lists.  A list can
-be defined recursively as either the empty list\index{empty list} or a pair whose
-cdr is a list.  More precisely, the set of lists is defined as the smallest
-set \var{X} such that
+点对主要用于表示表。表可以递归定义为：或者是一个空表\index{empty list}，或者是一个cdr域为表的点对。更准确地说，表的集合被定义为符合以下条件的最小集合\var{X}：
 
 \begin{itemize}
-\item The empty list is in \var{X}.
-\item If \var{list} is in \var{X}, then any pair whose cdr field contains
-      \var{list} is also in \var{X}.
+\item 空表在\var{X}中。
+\item 如果\var{list}在\var{X}中，则任何cdr域包含着\var{list}的点对也在\var{X}中。
 \end{itemize}
 
-The objects in the car fields of successive pairs of a list are the
-elements of the list.  For example, a two-element list is a pair whose car
-is the first element and whose cdr is a pair whose car is the second element
-and whose cdr is the empty list.  The length of a list is the number of
-elements, which is the same as the number of pairs.
+表中连续各点对的car域内的对象是表的元素。例如，一个拥有两个元素的表是一个点对，该点对的car域包含表的第一个元素，其cdr域又是一个点对，这个点对的car域包含表的第二个元素，cdr域是空表。表的长度是元素的数量，也等于其点对的数量。
 
-The empty list\mainindex{empty list} is a special object of its own type.
-It is not a pair.  It has no elements and its length is zero.
+空表\mainindex{empty list}是一个隶属于其自身类型的特殊对象。它不是点对。它不包含任何元素，且长度为零。
 
 \begin{note}
-The above definitions imply that all lists have finite length and are
-terminated by the empty list.
+上述定义意味着所有表都有有限的长度，都以空表结尾。
 \end{note}
 
-A chain of pairs not ending in the empty list is called an
-\defining{improper list}.  Note that an improper list is not a list.
-The list and dotted notations can be combined to represent
-improper lists:
+不是以空表结尾的点对链称为\defining{非严格表（improper list）}。注意，非严格表不是表。可以使用表和点记法的组合表示非严格表：
 
 \begin{scheme}
 (a b c . d)%
 \end{scheme}
 
-is equivalent to
+等价于
 
 \begin{scheme}
 (a . (b . (c . d)))%
 \end{scheme}
 
-Whether a given pair is a list depends upon what is stored in the cdr
-field.
+一个给定的点对是不是一个表取决于其cdr域存储的内容。
 
 \begin{entry}{%
 \proto{pair?}{ obj}{procedure}}
 
-Returns \schtrue{} if \var{obj} is a pair, and otherwise
-returns \schfalse.
+如果\var{obj}是一个点对则返回\schtrue{}，否则返回\schfalse{}。
 
 \begin{scheme}
 (pair? '(a . b))        \ev  \schtrue
@@ -1985,9 +1763,7 @@ returns \schfalse.
 \begin{entry}{%
 \proto{cons}{ \vari{obj} \varii{obj}}{procedure}}
 
-Returns a newly allocated pair whose car is \vari{obj} and whose cdr is
-\varii{obj}.  The pair is guaranteed to be different (in the sense of
-{\cf eqv?}) from every existing object.
+返回一个新分配的点对，其car是\vari{obj}且cdr是\varii{obj}。这个点对保证（从{\cf eqv?}的意义来说）和任何一个存在的对象都是不一样的。
 
 \begin{scheme}
 (cons 'a '())           \ev  (a)
@@ -2002,7 +1778,7 @@ Returns a newly allocated pair whose car is \vari{obj} and whose cdr is
 \begin{entry}{%
 \proto{car}{ pair}{procedure}}
 
-Returns the contents of the car field of \var{pair}.
+返回点对car域的内容。
 
 \begin{scheme}
 (car '(a b c))          \ev  a
@@ -2017,7 +1793,7 @@ Returns the contents of the car field of \var{pair}.
 \begin{entry}{%
 \proto{cdr}{ pair}{procedure}}
 
-Returns the contents of the cdr field of \var{pair}.
+返回点对cdr域的内容。
 
 \begin{scheme}
 (cdr '((a) b c d))      \ev  (b c d)
@@ -2043,15 +1819,13 @@ Returns the contents of the cdr field of \var{pair}.
 \proto{cdddar}{ pair}{procedure}
 \proto{cddddr}{ pair}{procedure}}
 
-These procedures are compositions of {\cf car} and {\cf cdr}, where
-for example {\cf caddr} could be defined by
+这些过程是{\cf car}和{\cf cdr}的组合。例如，{\cf caddr}可定义为：
 
 \begin{scheme}
 (define caddr (lambda (x) (car (cdr (cdr x))))){\rm.}%
 \end{scheme}
 
-Arbitrary compositions, up to four deep, are provided.  There are
-twenty-eight of these procedures in all.
+Scheme提供最高可达四层的任意组合。总共有二十八个这样的过程。
 
 \end{entry}
 
@@ -2059,17 +1833,14 @@ twenty-eight of these procedures in all.
 \begin{entry}{%
 \proto{null?}{ obj}{procedure}}
 
-Returns \schtrue{} if \var{obj} is the empty list\index{empty list},
-\schfalse otherwise.
+如果\var{obj}是一个空表\index{empty list}则返回\schtrue{}，否则返回\schfalse{}。
 
 \end{entry}
 
 \begin{entry}{%
 \proto{list?}{ obj}{procedure}}
 
-Returns \schtrue{} if \var{obj} is a list, \schfalse{} otherwise.
-By definition, all lists are chains of pairs that have finite length and are terminated by
-the empty list.
+如果\var{obj}是一个表则返回\schtrue{}，否则返回\schfalse{}。按照定义，所有的表都是长度有限且以空表结尾的点对链。
 
 \begin{scheme}
 (list? '(a b c))     \ev  \schtrue
@@ -2082,7 +1853,7 @@ the empty list.
 \begin{entry}{%
 \proto{list}{ \var{obj} \dotsfoo}{procedure}}
 
-Returns a newly allocated list of its arguments.
+返回新分配的它的参数的表。
 
 \begin{scheme}
 (list 'a (+ 3 4) 'c)            \ev  (a 7 c)
@@ -2094,7 +1865,7 @@ Returns a newly allocated list of its arguments.
 \begin{entry}{%
 \proto{length}{ list}{procedure}}
 
-Returns the length of \var{list}.
+返回表的长度。
 
 \begin{scheme}
 (length '(a b c))               \ev  3
@@ -2105,32 +1876,29 @@ Returns the length of \var{list}.
 
 
 \begin{entry}{%
-\proto{append}{ list \dotsfoo{} obj}{procedure}}
+\proto{append}{ list \dotsfoo{} obj}{procedure}
+\rproto{append}{}{procedure（根据勘误表添加）}}
 
-Returns a possibly improper list consisting of the elements of the first \var{list}
-followed by the elements of the other \var{list}s, with \var{obj} as
-the cdr of the final pair.
-An improper list results if \var{obj} is not a
-list.
+返回一个可能的非严格表，其包含第一个\var{list}以及跟在其后的其它\var{list}的元素，\var{obj}作为最后点对的cdr域。如果\var{obj}不是一个表，那么结果是一个非严格表。如果在没有参数的情况下调用，{\cf append}过程返回空表。
 
 \begin{scheme}
 (append '(x) '(y))              \ev  (x y)
 (append '(a) '(b c d))          \ev  (a b c d)
 (append '(a (b)) '((c)))        \ev  (a (b) (c))
 (append '(a b) '(c . d))        \ev  (a b c . d)
-(append '() 'a)                 \ev  a%
+(append '() 'a)                 \ev  a
+(append)                        \ev  ()
+(append 'a)                     \ev a%
 \end{scheme}
 
-If {\cf append} constructs a nonempty chain of pairs, it is always
-newly allocated.  If no pairs are allocated, \var{obj} is returned.
+如果{\cf append}包含非空的点对链，它总是新分配。如果没有点对被分配，\var{obj}被返回。返回值由所有参数的新的点对组成，除了最后一个参数；最后一个参数仅仅是被放在新的结构的结尾（本句根据勘误表添加）。
 \end{entry}
 
 
 \begin{entry}{%
 \proto{reverse}{ list}{procedure}}
 
-Returns a newly allocated list consisting of the elements of \var{list}
-in reverse order.
+返回一个新分配的表，其以逆序的方式包含\var{list}中的元素。
 
 \begin{scheme}
 (reverse '(a b c))              \ev  (c b a)
@@ -2142,52 +1910,37 @@ in reverse order.
 \begin{entry}{%
 \proto{list-tail}{ list k}{procedure}}
 
-\domain{\var{List} should be a list of size at least \var{k}.}
-The {\cf list-tail} procedure returns the subchain of pairs of \var{list}
-obtained by omitting the first \var{k} elements.
+\domain{\var{List}应该是一个长度至少是\var{k}的表。}
+{\cf list-tail}过程返回\var{list}点对的子链，通过省略前\var{k}个元素获得。
 
 \begin{scheme}
 (list-tail '(a b c d) 2)                 \ev  (c d)%
 \end{scheme}
 
-\implresp The implementation must check that \var{list} is a chain of
-pairs whose length is at least \var{k}.  It should not check that it is a chain
-of pairs beyond this length.
+\implresp 实现必须检测\var{list}至少是长度\var{k}的点对的链。它不需要检查超过这个长度的点对的链。
 \end{entry}
 
 
 \begin{entry}{%
 \proto{list-ref}{ list k}{procedure}}
 
-\domain{\var{List} must be a list whose length is at least $\var{k}+1$.}
-The {\cf list-tail} procedure returns the \var{k}th element of \var{list}.
+\domain{\var{List}必须是一个长度至少是$\var{k}+1$的表。}
+{\cf list-ref}过程返回\var{list}的第k个元素（已根据勘误表修改）。
 
 \begin{scheme}
 (list-ref '(a b c d) 2)                 \ev c%
 \end{scheme}
 
-\implresp The implementation must check that \var{list} is a chain of
-pairs whose length is at least $\var{k}+1$.  It should not check that it is a list
-of pairs beyond this length.
+\implresp 实现必须检测\var{list}至少是长度$\var{k}+1$的点对的链。它不需要检查超过这个长度的点对的链。
 \end{entry}
 
 
 \begin{entry}{%
 \proto{map}{ proc \vari{list} \varii{list} \dotsfoo}{procedure}}
 
-\domain{The \var{list}s should all have the same length.  \var{Proc}
-  should accept as many arguments as there are
-  \var{list}s and return a single value.  \var{Proc} should not mutate
-  any of the \var{list}s.}
+\domain{所有的\var{list}应该有相同的长度。\var{Proc}应该接受和\var{list}一样多的参数且返回一个单独的值。\var{Proc}不应该更改任何一个\var{list}。}
 
-The {\cf map} procedure applies \var{proc} element-wise to the elements of the
-\var{list}s and returns a list of the results, in order.
-\var{Proc} is always called in the same dynamic environment
-as {\cf map} itself.
-The order in which \var{proc} is applied to the elements of the
-\var{list}s is unspecified.
-If multiple returns occur from {\cf map}, the
-values returned by earlier returns are not mutated.
+{\cf map}过程将\var{proc}逐个元素地应用到\var{list}的元素上且返回一个按顺序的结果的表。\var{Proc}总是在相同的{\cf map}本身的动态环境中被调用。\var{proc}应用到\var{list}元素的顺序是未定义的。如果从{\cf map}出现多个返回，早期返回的返回值不会被改变。
 
 \begin{scheme}
 (map cadr '((a b) (d e) (g h)))   \lev  (b e h)
@@ -2204,29 +1957,16 @@ values returned by earlier returns are not mutated.
        '(a b)))                 \ev  (1 2) \var{or} (2 1)%
 \end{scheme}
 
-\implresp The implementation should check that the \var{list}s all
-have the same length.  The implementation must check the restrictions
-on \var{proc} to the extent performed by applying it as described.  An
-implementation may check whether \var{proc} is an appropriate argument
-before applying it.
+\implresp 实现应该检查所有的\var{list}有相同的长度。实现必须检查在\var{proc}上应用了上面描述的生存期的限制。一个实现可以在应用之前检查\var{proc}是不是一个合适的参数。
 \end{entry}
 
 
 \begin{entry}{%
 \proto{for-each}{ proc \vari{list} \varii{list} \dotsfoo}{procedure}}
 
-\domain{The \var{list}s should all have the same length.  \var{Proc}
-  should accept as many arguments as there are
-  \var{list}s.  \var{Proc} should not mutate
-  any of the \var{list}s.}
+\domain{所有的\var{list}应该有相同的长度。\var{Proc}应该接受和\var{list}一样多的参数。\var{Proc}不应该更改任何一个\var{list}。}
 
-The {\cf for-each} procedure applies \var{proc}
-element-wise to the elements of the
-\var{list}s for its side effects,  in order from the first elements to the
-last.
-\var{Proc} is always called in the same dynamic environment
-as {\cf for-each} itself.
-The return values of {\cf for-each} \areunspecified.
+{\cf for-each}过程以副作用为目的将\var{proc}逐个元素地应用到\var{list}的元素上，以从第一个元素到最后一个元素的顺序。\var{Proc}总是在相同的{\cf for-each}本身的动态环境中被调用。{\cf for-each}的返回值是未定义的。
 
 \begin{scheme}
 (let ((v (make-vector 5)))
@@ -2235,37 +1975,29 @@ The return values of {\cf for-each} \areunspecified.
             '(0 1 2 3 4))
   v)                                \ev  \#(0 1 4 9 16)
 
-(for-each (lambda (x) x) '(1 2 3 4)) \lev \theunspecified
+(for-each (lambda (x) x) '(1 2 3 4)) \lev \textrm{未定义}
 
-(for-each even? '()) \ev \theunspecified%
+(for-each even? '()) \ev \textrm{未定义}%
 \end{scheme}
 
-\implresp The implementation should check that the \var{list}s all
-have the same length.  The implementation must check the restrictions
-on \var{proc} to the extent performed by applying it as described.
-An implementation may check whether \var{proc} is an appropriate argument
-before applying it.
+\implresp 实现应该检查所有的\var{list}有相同的长度。实现必须检查在\var{proc}上应用了上面描述的生存期的限制。一个实现可以在应用之前检查\var{proc}是不是一个合适的参数。
 
 \begin{note}
-Implementations of {\cf for-each} may or may not tail-call
-\var{proc} on the last elements.
+\var{proc}的实现可以也可以不在最后一个元素上对\var{proc}实行尾调用。
 \end{note}
 
 \end{entry}
 
 
-\section{Symbols}
+\section{符号}
 \label{symbolsection}
 
-Symbols are objects whose usefulness rests on the fact that two
-symbols are identical (in the sense of {\cf eq?}, {\cf eqv?} and {\cf equal?}) if and only if their
-names are spelled the same way.
-A symbol literal is formed using {\cf quote}.
+符号是建立在如下事实上的对象，两个符号是相同的（从{\cf eq?}，{\cf eqv?}和{\cf equal?}的意义来说）当且仅当它们的名字以同样的方式拼写。一个符号字面量使用{\cf quote}形式。
 
 \begin{entry}{%
 \proto{symbol?}{ obj}{procedure}}
 
-Returns \schtrue{} if \var{obj} is a symbol, otherwise returns \schfalse.
+如果\var{obj}是一个符号则返回\schtrue{}，否则返回\schfalse{}。
 
 \begin{scheme}
 (symbol? 'foo)          \ev  \schtrue
@@ -2281,7 +2013,7 @@ Returns \schtrue{} if \var{obj} is a symbol, otherwise returns \schfalse.
 \begin{entry}{%
 \proto{symbol->string}{ symbol}{procedure}}
 
-Returns the name of \var{symbol} as an immutable string.
+以不可变字符串的形式返回\var{symbol}的名字。
 
 \begin{scheme}
 (symbol->string 'flying-fish)
@@ -2297,14 +2029,13 @@ Returns the name of \var{symbol} as an immutable string.
 \proto{symbol=?}{ \vari{symbol} \varii{symbol} \variii{symbol}
   \dotsfoo}{procedure}}
 
-Returns \schtrue{} if the symbols are the same, i.e., if their names
-are spelled the same.
+如果符号是一样的则返回\schtrue{}，也就是说如果它们的名字拼写相同的话。
 \end{entry}
 
 \begin{entry}{%
 \proto{string->symbol}{ string}{procedure}}
 
-Returns the symbol whose name is \var{string}.
+返回名字是\var{string}的符号。
 
 \begin{scheme}
 (eq? 'mISSISSIppi 'mississippi)  \lev  \schfalse
@@ -2322,49 +2053,26 @@ Returns the symbol whose name is \var{string}.
 \end{entry}
 
 
-\section{Characters}
+\section{字符}
 \label{charactersection}
 
 \mainindex{Unicode}
 \mainindex{scalar value}
 
-\defining{Characters} are objects that represent Unicode scalar
-values~\cite{Unicode}.
+\defining{字符}是表示Unicode标量值得对象~\cite{Unicode}。
 
 \begin{note}
-  Unicode defines a standard mapping between sequences of
-  \textit{Unicode scalar values}\mainindex{Unicode scalar
-    value}\mainindex{scalar value} (integers in the range 0 to
-  \#x10FFFF, excluding the range \#xD800 to \#xDFFF) in the latest
-  version of the standard and human-readable ``characters''. More
-  precisely, Unicode distinguishes between glyphs, which are printed
-  for humans to read, and characters, which are abstract entities that
-  map to glyphs (sometimes in a way that's sensitive to surrounding
-  characters).  Furthermore, different sequences of scalar values
-  sometimes correspond to the same character.  The relationships among
-  scalar, characters, and glyphs are subtle and complex.
+Unicode在最新版本的\textit{Unicode标量值}\mainindex{Unicode scalar value}\mainindex{scalar value}（在0到\#x10FFF之间的整数，不包括区间\#xD800到\#xDFFF）和人类可读“字符”直接定义了一个标准的映射。更精确地说，Unicode区别字形（glyphs），其被印刷供人类阅读，和字符（characters），其实映射到字形的抽象入口（有时那在某种程度上对周围字符敏感）。此外，标量值的不同序列有时对应于相同的字符。标量，字符，字形之间的关系是微妙和复杂的。
 
-  Despite this complexity, most things that a literate human would
-  call a ``character'' can be represented by a single Unicode scalar
-  value (although several sequences of Unicode scalar values may
-  represent that same character). For example, Roman letters, Cyrillic
-  letters, Hebrew consonants, and most Chinese characters fall into
-  this category.
+尽管有这样的复杂性，大部分一个有教养的人可以称之为“字符”的东西可以被单个Unicode标量值表示（尽管一些Unicode标量值的序列可以表示那个同样的字符）。比如，罗马字母，斯拉夫字母，希伯来辅音，和大部分中文字符都在这个类别中。
 
-  Unicode scalar values exclude the range \#xD800 to \#xDFFF, which
-  are part of the range of Unicode \textit{code points}\mainindex{code
-    point}.  However, the Unicode code points in this range,
-  the so-called \textit{surrogates}\mainindex{surrogate}, are an
-  artifact of the UTF-16 encoding, and can only appear in specific
-  Unicode encodings, and even then only in pairs that encode scalar
-  values.  Consequently, all characters represent code points, but the
-  surrogate code points do not have representations as characters.
+Unicode标量值不包括区间\#xD800到\#xDFFF，其是Unicode\textit{码位（code points）}\mainindex{code point}范围的一部分。然而，这个范围内的Unicode码位，即所谓的\textit{代理（surrogates）}\mainindex{surrogate}，是一个UTF-16编码的人工制品，且只能出现在特定的Unicode编码中。因此，所有的字符代表码位，但是，代理码位没有字符的表示法。
 \end{note}
 
 \begin{entry}{%
 \proto{char?}{ obj}{procedure}}
 
-Returns \schtrue{} if \var{obj} is a character, otherwise returns \schfalse.
+如果\var{obj}是一个字符则返回\schtrue{}，否则返回\schfalse{}。
 
 \end{entry}
 
@@ -2372,14 +2080,9 @@ Returns \schtrue{} if \var{obj} is a character, otherwise returns \schfalse.
 \proto{char->integer}{ char}{procedure}
 \proto{integer->char}{ \vr{sv}}{procedure}}
 
-\domain{\var{Sv} must be a Unicode scalar value, i.e., a non-negative exact
-  integer object in $\left[0, \#x\textrm{D7FF}\right] \cup
-  \left[\#x\textrm{E000}, \#x\textrm{10FFFF}\right]$.}
+\domain{\var{Sv}必须是一个Unicode标量值，也就是说，一个属于$\left[0, \#x\textrm{D7FF}\right] \cup \left[\#x\textrm{E000}, \#x\textrm{10FFFF}\right]$的非负精确整数对象。}
 
-Given a character, {\cf char\coerce{}integer} returns its Unicode scalar value
-as an exact integer object.
-For a Unicode scalar value \var{sv}, {\cf integer\coerce{}char}
-returns its associated character.
+传递一个字符，{\cf char\coerce{}integer}以一个精确整数对象的形式返回它的Unicode标量值。对于一个Unicode标量值\var{sv}，{\cf integer\coerce{}char}返回与其相关的字符。
 
 \begin{scheme}
 (integer->char 32) \ev \sharpsign\backwhack{}space
@@ -2398,8 +2101,7 @@ returns its associated character.
 \proto{char>=?}{ \vari{char} \varii{char} \variii{char} \dotsfoo}{procedure}}
 
 \label{characterequality}
-These procedures impose a total ordering on the set of characters
-according to their Unicode scalar values.
+这些过程根据根据字符的标量值给它们强加了一个总体的顺序。
 
 \begin{scheme}
 (char<? \sharpsign\backwhack{}z \sharpsign\backwhack{}\ss) \ev \schtrue
@@ -2408,21 +2110,17 @@ according to their Unicode scalar values.
 
 \end{entry}
 
-\section{Strings}
+\section{字符串}
 \label{stringsection}
 
-Strings are sequences of characters.
+字符串是字符的序列。
 
-\vest The {\em length} of a string is the number of characters that it
-contains.  This number is fixed when the
-string is created.  The \defining{valid indices} of a string are the
-integers less than the length of the string.  The first
-character of a string has index 0, the second has index 1, and so on.
+\vest 字符串的{\em 长度}是它包含的字符的数量。当字符串被创建的时候这个数被固定。一个字符串的\defining{合法索引（valid indices）}是小于字符串长度的整数。一个字符串的第一个字符的索引是0，第二个是1，以此类推。
 
 \begin{entry}{%
 \proto{string?}{ obj}{procedure}}
 
-Returns \schtrue{} if \var{obj} is a string, otherwise returns \schfalse.
+如果\var{obj}是一个字符串则返回\schtrue{}，否则返回\schfalse{}。
 \end{entry}
 
 
@@ -2430,46 +2128,39 @@ Returns \schtrue{} if \var{obj} is a string, otherwise returns \schfalse.
 \proto{make-string}{ k}{procedure}
 \rproto{make-string}{ k char}{procedure}}
 
-Returns a newly allocated string of
-length \var{k}.  If \var{char} is given, then all elements of the string
-are initialized to \var{char}, otherwise the contents of the
-\var{string} are unspecified.
+返回一个新分配的长度是\var{k}的字符串。如果传递了\var{char}参数，那么这个字符串的所有元素被初始化为\var{char}，否则\var{字符串}的内容是未定义的。
 
 \end{entry}
 
 \begin{entry}{%
 \proto{string}{ char \dotsfoo}{procedure}}
 
-Returns a newly allocated string composed of the arguments.
+返回一个新分配的由其参数组成的字符串。
 
 \end{entry}
 
 \begin{entry}{%
 \proto{string-length}{ string}{procedure}}
 
-Returns the number of characters in the given \var{string} as an exact
-integer object.
+以一个精确整数对象的形式返回给定的\var{string}中字符的数量。
 \end{entry}
 
 
 \begin{entry}{%
 \proto{string-ref}{ string k}{procedure}}
 
-\domain{\var{K} must be a valid index of \var{string}.}
-The {\cf string-ref} procedure returns character \vr{k} of \var{string} using zero-origin indexing.
+\domain{\var{K}必须是\var{string}的一个合法的索引。}
+{\cf string-ref}以从零开始的索引返回\var{string}的第\var{k}个字符。
 
 \begin{note}
-  Implementors should make {\cf string-ref} run in constant
-  time.
+实现应该让{\cf string-ref}在常数时间内运行完成。
 \end{note}
 \end{entry}
 
 \begin{entry}{%
 \proto{string=?}{ \vari{string} \varii{string} \variii{string} \dotsfoo}{procedure}}
 
-Returns \schtrue{} if the strings are the same length and contain the same
-characters in the same positions.  Otherwise, the {\cf string=?}
-procedure returns \schfalse.
+如果所有的字符串的长度都是一样的且包含相同的字符则返回\schtrue{}。否则{\cf string=?}过程返回\schfalse{}。
 
 \begin{scheme}
 (string=? "Stra\ss{}e" "Strasse") \lev \schfalse%
@@ -2482,12 +2173,7 @@ procedure returns \schfalse.
 \proto{string<=?}{ \vari{string} \varii{string} \variii{string} \dotsfoo}{procedure}
 \proto{string>=?}{ \vari{string} \varii{string} \variii{string} \dotsfoo}{procedure}}
 
-These procedures are the lexicographic extensions to strings of the
-corresponding orderings on characters.  For example, {\cf string<?}\ is
-the lexicographic ordering on strings induced by the ordering
-{\cf char<?}\ on characters.  If two strings differ in length but
-are the same up to the length of the shorter string, the shorter string
-is considered to be lexicographically less than the longer string.
+这些操作是字符上对应于顺序的字符串的词典扩展。比如，{\cf string<?}是{\cf char<?}在字符上的顺序在字符串上的词典序。如果两个字符串长度不同，但多达较短字符串的长度是一样的，那么较短的字符串在词典序上被认为小于较长的字符串。
 
 \begin{scheme}
 (string<? "z" "\ss") \ev \schtrue
@@ -2500,20 +2186,16 @@ is considered to be lexicographically less than the longer string.
 \begin{entry}{%
 \proto{substring}{ string start end}{procedure}}
 
-\domain{\var{String} must be a string, and \var{start} and \var{end}
-must be exact integer objects satisfying
-$$0 \leq \var{start} \leq \var{end} \leq \hbox{\tt(string-length \var{string})\rm.}$$}
-The {\cf substring} procedure returns a newly allocated string formed from the characters of
-\var{string} beginning with index \var{start} (inclusive) and ending with index
-\var{end} (exclusive).
+\domain{\var{String}必须是一个字符串，且\var{start}和\var{end}必须是一个精确的整数对象，且符合
+$$0 \leq \var{start} \leq \var{end} \leq \hbox{\tt(string-length \var{string})\rm。}$$}
+{\cf substring}过程返回一个新分配的字符串，其形成于\var{string}以索引\var{start}（包括）开始及以\var{end}结束（不包括）的字符。
 \end{entry}
 
 
 \begin{entry}{%
 \proto{string-append}{ \var{string} \dotsfoo}{procedure}}
 
-Returns a newly allocated string whose characters form the concatenation of the
-given strings.
+返回一个新分配的字符串，其字符是给定字符串的串联。
 \end{entry}
 
 
@@ -2521,62 +2203,36 @@ given strings.
 \proto{string->list}{ string}{procedure}
 \proto{list->string}{ list}{procedure}}
 
-\domain{\var{List} must be a list of characters.}
-The {\cf string\coerce{}list} procedure returns a newly allocated list of the
-characters that make up the given string.  The {\cf
-  list\coerce{}string} procedure
-returns a newly allocated string formed from the characters in
-\var{list}. The {\cf string\coerce{}list}
-and {\cf list\coerce{}string} procedures are
-inverses so far as {\cf equal?}\ is concerned.
+\domain{\var{List}必须是一个字符的表。}
+{\cf string\coerce{}list}过程返回一个新分配的字符的表，这些字符是组成给定字符串的字符。{\cf list\coerce{}string}过程返回一个新分配的字符串，其由\var{list}当中的字符组成。从{\cf equal?}的角度来说，{\cf string\coerce{}list}和{\cf list\coerce{}string}是互逆的过程。
 \end{entry}
 
 \begin{entry}{%
 \proto{string-for-each}{ proc \vari{string} \varii{string} \dotsfoo}{procedure}}
 
-\domain{The \var{string}s must all have the same length.  \var{Proc}
-  should accept as many arguments as there are {\it string}s.}
-The {\cf string-for-each} procedure applies \var{proc}
-element-wise to the characters of the
-\var{string}s for its side effects,  in order from the first characters to the
-last.
-\var{Proc} is always called in the same dynamic environment
-as {\cf string-for-each} itself.
-The return values of {\cf string-for-each} \areunspecified.
+\domain{所有的\var{string}必须有相同的长度。\var{Proc}应该接受和\var{string}个数相同的参数。}
+{\cf string-for-each}过程将\var{proc}逐个元素地应用到\var{string}的字符上，其以副作用为目的，并且是按照从第一个字符到最后一个的顺序。\var{Proc}总是在相同的{\cf string-for-each}本身的动态环境中被调用。{\cf string-for-each}的返回值是未定义的。
 
-Analogous to {\cf for-each}.
+类似于{\cf for-each}。
 
-\implresp The implementation must check the restrictions
-on \var{proc} to the extent performed by applying it as described.
-An
-implementation may check whether \var{proc} is an appropriate argument
-before applying it.
+\implresp 实现必须检查在\var{proc}上应用了上面描述的生存期的限制。一个实现可以在应用之前检查\var{proc}是不是一个合适的参数。
 \end{entry}
 
 \begin{entry}{%
 \proto{string-copy}{ string}{procedure}}
 
-Returns a newly allocated copy of the given \var{string}.
+返回给定\var{string}的一个新分配的副本。
 
 \end{entry}
 
-\section{Vectors}
+\section{向量}
 \label{vectorsection}
 
-Vectors are heterogeneous structures whose elements are indexed
-by integers.  A vector typically occupies less space than a list
-of the same length, and the average time needed to access a randomly
-chosen element is typically less for the vector than for the list.
+向量是一个异构结构（heterogeneous structures），其元素由整数索引。向量通常比相同长度的表占据更少的空间，访问随机选定的元素时，向量需要的平均时间通常也比表少。
 
-\vest The {\em length} of a vector is the number of elements that it
-contains.  This number is a non-negative integer that is fixed when the
-vector is created.
-The {\em valid indices}\index{valid indices} of a
-vector are the exact non-negative integer objects less than the length of the
-vector.  The first element in a vector is indexed by zero, and the last
-element is indexed by one less than the length of the vector.
+\vest 一个向量的{\em 长度}是其包含的元素的数量。这个数量是一个非负整数，其在向量创建的时候就被确定。一个向量的合法索引\index{valid indices}是小于向量长度的精确非负整数对象。在向量中，第一个元素的索引是零，且最后一个元素的索引比向量的长度小一。
 
-Like list constants, vector constants must be quoted:
+和表常量一样，向量常量必须被引用（quoted）：
 
 \begin{scheme}
 '\#(0 (2 2 2 2) "Anna")  \lev  \#(0 (2 2 2 2) "Anna")%
@@ -2585,8 +2241,7 @@ Like list constants, vector constants must be quoted:
 \begin{entry}{%
 \proto{vector?}{ obj}{procedure}}
 
-Returns \schtrue{} if \var{obj} is a vector.  Otherwise the procedure
-returns \schfalse.
+如果\var{obj}是一个向量则返回\schtrue{}，否则过程返回\schfalse{}。
 \end{entry}
 
 
@@ -2594,9 +2249,7 @@ returns \schfalse.
 \proto{make-vector}{ k}{procedure}
 \rproto{make-vector}{ k fill}{procedure}}
 
-Returns a newly allocated vector of \var{k} elements.  If a second
-argument is given, then each element is initialized to \var{fill}.
-Otherwise the initial contents of each element is unspecified.
+返回一个新分配的\var{k}个元素的向量。如果给了第二个参数，那么每个元素被初始化为\var{fill}。否则每个元素的初始化内容是未定义的。
 
 \end{entry}
 
@@ -2604,8 +2257,7 @@ Otherwise the initial contents of each element is unspecified.
 \begin{entry}{%
 \proto{vector}{ obj \dotsfoo}{procedure}}
 
-Returns a newly allocated vector whose elements contain the given
-arguments.  Analogous to {\cf list}.
+返回一个新分配的向量，其元素包含给定的参数。类似与{\cf list}。
 
 \begin{scheme}
 (vector 'a 'b 'c)               \ev  \#(a b c)%
@@ -2616,16 +2268,15 @@ arguments.  Analogous to {\cf list}.
 \begin{entry}{%
 \proto{vector-length}{ vector}{procedure}}
 
-Returns the number of elements in \var{vector} as an exact integer object.
+以一个精确整数对象的形式返回\var{vector}中元素的数量。
 \end{entry}
 
 
 \begin{entry}{%
 \proto{vector-ref}{ vector k}{procedure}}
 
-\domain{\var{K} must be a valid index of \var{vector}.}
-The {\cf vector-ref} procedure returns the contents of element \vr{k} of
-\var{vector}.
+\domain{\var{K}必须是\var{vector}的一个合法的索引。}
+{\cf vector-ref}过程返回\var{vector}元素\var{k}的内容。
 
 \begin{scheme}
 (vector-ref '\#(1 1 2 3 5 8 13 21) 5)  \lev  8%
@@ -2636,21 +2287,19 @@ The {\cf vector-ref} procedure returns the contents of element \vr{k} of
 \begin{entry}{%
 \proto{vector-set!}{ vector k obj}{procedure}}
 
-\domain{\var{K} must be a valid index of \var{vector}.}
-The {\cf vector-set!} procedure stores \var{obj} in element \vr{k} of
-\var{vector}, and returns \unspecifiedreturn.
+\domain{\var{K}必须是\var{vector}的一个合法的索引。}
+{\cf vector-set!}过程将\var{obj}存储到\var{vector}的元素\var{k}中，且返回未定义的值。
 
-Passing an immutable vector to {\cf vector-set!} should cause an exception
-with condition type {\cf\&assertion} to be raised.
+给{\cf vector-set!}传递一个不可改变的向量应当导致一个条件类型是{\cf\&assertion}的异常被抛出。
 
 \begin{scheme}
 (let ((vec (vector 0 '(2 2 2 2) "Anna")))
   (vector-set! vec 1 '("Sue" "Sue"))
   vec)      \lev  \#(0 ("Sue" "Sue") "Anna")
 
-(vector-set! '\#(0 1 2) 1 "doe")  \lev  \unspecified
-             ; \textrm{constant vector}
-             ; \textrm{should raise} \exception{\&assertion}%
+(vector-set! '\#(0 1 2) 1 "doe")  \lev  \textrm{未定义的}
+             ; \textrm{常向量}
+             ; \textrm{应当抛出}\exception{\&assertion}%
 \end{scheme}
 
 \end{entry}
@@ -2660,9 +2309,7 @@ with condition type {\cf\&assertion} to be raised.
 \proto{vector->list}{ vector}{procedure}
 \proto{list->vector}{ list}{procedure}}
 
-The {\cf vector->list} procedure returns a newly allocated list of the objects contained
-in the elements of \var{vector}.  The {\cf list->vector} procedure returns a newly
-created vector initialized to the elements of the list \var{list}.
+{\cf vector->list}过程返回一个新分配的由包含在\var{vector}中元素的对象组成的表。{\cf list->vector}过程返回一个新创建的由表\var{list}中的元素初始化的向量。
 
 \begin{scheme}
 (vector->list '\#(dah dah didah))  \lev  (dah dah didah)
@@ -2674,102 +2321,56 @@ created vector initialized to the elements of the list \var{list}.
 \begin{entry}{%
 \proto{vector-fill!}{ vector fill}{procedure}}
 
-Stores \var{fill} in every element of \var{vector}
-and returns \unspecifiedreturn.
+将\var{fill}存储到\var{vector}的每一个元素中，且返回未定义的值。
 \end{entry}
 
 \begin{entry}{%
 \proto{vector-map}{ proc \vari{vector} \varii{vector} \dotsfoo}{procedure}}
 
-\domain{The \var{vector}s must all have the same length.  \var{Proc}
-  should accept as many arguments as there are {\it vector}s and return a
-  single value.}
+\domain{所有的\var{vector}必须有相同的长度。\var{Proc}应该接受和\var{vector}个数相同的参数，且返回一个单独的值。}
 
-The {\cf vector-map} procedure applies \var{proc} element-wise to the elements of the
-\var{vector}s and returns a vector of the results, in order.
-\var{Proc} is always called in the same dynamic environment
-as {\cf vector-map} itself.
-The order in which \var{proc} is applied to the elements of the
-\var{vector}s is unspecified.
-If multiple returns occur from {\cf vector-map}, the return
-values returned by earlier returns are not mutated.
+{\cf vector-map}过程将\var{proc}逐个元素地应用到\var{vector}的元素上且返回一个按顺序的结果的向量。\var{Proc}总是在相同的{\cf vector-map}本身的动态环境中被调用。\var{proc}应用到\var{vector}元素的顺序是未定义的。如果从{\cf vector-map}出现多个返回，早期返回的返回值不会被改变。
 
 
-Analogous to {\cf map}.
+类似于{\cf map}。
 
-\implresp The implementation must check the restrictions
-on \var{proc} to the extent performed by applying it as described.
-An
-implementation may check whether \var{proc} is an appropriate argument
-before applying it.
+\implresp 实现必须检查在\var{proc}上应用了上面描述的生存期的限制。一个实现可以在应用之前检查\var{proc}是不是一个合适的参数。
 \end{entry}
 
 
 \begin{entry}{%
 \proto{vector-for-each}{ proc \vari{vector} \varii{vector} \dotsfoo}{procedure}}
 
-\domain{The \var{vector}s must all have the same length.  \var{Proc}
-  should accept as many arguments as there are {\it vector}s.}
-The {\cf vector-for-each} procedure applies \var{proc}
-element-wise to the elements of the
-\var{vector}s for its side effects,  in order from the first elements to the
-last.
-\var{Proc} is always called in the same dynamic environment
-as {\cf vector-for-each} itself.
-The return values of {\cf vector-for-each} \areunspecified.
+\domain{所有的\var{vector}必须有相同的长度。\var{Proc}应该接受和\var{vector}个数相同的参数。}
+{\cf vector-for-each}过程将\var{proc}逐个元素地应用到\var{vector}的字符上，其以副作用为目的，并且是按照从第一个字符到最后一个的顺序。\var{Proc}总是在相同的{\cf vector-for-each}本身的动态环境中被调用。{\cf vector-for-each}的返回值是未定义的。
 
-Analogous to {\cf for-each}.
+类似于{\cf for-each}。
 
-\implresp The implementation must check the restrictions
-on \var{proc} to the extent performed by applying it as described.
-An
-implementation may check whether \var{proc} is an appropriate argument
-before applying it.
+\implresp 实现必须检查在\var{proc}上应用了上面描述的生存期的限制。一个实现可以在应用之前检查\var{proc}是不是一个合适的参数。
 \end{entry}
 
-\section{Errors and violations}
+\section{错误（Errors）和违规行为（violations）}
 \label{errorviolation}
 
 \begin{entry}{%
 \proto{error}{ who message \vari{irritant} \dotsfoo}{procedure}
 \proto{assertion-violation}{ who message \vari{irritant} \dotsfoo}{procedure}}
 
-\domain{\var{Who} must be a string or a symbol or \schfalse{}.
-  \var{Message} must be a string.
-  The \var{irritant}s are arbitrary objects.}
+\domain{\var{Who}必须是一个字符串或一个符号或\schfalse{}。\var{Message}必须是一个字符串。\var{Irritant}是任意的对象。}
 
-These procedures raise an exception.  The {\cf error}
-procedure should be called when an error has occurred, typically caused by
-something that has gone wrong in the interaction of the program with the
-external world or the user.  The {\cf assertion-violation} procedure
-should be called when an invalid call to a procedure was made, either passing an
-invalid number of arguments, or passing an argument that it is not
-specified to handle.
+这些过程抛出一个异常。当一个错误出现的时候，{\cf error}过程应当被调用，通常由程序在与外部世界或用户交互时已经出错的一些事情导致。{\cf assertion-violation}过程在一个过程被非法调用的时候应当被调用，或者是传递了非法数量的参数，或者传递了未被指定处理的参数。
 
-The \var{who} argument should describe the procedure or operation that
-detected the exception.  The \var{message} argument should describe
-the exceptional situation.  The \var{irritant}s should be the arguments
-to the operation that detected the operation.
+\var{Who}参数应当描述检测到异常的过程或操作。\var{Message}参数应当应当描述外部情况。\var{Irritant}应当是检测到操作的操作的参数。
 
-The condition object provided with the exception (see
-library chapter~\extref{lib:exceptionsconditionschapter}{Exceptions
-  and conditions}) has the following condition types:
+异常提供的条件对象（见库的第\extref{lib:exceptionsconditionschapter}{Exceptions and conditions}章）有下列的条件类型：
 %
 \begin{itemize}
-\item If \var{who} is not \schfalse, the condition has condition type
-  {\cf \&who}, with \var{who} as the value of its field.  In
-  that case, \var{who} should be the name of the procedure or entity that
-  detected the exception.  If it is \schfalse, the condition does not
-  have condition type {\cf \&who}.
-\item The condition has condition type {\cf \&message}, with
-  \var{message} as the value of its field.
-\item The condition has condition type {\cf \&irritants}, and its
-  field has as its value a list of the \var{irritant}s.
+\item 如果\var{who}不是\schfalse{}，那么条件有条件类型{\cf \&who}，\var{who}作为它的域的值。在哪种情况下，\var{who}应当是检测到异常的过程或条目的名字。如果它是\schfalse{}，那么条件没有条件类型{\cf \&who}。
+\item 条件有条件类型{\cf \&message}，\var{message}作为它的域的值。
+\item 条件有条件类型{\cf \&irritant}，\var{irritant}的表作为它的域的值。
 \end{itemize}
 %
-Moreover, the condition created by {\cf error} has condition type
-{\cf \&error}, and the condition created by {\cf assertion-\hp{}violation} has
-condition type {\cf \&assertion}.
+此外，{\cf error}创建的条件有条件类型{\cf \&error}，且{\cf assertion-\hp{}violation}创建的条件有条件类型{\cf \&assertion}。
 
 \begin{scheme}
 (define (fac n)
@@ -2795,39 +2396,26 @@ condition type {\cf \&assertion}.
 \begin{entry}{%
 \proto{assert}{ \hyper{expression}}{\exprtype}}
 
-An {\cf assert} form is evaluated by evaluating \hyper{expression}.
-If \hyper{expression} returns a true value, that value is returned
-from the {\cf assert} expression.  If \hyper{expression} returns
-\schfalse, an exception with condition types {\cf \&assertion} and
-{\cf \&message} is raised.  The message provided in the condition
-object is implementation-dependent.
+一个{\cf assert}形式通过计算\hyper{expression}被求值。如果\hyper{expression}返回一个真值，那么那个值被从{\cf assert}表达式返回。如果\hyper{expression}返回\schfalse{}，那么一个条件类型是{\cf \&assertion}和{\cf \&message}的异常被抛出。条件对象提供的消息是实现定义的。
 
 \begin{note}
-  Implementations should exploit the fact that
-  {\cf assert} is syntax to provide as much information as possible
-  about the location of the assertion failure.
+实现应当利用这样的事实，{\cf assert}是提供尽可能多关于断言（assertion）错误位置信息的语法。
 \end{note}
 \end{entry}
 
-\section{Control features}
+\section{控制特性}
 \label{controlsection}
 \label{valuessection}
 
-This chapter describes various primitive procedures which control the
-flow of program execution in special ways.
+本章描述了各种以特殊方式控制程序执行流程的基本过程。
 
 \begin{entry}{%
 \proto{apply}{ proc \vari{arg} $\ldots$ rest-args}{procedure}}
 
-\domain{\var{Rest-args} must be a list.
- \var{Proc} should accept $n$ arguments, where $n$ is
-  number of \var{arg}s plus the length of \var{rest-args}.}
-The {\cf apply} procedure calls \var{proc} with the elements of the list
-{\cf(append (list \vari{arg} \dotsfoo) \var{rest-args})} as the actual
-arguments.
+\domain{\var{Rest-args}必须是一个表。\var{Proc}应当接受$n$个元素，其中$n$是\var{arg}的数量加上\var{rest-args}的长度。}
+{\cf apply}过程以表{\cf(append (list \vari{arg} \dotsfoo) \var{rest-args})}的元素作为真实参数调用\var{proc}。
 
-If a call to {\cf apply} occurs in a tail context, the call
-to \var{proc} is also in a tail context.
+如果一个{\cf apply}的调用在尾上下文中，那么对\var{proc}的调用也在尾上下文中。
 
 \begin{scheme}
 (apply + (list 3 4))              \ev  7
@@ -2846,32 +2434,15 @@ to \var{proc} is also in a tail context.
 \proto{call-with-current-continuation}{ proc}{procedure}
 \proto{call/cc}{ proc}{procedure}}
 
-\label{continuations} \domain{\var{Proc} should accept one
-argument.} The procedure {\cf call-with-current-continuation}
-(which is the same as the procedure {\cf call/cc}) packages
-the current continuation as an ``escape
-procedure''\mainindex{escape procedure} and passes it as an argument to
-\var{proc}.  The escape procedure is a Scheme procedure that, if it is
-later called, will abandon whatever continuation is in effect at that later
-time and will instead reinstate the continuation that was in effect
-when the escape procedure was created.  Calling the escape procedure
-may cause the invocation of \var{before} and \var{after} procedures installed using
-\ide{dynamic-wind}.
+\label{continuations} \domain{\var{Proc}应当接受一个参数。}过程{\cf call-with-current-continuation}（这和过程{\cf call/cc}是一样的）将当前的继续作为“逃逸过程”\mainindex{escape procedure}打包，且作为参数传递给\var{proc}。这个逃逸过程是一个Scheme过程，如果它在随后被调用的话，将会放弃任何在随后起作用的继续，取而代之以恢复逃逸过程创建时起作用的继续。调用逃逸过程可以导致{\cf dynamic-wind}安装的\var{before}和\var{after}过程被调用。
 
-The escape procedure accepts the same number of arguments as the
-continuation of the original call to {\cf call-\hp{}with-\hp{}current-\hp{}continuation}.
+逃逸过程的参数数量与最初调用{\cf call-with-current-continuation}时的继续的参数数量相同。
 
-The escape procedure that is passed to \var{proc} has
-unlimited extent just like any other procedure in Scheme.  It may be stored
-in variables or data structures and may be called as many times as desired.
+传入\var{proc}的逃逸过程像其他Scheme过程那样拥有无限的生存期。它可以被存入变量或数据结构中，可以被调用任意多次。
 
-If a call to {\cf call-with-current-continuation} occurs in a tail
-context, the call to \var{proc} is also in a tail context.
+如果对{\cf call-with-current-continuation}的调用发生在尾上下文中，那么对\var{proc}的调用也在尾上下文中。
 
-The following examples show only some ways in which
-{\cf call-with-current-continuation} is used.  If all real uses were as
-simple as these examples, there would be no need for a procedure with
-the power of {\cf call-\hp{}with-\hp{}current-\hp{}continuation}.
+以下示例只显示了{\cf call-with-current-continuation}的一些用法。如果所有真实的应用都像这些示例一样简单，像{\cf call-with-current-continuation}这样强大的过程也就没有存在的必要了。
 
 \begin{scheme}
 (call-with-current-continuation
@@ -2903,9 +2474,7 @@ the power of {\cf call-\hp{}with-\hp{}current-\hp{}continuation}.
 \end{scheme}
 
 \begin{note}
-  Calling an escape procedure reenters the dynamic extent of the call
-  to {\cf call-with-current-continuation}, and thus restores its
-  dynamic environment; see section~\ref{dynamicenvironmentsection}.
+调用一个逃逸过程会从新进入调用{\cf call-with-current-continuation}的动态生存期，且因此恢复它的动态环境；见第~\ref{dynamicenvironmentsection}~小节。
 \end{note}
 
 \end{entry}
@@ -2913,40 +2482,22 @@ the power of {\cf call-\hp{}with-\hp{}current-\hp{}continuation}.
 \begin{entry}{%
 \proto{values}{ obj $\ldots$}{procedure}}
 
-Delivers all of its arguments to its continuation.
-The {\cf values} procedure might be defined as follows:
+把所有的参数传递给它的继续。{\cf values}过程可以像如下方式定义：
 \begin{scheme}
 (define (values . things)
   (call-with-current-continuation
     (lambda (cont) (apply cont things))))%
 \end{scheme}
 
-The continuations of all non-final expressions within a sequence of
-expressions, such as in {\cf lambda}, {\cf begin}, {\cf let}, {\cf
-  let*}, {\cf letrec}, {\cf letrec*}, {\cf let-values}, {\cf
-  let*-values}, {\cf case}, and {\cf cond} forms, usually take an
-arbitrary number of values.
+一系列中表达式中所有非最终表达式的继续，比如在{\cf lambda}, {\cf begin}, {\cf let}, {\cf let*}, {\cf letrec}, {\cf letrec*}, {\cf let-values}, {\cf let*-values}, {\cf case}, 和{\cf cond}形式中，通常接受任意数量的值。
 
-Except for these and the continuations created by {\cf
-  call-\hp{}with-\hp{}values}, {\cf let-values}, and {\cf let*-values},
-continuations implicitly accepting a single value, such as the
-continuations of \hyper{operator} and \hyper{operand}s of procedure
-calls or the \hyper{test} expressions in conditionals, take exactly
-one value.  The effect of passing an inappropriate number of values to
-such a continuation is undefined.
+除了这些和{\cf call-with-values}, {\cf let-values}, 以及{\cf let*-values}创建的继续，继续隐式地接受一个单独的值，比如\hyper{operator}和过程调用的\hyper{operator}或在条件语句中的\hyper{text}表达式的继续，都精确地接受一个值。给继续传递不当数量的值的效果是未定义的。
 \end{entry}
 
 \begin{entry}{%
 \proto{call-with-values}{ producer consumer}{procedure}}
 
-\domain{\var{Producer} must be a procedure and should accept zero
-  arguments.  \var{Consumer} must be a procedure and should accept as many
-  values as \var{producer} returns.}
-The {\cf call-\hp{}with-\hp{}values} procedure calls \var{producer} with no arguments and
-a continuation that, when passed some values, calls the
-\var{consumer} procedure with those values as arguments.
-The continuation for the call to \var{consumer} is the
-continuation of the call to {\tt call-with-values}.
+\domain{\var{Producer}必须是一个过程，且必须接受零个值。\var{Consumer}必须是一个过程，且必须接受和\var{produce}过程返回值个数一样多的值。}{\cf call-with-values}过程会调用\var{producer}，调用时没有参数且有如下继续，当传递给这个继续一些值，会以这些值作为参数调用\var{consumer}过程。\var{consumer}调用的继续和{\cf call-with-values}调用的继续相同。
 
 \begin{scheme}
 (call-with-values (lambda () (values 4 5))
@@ -2956,55 +2507,21 @@ continuation of the call to {\tt call-with-values}.
 (call-with-values * -)                             \ev  -1%
 \end{scheme}
 
-If a call to {\cf call-with-values} occurs in a tail context, the call
-to \var{consumer} is also in a tail context.
+如果{\cf call-with-values}调用发生在尾上下文中，那么\var{consumer}调用也在尾上下文中。
 
-\implresp After \var{producer} returns, the implementation must check
-that \var{consumer} accepts as many values as \var{consumer} has
-returned.
+\implresp 在\var{producer}返回后，实现必须检查\var{consumer}必须接受和\var{producer}返回值一样多的值。
 \end{entry}
 
 \begin{entry}{%
 \proto{dynamic-wind}{ before thunk after}{procedure}}
 
-\domain{\var{Before}, \var{thunk}, and \var{after} must be procedures,
-  and each should accept zero arguments.  These procedures may return
-  any number of values.}  The {\cf dynamic-wind} procedure calls
-\var{thunk} without arguments, returning the results of this call.
-Moreover, {\cf dynamic-wind} calls \var{before} without arguments
-whenever the dynamic extent of the call to \var{thunk} is entered, and
-\var{after} without arguments whenever the dynamic extent of the call
-to \var{thunk} is exited.  Thus, in the absence of calls to escape
-procedures created by {\cf call-with-current-continuation}, {\cf
-  dynamic-wind} calls \var{before}, \var{thunk}, and \var{after}, in
-that order.
+\domain{\var{Before}, \var{thunk}, 和\var{after}必须是过程，且每个都应当接受零个参数。这些过程可以返回任意数量的值。}{\cf dynamic-wind}以无参数的方式调用\var{thunk}，返回这个调用的结果。此外，每当进入\var{trunk}调用的动态生存期的时候，{\cf dynamic-wind}会以无参数的方式调用\var{before}，每当离开\var{trunk}调用的动态生存期的时候，{\cf dynamic-wind}会以无参数的方式调用\var{after}。因此，在缺少{\cf call-with-current-continuation}创建的逃逸过程调用的情况下，{\cf dynamic-wind}按顺序调用\var{before}, \var{thunk}, \var{after}。
 
-While the calls to \var{before} and \var{after} are not considered to be
-within the dynamic extent of the call to \var{thunk}, calls to the \var{before}
-and \var{after} procedures of any other calls to {\cf dynamic-wind} that occur
-within the dynamic extent of the call to \var{thunk} are considered to be
-within the dynamic extent of the call to \var{thunk}.
+尽管对\var{before}和\var{after}的调用不被认为是在\var{thunk}调用的动态生存期内，但是，出现在\var{thunk}调用动态生存期内的任何其它的{\cf dynamic-wind}调用的\var{before}和\var{after}过程被认为是在\var{thunk}调用的动态生存期里面的。
 
-More precisely, an escape procedure transfers control out of the
-dynamic extent of a set of zero or more active {\cf dynamic-wind}
-calls $x\ \dots$ and transfer control into the dynamic extent
-of a set of zero or more active {\cf dynamic-wind} calls
-$y\ \dots$.
-It leaves the dynamic extent of the most recent $x$ and calls without
-arguments the corresponding \var{after} procedure.
-If the \var{after} procedure returns, the escape procedure proceeds to
-the next most recent $x$, and so on.
-Once each $x$ has been handled in this manner,
-the escape procedure calls without arguments the \var{before} procedure
-corresponding to the least recent $y$.
-If the \var{before} procedure returns, the escape procedure reenters the
-dynamic extent of the least recent $y$ and proceeds with the next least
-recent $y$, and so on.
-Once each $y$ has been handled in this manner, control is transferred to
-the continuation packaged in the escape procedure.
+更精确地说，一个逃逸过程将控制权转移出一组零个或多个活动的{\cf dynamic-wind}调用$x\ \dots$的动态生存期且将控制权转移入一组零个或多个活动的{\cf dynamic-wind}调用$y\ \dots$。它离开最近$x$的动态生存期，且以无参数的方式调用其对应的\var{after}过程。如果\var{after}过程返回的话，逃逸过程继续到下一个最近的$x$，以此类推。一旦每一个$x$都以这种方式被处理了，逃逸过程以无参数的方式调用最不接近的$y$对应的\var{before}过程。如果\var{before}过程返回的话，逃逸过程重新进入最近$y$的动态生存期，然后继续处理下一个最近的$y$，以此类推。一旦每一个$y$都以这种方式被处理了，控制权被转移到逃逸过程打包的继续。
 
-\implresp The implementation must check the restrictions on
-\var{thunk} and \var{after} only if they are actually called.
+\implresp 实现必须检查在\var{thunk}和\var{after}上的限制，只要它们被实际调用。
 
 \begin{scheme}
 (let ((path '())
@@ -3058,25 +2575,17 @@ the continuation packaged in the escape procedure.
 \end{scheme}
 
 \begin{note}
-  Entering a dynamic extent restores its dynamic environment; see
-  section~\ref{dynamicenvironmentsection}.
+进入一个动态生存期会恢复它的动态环境；见第~\ref{dynamicenvironmentsection}~小节。
 \end{note}
 \end{entry}
 
-\section{Iteration}\unsection
+\section{迭代}\unsection
 
 \begin{entry}{%
 \rproto{let}{ \hyper{variable} \hyper{bindings} \hyper{body}}{\exprtype}}
 
 \label{namedlet}
-``Named {\cf let}'' is a variant on the syntax of \ide{let} that provides
-a general looping construct and may also be used to express
-recursion.
-It has the same syntax and semantics as ordinary {\cf let}
-except that \hyper{variable} is bound within \hyper{body} to a procedure
-whose parameters are the bound variables and whose body is
-\hyper{body}.  Thus the execution of \hyper{body} may be repeated by
-invoking the procedure named by \hyper{variable}.
+“命名{\cf let}（Named {\cf let}）”是{\cf let}在语法上的一个变体，其提供一个通用的循环结构，同时也被用作表达递归。除了\hyper{variable}用\hyper{body}绑定到一个过程之外，它和普通的{\cf let}有相同的语法和语义，其中这个过程的变量是被绑定的变量，内部是\hyper{body}。因此，\hyper{body}的执行可以通过调用\hyper{variable}命名的过程被重复。
 
 %                                              |  <-- right margin
 \begin{scheme}
@@ -3097,7 +2606,7 @@ invoking the procedure named by \hyper{variable}.
 
 \end{entry}
 
-\section{Quasiquotation}\unsection
+\section{准引用（Quasiquotation）}\unsection
 \label{quasiquotesection}
 
 \begin{entry}{%
@@ -3105,41 +2614,19 @@ invoking the procedure named by \hyper{variable}.
 \litproto{unquote}
 \litproto{unquote-splicing}}
 
-``Backquote'' or ``quasiquote''\index{backquote} expressions are useful
-for constructing a list or vector structure when some but not all of the
-desired structure is known in advance.
+“反引用（Backquote）”或“准引用”\index{backquote}在构造表或向量结构时是有用的，尤其是在需要的结构中只有一些是提前知道的时候。
 
-\syntax \hyper{Qq template} should be as specified by the grammar at
-the end of this entry.
+\syntax \hyper{Qq template}应该与本条目最后的语法说明的一样。
 
-\semantics If no
-{\cf unquote} or {\cf unquote-splicing} forms
-appear within the \hyper{qq template}, the result of
-evaluating
-{\cf (quasiquote \hyper{qq template})} is equivalent to the result of evaluating
-{\cf (quote \hyper{qq template})}.
+\semantics 如果没有{\cf unquote}或{\cf unquote-splicing}形式出现在\hyper{qq template}里面，那么{\cf (quasiquote \hyper{qq template})}计算结果和{\cf (quote \hyper{qq template})}计算结果是一样的。
 
-If an {\cf (unquote \hyper{expression} \dotsfoo)} form appears inside a
-\hyper{qq template}, however, the \hyper{expression}s are evaluated
-(``unquoted'') and their results are inserted into the structure instead
-of the {\cf unquote} form.
+如果一个{\cf (unquote \hyper{expression} \dotsfoo)}形式出现在\hyper{qq template}里面，那么\hyper{expression}会被求值（“解引用（unquoted）”）且它们的结果会被插入到结构中来代替{\cf unquote}形式。
 
-If an {\cf (unquote-splicing \hyper{expression} \dotsfoo)} form
-appears inside a \hyper{qq template}, then the \hyper{expression}s must
-evaluate to lists; the opening and closing parentheses of the lists are
-then ``stripped away'' and the elements of the lists are inserted in
-place of the {\cf unquote-splicing} form.
+如果一个{\cf (unquote-splicing \hyper{expression} \dotsfoo)}形式出现在\hyper{qq template}里面，那么\hyper{expression}的结果必须是一个表；然后，表中的左右小括号会被“剥离（stripped away）”，且表中的元素会被插入到结构中来代替{\cf unquote-splicing}形式。
 
-Any {\cf unquote-splicing} or multi-operand {\cf unquote} form must
-appear only within a list or vector \hyper{qq template}.
+任何{\cf unquote-splicing}或多操作的{\cf unquote}形式智能出现在一个表或向量的\hyper{qq template}中。
 
-As noted in section~\ref{abbreviationsection},
-{\cf (quasiquote \hyper{qq template})} may be abbreviated
-\backquote\hyper{qq template},
-{\cf (unquote \hyper{expression})} may be abbreviated
-{\cf,}\hyper{expression}, and
-{\cf (unquote-splicing \hyper{expression})} may be abbreviated
-{\cf,}\atsign\hyper{expression}.
+正如第~\ref{abbreviationsection}~小节所提到的，{\cf (quasiquote \hyper{qq template})}可以被简写成\backquote\hyper{qq template}，{\cf (unquote \hyper{expression})}可以被简写成{\cf,}\hyper{expression}，且{\cf (unquote-splicing \hyper{expression})}可以被简写成{\cf,}\atsign\hyper{expression}。
 
 \begin{scheme}
 `(list ,(+ 1 2) 4)  \ev  (list 3 4)
@@ -3147,10 +2634,10 @@ As noted in section~\ref{abbreviationsection},
           \lev  (list a (quote a))
 `(a ,(+ 1 2) ,@(map abs '(4 -5 6)) b) %
           \lev  (a 3 4 5 6 b)
-`(({\cf foo} ,(- 10 3)) ,@(cdr '(c)) . ,(car '(cons))) %
+`(( foo ,(- 10 3)) ,@(cdr '(c)) . ,(car '(cons))) %
           \lev  ((foo 7) . cons)
-`\#(10 5 ,(sqrt 4) ,@(map sqrt '(16 9)) 8) %
-          \lev  \#(10 5 2 4 3 8)
+`\#(10 5 ,(- 4) ,@(map - '(16 9)) 8) %
+          \lev  \#(10 5 -4 -16 -9 8)
 (let ((name 'foo))
   `((unquote name name name)))%
           \lev (foo foo foo)
@@ -3162,14 +2649,11 @@ As noted in section~\ref{abbreviationsection},
                  (unquote (append x y) (sqrt 9)))
 (let ((x '(2 3))
       (y '(4 5)))
-  `(foo (unquote (append x y) (sqrt 9)))) \lev (foo (2 3 4 5) 3)%
+  `(foo (unquote (append x y) (- 9)))) ;（已根据勘误表修改）
+          \lev (foo (2 3 4 5) -9)%
 \end{scheme}
 
-Quasiquote forms may be nested.  Substitutions are made only for
-unquoted components appearing at the same nesting level
-as the outermost {\cf quasiquote}.  The nesting level increases by one inside
-each successive quasiquotation, and decreases by one inside each
-unquotation.
+准引用格式可以嵌套。置换操作只作用于那些与最外层{\cf quasiquote}有同样嵌套级别的解除引用的元素。每进入一个后续的准引用，嵌套级别就增加一，每进入一个解除引用的语法单元，嵌套级别就减少一。
 
 \begin{scheme}
 `(a `(b ,(+ 1 2) ,(foo ,(+ 1 3) d) e) f) %
@@ -3180,16 +2664,13 @@ unquotation.
           \lev  (a `(b ,x ,'y d) e)%
 \end{scheme}
 
-A {\cf quasiquote} expression may return either fresh, mutable objects
-or literal structure for any structure that is constructed at run time
-during the evaluation of the expression.  Portions that do not need to
-be rebuilt are always literal.  Thus,
+一个{\cf quasiquote}表达式可以返回新鲜的，可变的结构，也可以返回字面结构，其中每个结构都是在表达式求值期间在运行时被构造。不需要被重建的部分总是字面的。因此，
 %
 \begin{scheme}
 (let ((a 3)) `((1 2) ,a ,4 ,'five 6))%
 \end{scheme}
 %
-may be equivalent to either of the following expressions:
+可以等价于下面两个表达式之一：
 %
 \begin{scheme}
 '((1 2) 3 4 five 6)
@@ -3198,20 +2679,15 @@ may be equivalent to either of the following expressions:
         (cons a (cons 4 (cons 'five '(6))))))%
 \end{scheme}
 %
-However, it is not equivalent to this expression:
+可是，它不等价于这个表达式：
 %
 \begin{scheme}
 (let ((a 3)) (list (list 1 2) a 4 'five 6))
 \end{scheme}
 %
-It is a syntax violation if any of the identifiers
-\ide{quasiquote}, \ide{unquote}, or \ide{unquote-splicing} appear in
-positions within a \hyper{qq template} otherwise than as described above.
+\hyper{Qq template}中的\ide{quasiquote}、\ide{unquote}或\ide{unquote-splicing}标识符出现在不符合上述描述的其它位置是一个语法错误。
 
-The following grammar for quasiquote expressions is not context-free.
-It is presented as a recipe for generating an infinite number of
-production rules.  Imagine a copy of the following rules for $D = 1, 2,
-3, \ldots$.  $D$ keeps track of the nesting depth.
+下面准引用表达式的语法不是上下文无关的。他作为生成无限数量产生式规则的一个配方。想象在$D = 1, 2, 3, \ldots$时下列规则的副本。$D$跟踪嵌套深度。
 
 \begin{grammar}%
 \meta{qq template} \: \meta{qq template 1}
@@ -3233,61 +2709,31 @@ production rules.  Imagine a copy of the following rules for $D = 1, 2,
 \>    \| (unquote \arbno{\meta{qq template $D-1$}}) %
 \end{grammar}
 
-In \meta{quasiquotation}s, a \meta{list qq template $D$} can sometimes
-be confused with either an \meta{un\-quota\-tion $D$} or a \meta{splicing
-un\-quo\-ta\-tion $D$}.  The interpretation as an
-\meta{un\-quo\-ta\-tion} or \meta{splicing
-un\-quo\-ta\-tion $D$} takes precedence.
+在\meta{quasiquotation}中，\meta{list qq template $D$}有时会和\meta{unquotation $D$}或\meta{splicing unquotation $D$}混淆。解释为\meta{unquotation $D$}或\meta{splicing unquotation $D$}是优先的。
 
 \end{entry}
 
-\section{Binding constructs for syntactic keywords}
+\section{句法关键词的绑定结构}
 \label{bindsyntax}
 
-The {\cf let-syntax} and {\cf letrec-syntax} forms
-bind keywords.
-Like a {\cf begin} form, a {\cf let-syntax} or {\cf letrec-syntax} form
-may appear in a definition context, in which case it is treated as a
-definition, and the forms in the body must also be
-definitions.
-A {\cf let-syntax} or {\cf letrec-syntax} form may also appear in an
-expression context, in which case the forms within their bodies must be
-expressions.
+{\cf let-syntax}和{\cf letrec-syntax}形式绑定关键词。就像{\cf begin}形式一样，一个{\cf let-syntax}或{\cf letrec-syntax}形式可以出现在定义上下文中，在这种情况下，它被当作一个定义，且在内部的形式必须也是定义。一个{\cf let-syntax}或{\cf letrec-syntax}形式也可以出现在一个表达式上下文中，在这种情况下，它们内部的形式必须是表达式。
 
 \begin{entry}{%
 \proto{let-syntax}{ \hyper{bindings} \hyper{form} \dotsfoo}{\exprtype}}
 
 \syntax
-\hyper{Bindings} must have the form
+\hyper{Bindings}必须有如下形式：
 \begin{scheme}
 ((\hyper{keyword} \hyper{expression}) \dotsfoo)%
 \end{scheme}
-Each \hyper{keyword} is an identifier,
-and each \hyper{expression} is
-an expression that evaluates, at macro-expansion
-time, to a \textit{transformer}\index{transformer}\index{macro transformer}.
-Transformers may be created by {\cf syntax-rules} or {\cf identifier-syntax}
-(see section~\ref{syntaxrulessection}) or by one of the other mechanisms
-described in library chapter~\extref{lib:syntaxcasechapter}{{\cf syntax-case}}.  It is a
-syntax violation for \hyper{keyword} to appear more than once in the list of keywords
-being bound.
+每个\hyper{keyword}是一个标识符，且每个\hyper{expression}是一个在宏扩展时期可以被求值为\textit{转换器}\index{transformer}\index{macro transformer}的表达式。转换器可以通过{\cf syntax-rules}或{\cf identifier-syntax}（见第~\ref{syntaxrulessection}~小节）创建，或通过库的第~\extref{lib:syntaxcasechapter}{{\cf syntax-case}}~章描述的其它机制之一创建。在关键词绑定列表中\hyper{keyword}出现超过一个是一个语法语法错误。
 
 \semantics
-The \hyper{form}s are expanded in the syntactic environment
-obtained by extending the syntactic environment of the
-{\cf let-syntax} form with macros whose keywords are
-the \hyper{keyword}s, bound to the specified transformers.
-Each binding of a \hyper{keyword} has the \hyper{form}s as its region.
+\hyper{Form}在语法环境中被扩展，此句法环境通过扩展{\cf let-syntax}形式的句法环境以宏的方式获得，其关键词是\hyper{keyword}，绑定到特定的转换器。每个\hyper{keyword}的绑定以\hyper{form}作为它的作用范围。
 
-The \hyper{form}s of a {\cf let-syntax}
-form are treated, whether in definition or expression context, as if
-wrapped in an implicit {\cf begin}; see section~\ref{begin}.
-Thus definitions in the result of expanding the \hyper{form}s have
-the same region as any definition appearing in place of the {\cf
-  let-syntax} form would have.
+不管是在定义还是在表达式上下文中，{\cf let-syntax}形式中的\hyper{form}被当作在一个隐含的{\cf begin}中；见第~\ref{begin}~小节。因此，在\hyper{form}扩展结果中的定义和出现在{\cf let-syntax}形式中的定义有相同的作用范围。
 
-\implresp The implementation should detect if the value of
-\hyper{expression} cannot possibly be a transformer.
+\implresp 实现应当检测\hyper{expression}的值是否有可能不是一个转换器。
 
 \begin{scheme}
 (let-syntax ((when (syntax-rules ()
@@ -3322,29 +2768,14 @@ the same region as any definition appearing in place of the {\cf
 \proto{letrec-syntax}{ \hyper{bindings} \hyper{form} \dotsfoo}{\exprtype}}
 
 \syntax
-Same as for {\cf let-syntax}.
+和{\cf let-syntax}一样。
 
 \semantics
-The \hyper{form}s are
-expanded in the syntactic environment obtained by
-extending the syntactic environment of the {\cf letrec-syntax}
-form with macros whose keywords are the
-\hyper{keyword}s, bound to the specified transformers.
-Each binding of a \hyper{keyword} has the \hyper{bindings}
-as well as the \hyper{form}s within its region,
-so the transformers can
-transcribe forms into uses of the macros
-introduced by the {\cf letrec-syntax} form.
+\hyper{Form}在语法环境中被扩展，此句法环境通过扩展{\cf letrec-syntax}形式的句法环境以宏的方式获得，其关键词是\hyper{keyword}，绑定到特定的转换器。每个\hyper{keyword}的绑定以\hyper{bindings}以及\hyper{form}作为它的作用范围，所以，转换器可以将形式转译成通过{\cf letrec-syntax}形式引入的宏的使用。
 
-The \hyper{form}s of a {\cf letrec-syntax}
-form are treated, whether in definition or expression context, as if
-wrapped in an implicit {\cf begin}; see section~\ref{begin}.
-Thus definitions in the result of expanding the \hyper{form}s have
-the same region as any definition appearing in place of the {\cf
-  letrec-syntax} form would have.
+不管是在定义还是在表达式上下文中，{\cf letrec-syntax}形式中的\hyper{form}被当作在一个隐含的{\cf begin}中；见第~\ref{begin}~小节。因此，在\hyper{form}扩展结果中的定义和出现在{\cf letrec-syntax}形式中的定义有相同的作用范围。
 
-\implresp The implementation should detect if the value of
-\hyper{expression} cannot possibly be a transformer.
+\implresp 实现应当检测\hyper{expression}的值是否有可能不是一个转换器。
 
 \begin{scheme}
 (letrec-syntax
@@ -3367,8 +2798,7 @@ the same region as any definition appearing in place of the {\cf
            y)))        \ev  7%
 \end{scheme}
 
-The following example highlights how {\cf let-syntax}
-and {\cf letrec-syntax} differ.
+下面的例子突出了{\cf let-syntax}和{\cf letrec-syntax}的不同。
 
 \begin{scheme}
 (let ((f (lambda (x) (+ x 1))))
@@ -3386,15 +2816,10 @@ and {\cf letrec-syntax} differ.
     (list (f 1) (g 1)))) \lev (1 1)%
 \end{scheme}
 
-The two expressions are identical except that the {\cf let-syntax} form
-in the first expression is a {\cf letrec-syntax} form in the second.
-In the first expression, the {\cf f} occurring in {\cf g} refers to
-the {\cf let}-bound variable {\cf f}, whereas in the second it refers
-to the keyword {\cf f} whose binding is established by the
-{\cf letrec-syntax} form.
+除了第一个表达式中的{\cf let-syntax}形式和第二个当中的{\cf letrec-syntax}之外，两个表达式是一样的。在第一个表达式中，出现在{\cf g}中的{\cf f}引用{\cf let}绑定中的变量{\cf f}，而在第二个当中它引用的关键词{\cf f}其绑定是{\cf letrec-syntax}形式建立的。
 \end{entry}
 
-\section{Macro transformers}
+\section{宏转换器}
 \label{syntaxrulessection}
 
 \begin{entry}{%
@@ -3403,17 +2828,13 @@ to the keyword {\cf f} whose binding is established by the
 \litprotoexpand{...}}
 \mainschindex{syntax-rules}\schindex{\_}
 
-\syntax Each \hyper{literal} must be an identifier.
-Each \hyper{syntax rule} must have the following form:
+\syntax 每一个\hyper{literal}必须是一个标识符。每一个\hyper{syntax rule}必须有如下形式：
 
 \begin{scheme}
 (\hyper{srpattern} \hyper{template})%
 \end{scheme}
 
-An \hyper{srpattern} is a restricted form of \hyper{pattern},
-namely, a nonempty \hyper{pattern} in one of four parenthesized forms below
-whose first subform is an identifier or an underscore {\cf \_}\schindex{\_}.
-A \hyper{pattern} is an identifier, constant, or one of the following.
+一个\hyper{srpattern}是\hyper{pattern}的受限形式，也就是说，一个非空的\hyper{pattern}是下列的四个由小括号包围的形式之一，其第一个子形式是一个标识符或一个下划线{\cf \_}\schindex{\_}。一个\hyper{pattern}是一个标识符，常量，或下面当中的一个。
 
 \begin{schemenoindent}
 (\hyper{pattern} \ldots)
@@ -3424,11 +2845,9 @@ A \hyper{pattern} is an identifier, constant, or one of the following.
 \#(\hyper{pattern} \ldots \hyper{pattern} \hyper{ellipsis} \hyper{pattern} \ldots)%
 \end{schemenoindent}
 
-An \hyper{ellipsis} is the identifier ``{\cf ...}'' (three periods).\schindex{...}
+一个\hyper{ellipsis}是标识符“{\cf ...}”（三个句号（译注：必须是西文句号））。\schindex{...}
 
-A \hyper{template} is a pattern variable, an identifier that
-is not a pattern
-variable, a pattern datum, or one of the following.
+\hyper{Template}是一个模式变量，一个不是模式变量的标识符，一个模式数据，或下列形式之一。
 
 \begin{scheme}
 (\hyper{subtemplate} \ldots)
@@ -3436,144 +2855,51 @@ variable, a pattern datum, or one of the following.
 \#(\hyper{subtemplate} \ldots)%
 \end{scheme}
 
-A \hyper{subtemplate} is a \hyper{template} followed by zero or more ellipses.
+一个\hyper{subtemplate}是一个\hyper{template}跟着零个或多个省略号（译注：必须是西文省略号）。
 
-\semantics An instance of {\cf syntax-rules} evaluates, at
-macro-expansion time, to a new macro
-transformer by specifying a sequence of hygienic rewrite rules.  A use
-of a macro whose keyword is associated with a transformer specified by
-{\cf syntax-rules} is matched against the patterns contained in the
-\hyper{syntax rule}s, beginning with the leftmost \hyper{syntax rule}.
-When a match is found, the macro use is transcribed hygienically
-according to the template.  It is a syntax violation when no match is found.
+\semantics 在宏扩展期间，{\cf syntax-rules}的实例通过指定一系列的卫生重写规则被求值为一个新的宏转换器。一个关键词与{\cf syntax-rules}指定的转换器相关联的宏的使用与\hyper{syntax rule}包含的模式相匹配，以最左边的\hyper{syntax rule}开始。当发现一个匹配的时候，宏使用根据模板被卫生地转录。没有匹配是一个语法错误。
 
-An identifier appearing within a \hyper{pattern} may be an underscore
-(~{\cf \_}~), a literal identifier listed in the list of literals
-{\cf (\hyper{literal} \dotsfoo)}, or an ellipsis (~{\cf ...}~).
-All other identifiers appearing within a \hyper{pattern} are
-\textit{pattern variables\mainindex{pattern variable}}.
-It is a syntax violation if an ellipsis or underscore appears in {\cf (\hyper{literal} \dotsfoo)}.
+出现在\hyper{pattern}中的标识符可以是一个下划线（{\cf \_}），一个列在字面量{\cf (\hyper{literal} \dotsfoo)}的表中的字面量标识符，或一个省略号（{\cf ...}）。所有出现在\hyper{pattern}中的其它标识符都是\textit{模式变量（pattern variables）\mainindex{pattern variable}}。省略号或下划线出现在{\cf (\hyper{literal} \dotsfoo)}中是一个语法错误。
 
-While the first subform of \hyper{srpattern} may be an identifier, the
-identifier is not involved in the matching and
-is not considered a pattern variable or literal identifier.
+尽管\hyper{srpattern}的第一个子形式可以是一个标识符，但是标识符不涉及到匹配，且不被认为是一个模式变量或一个字面量标识符。
 
-Pattern variables match arbitrary input subforms and
-are used to refer to elements of the input.
-It is a syntax violation if the same pattern variable appears more than once in a
-\hyper{pattern}.
+模式变量匹配任意的输入子形式且被用作引用输入的元素。在\hyper{pattern}中同样的模式变量出现超过一次是一个语法错误。
 
-Underscores also match arbitrary input subforms but are not pattern variables
-and so cannot be used to refer to those elements.
-Multiple underscores may appear in a \hyper{pattern}.
+下划线也匹配任意的输入子形式，但不是模式变量，且不能被用作引用那些元素。\hyper{Pattern}中可以出现多个下划线。
 
-A literal identifier matches an input subform if and only if the input
-subform is an identifier and either both its occurrence in the input
-expression and its occurrence in the list of literals have the same
-lexical binding, or the two identifiers have the same name and both have
-no lexical binding.
+一个字面量标识符匹配一个输入子形式当且仅当输入子形式是一个标识符且或者在输入表达式中它的出现和在字面量的表中它的出现有相同的词法绑带，或者两个标识符有相同的名字且都没有词法绑定。
 
-A subpattern followed by an ellipsis can match zero or more elements of
-the input.
+一个跟着一个省略号的子模式可以匹配零个或多个输入元素。
 
-More formally, an input form $F$ matches a pattern $P$ if and only if
-one of the following holds:
+更正式地说，一个输入形式$F$匹配一个模式$P$当且仅当下列之一成立：
 
 \begin{itemize}
-\item $P$ is an underscore (~{\cf \_}~).
+\item $P$是一个下划线（{\cf \_}）。
 
-\item $P$ is a pattern variable.
+\item $P$是一个模式变量。
 
-\item $P$ is a literal identifier
-and $F$ is an identifier such that both $P$ and $F$ would refer to the
-same binding if both were to appear in the output of the macro outside
-of any bindings inserted into the output of the macro.
-(If neither of two like-named identifiers refers to any binding, i.e., both
-are undefined, they are considered to refer to the same binding.)
+\item $P$是一个字面量标识符且$F$是一个标识符，其使得如果$P$和$F$都出现在被插入宏输出的任何绑定的外部的宏的输出中，那么它们都指向相同的绑定。（如果两个类似命名的标识符没有一个指向任意的绑定，也就是说，两个都是未定义的，它们被认为是指向相同的绑定。）
 
-\item $P$ is of the form
-{\cf ($P_1$ \dotsfoo{} $P_n$)}
-and $F$ is a list of $n$ elements that match $P_1$ through
-$P_n$.
+\item $P$有形式{\cf ($P_1$ \dotsfoo{} $P_n$)}，且$F$是一个有$n$个元素的表，其分别与$P_1$到$P_n$匹配。
 
-\item $P$ is of the form
-{\cf ($P_1$ \dotsfoo{} $P_n$ . $P_x$)}
-and $F$ is a list or improper list of $n$ or more elements
-whose first $n$ elements match $P_1$ through $P_n$
-and
-whose $n$th cdr matches $P_x$.
+\item $P$有形式{\cf ($P_1$ \dotsfoo{} $P_n$ . $P_x$)}，且$F$是一个有$n$个元素或多于$n$个元素的表或非严格表，其前$n$个元素分别与$P_1$到$P_n$匹配，且其第$n$个cdr匹配$P_x$。
 
-\item $P$ is of the form
-{\cf ($P_1$ \dotsfoo{} $P_k$ $P_e$ \hyper{ellipsis} $P_{m+1}$ \dotsfoo{} $P_n$)},
-where \hyper{ellipsis} is the identifier {\cf ...}
-and $F$ is a list of $n$
-elements whose first $k$ elements match $P_1$ through $P_k$,
-whose next $m-k$ elements each match $P_e$,
-and
-whose remaining $n-m$ elements match $P_{m+1}$ through $P_n$.
+\item $P$有形式{\cf ($P_1$ \dotsfoo{} $P_k$ $P_e$ \hyper{ellipsis} $P_{m+1}$ \dotsfoo{} $P_n$)}，其中\hyper{ellipsis}是标识符{\cf ...}，且$F$是一个有$n$个元素的表，其前$k$个元素分别匹配$P_1$到$P_k$，接下来的$m-k$个元素匹配$P_e$，且剩余的$n-m$个元素匹配$P_{m+1}$到$P_n$。
 
-\item $P$ is of the form
-{\cf ($P_1$ \dotsfoo{} $P_k$ $P_e$ \hyper{ellipsis} $P_{m+1}$ \dotsfoo{} $P_n$ . $P_x$)},
-where \hyper{ellipsis} is the identifier {\cf ...}
-and $F$ is a list or improper list of $n$
-elements whose first $k$ elements match $P_1$ through $P_k$,
-whose next $m-k$ elements each match $P_e$,
-whose next $n-m$ elements match $P_{m+1}$ through $P_n$,
-and
-whose $n$th and final cdr matches $P_x$.
+\item $P$有形式{\cf ($P_1$ \dotsfoo{} $P_k$ $P_e$ \hyper{ellipsis} $P_{m+1}$ \dotsfoo{} $P_n$ . $P_x$)}，其中\hyper{ellipsis}是标识符{\cf ...}，且$F$是一个有$n$个元素的表或非严格表，其前$k$个元素分别匹配$P_1$到$P_k$，接下来的$m-k$个元素匹配$P_e$，且剩余的$n-m$个元素匹配$P_{m+1}$到$P_n$，且其第$n$个和最终的cdr匹配$P_x$。
 
-\item $P$ is of the form
-{\cf \#($P_1$ \dotsfoo{} $P_n$)}
-and $F$ is a vector of $n$ elements that match $P_1$ through
-$P_n$.
+\item $P$有形式{\cf \#($P_1$ \dotsfoo{} $P_n$)}，且$F$是一个有$n$个元素的向量，其分别与$P_1$到$P_n$匹配。
 
-\item $P$ is of the form
-{\cf \#($P_1$ \dotsfoo{} $P_k$ $P_e$ \hyper{ellipsis} $P_{m+1}$ \dotsfoo{} $P_n$)},
-where \hyper{ellipsis} is the identifier {\cf ...}
-and $F$ is a vector of $n$ or more elements
-whose first $k$ elements match $P_1$ through $P_k$,
-whose next $m-k$ elements each match $P_e$,
-and
-whose remaining $n-m$ elements match $P_{m+1}$ through $P_n$.
+\item $P$有形式{\cf \#($P_1$ \dotsfoo{} $P_k$ $P_e$ \hyper{ellipsis} $P_{m+1}$ \dotsfoo{} $P_n$)}，其中\hyper{ellipsis}是标识符{\cf ...}，且$F$是一个有$n$个元素或多余$n$个元素的向量，其前$k$个元素分别匹配$P_1$到$P_k$，接下来的$m-k$个元素匹配$P_e$，且剩余的$n-m$个元素匹配$P_{m+1}$到$P_n$。
 
-\item $P$ is a pattern datum (any nonlist, nonvector, nonsymbol
-datum) and $F$ is equal to $P$ in the sense of the
-{\cf equal?} procedure.
+\item $P$是一个模式数据（任何非表，非向量，非符号数据）且$F$在过程{\cf equal?}的意义下等价于$P$。
 \end{itemize}
 
-When a macro use is transcribed according to the template of the
-matching \hyper{syntax rule}, pattern variables that occur in the
-template are replaced by the subforms they match in the input.
+当一个宏使用根据匹配的\hyper{syntax rule}模板转录的时候，出现在模板中的模式变量被输入中匹配的子形式替代。
 
-Pattern data and identifiers that are not pattern variables
-or ellipses are copied into the output.
-A subtemplate followed by an ellipsis expands
-into zero or more occurrences of the subtemplate.
-Pattern variables that occur in subpatterns followed by one or more
-ellipses may occur only in subtemplates that are
-followed by (at least) as many ellipses.
-These pattern variables are replaced in the output by the input
-subforms to which they are bound, distributed as specified.
-If a pattern variable is followed by more ellipses in the subtemplate
-than in the associated subpattern, the input form is replicated as
-necessary.
-The subtemplate must contain at least one pattern variable from a
-subpattern followed by an ellipsis, and for at least one such pattern
-variable, the subtemplate must be followed by exactly as many ellipses as
-the subpattern in which the pattern variable appears.
-(Otherwise, the expander would not be able to determine how many times the
-subform should be repeated in the output.)
-It is a syntax violation if the constraints of this paragraph are not met.
+不是模式变量或省略号的模式数据和标识符被复制到输出中。一个跟着一个省略号的子模版扩展成一个或多个子模版的出现。出现在子模式并跟着一个或多个省略号的模式变量只可以出现在跟着（至少）何其一样多省略号的子模版中。这些模式变量在输出中被替换成它们绑定的按指定分布的输入子形式。如果一个模式变量在子模版中比在与其相关联的子模式跟着更多的省略号，那么输入形式根据需要重复。子模版必须至少包含一个来自跟着一个省略号的子模式的模式变量，且至少有一个这样的模式变量，其子模版必须跟着和其中出现模式变量的子模式中省略号数量精确相等的省略号。（否则，扩展器可能不能决定子形式应该在输出中重复多少次。）不符合本段的约束是一个语法错误。
 
-A template of the form
-{\cf (\hyper{ellipsis} \hyper{template})} is identical to \hyper{template}, except that
-ellipses within the template have no special meaning.
-That is, any ellipses contained within \hyper{template} are
-treated as ordinary identifiers.
-In particular, the template {\cf (... ...)} produces a single
-ellipsis, {\cf ...}.
-This allows syntactic abstractions to expand into forms containing
-ellipses.
+形式{\cf (\hyper{ellipsis} \hyper{template})}的模板和\hyper{template}是相同的，除了模板中的省略号没有特殊的意义之外。换言之，任何包含在\hyper{template}中的省略号被当作普通的标识符对待。特别地，模板{\cf (... ...)}产生一个单独的省略号，{\cf ...}。这允许句法抽象扩展包含省略号的形式。
 
 \begin{scheme}
 (define-syntax be-like-begin
@@ -3588,27 +2914,21 @@ ellipses.
 (sequence 1 2 3 4) \ev 4%
 \end{scheme}
 
-As an example for hygienic use of auxiliary identifier,
-if \ide{let} and \ide{cond} are defined as in
-section~\ref{let} and appendix~\ref{derivedformsappendix} then they
-are hygienic (as required) and the following is not an error.
+考虑一个辅助标识符卫生使用的例子，如果\ide{let}和\ide{cond}按第~\ref{namedlet}~小节和附录~\ref{derivedformsappendix}所定义，那么它们是卫生的（和要求一样），且下面的不是一个错误。
 
 \begin{scheme}
 (let ((=> \schfalse))
   (cond (\schtrue => 'ok)))           \ev ok%
 \end{scheme}
 
-The macro transformer for {\cf cond} recognizes {\cf =>}
-as a local variable, and hence an expression, and not as the
-identifier {\cf =>}, which the macro transformer treats
-as a syntactic keyword.  Thus the example expands into
+{\cf cond}的宏转换器注意到{\cf =>}是一个局部变量，且因此是一个表达式，而不是标识符{\cf =>}，宏转换器将其当作句法关键词对待。因此例子扩展成
 
 \begin{scheme}
 (let ((=> \schfalse))
   (if \schtrue (begin => 'ok)))%
 \end{scheme}
 
-instead of
+而不是
 
 \begin{scheme}
 (let ((=> \schfalse))
@@ -3616,7 +2936,7 @@ instead of
     (if temp ('ok temp))))%
 \end{scheme}
 
-which would result in an assertion violation.
+后者可以导致一个断言违规。
 \end{entry}
 
 \begin{entry}{%
@@ -3628,13 +2948,10 @@ which would result in an assertion violation.
    \hyperii{template}))\\
 \litprotoexpandnoindex{set!}}
 
-\syntax The \hyper{id}s must be identifiers.  The \hyper{template}s
-must be as for {\cf syntax-rules}.
+\syntax \hyper{Id}必须是标识符。\hyper{Template}必须为{\cf syntax-rules}。
 
 \semantics
-When a keyword is bound to a transformer produced by the first form of
-{\cf identifier-syntax}, references to the keyword within the scope
-of the binding are replaced by \hyper{template}.
+当一个关键词被绑定到一个由{\cf identifier-syntax}的第一个形式产生的转换器的时候，关键词的引用在绑定的范围内被\hyper{template}代替。
 
 \begin{scheme}
 (define p (cons 4 5))
@@ -3643,11 +2960,7 @@ p.car \ev 4
 (set! p.car 15) \ev \exception{\&syntax}%
 \end{scheme}
 
-The second, more general, form of {\cf identifier-syntax} permits
-the transformer to determine what happens when {\cf set!} is used.
-In this case, uses of the identifier by itself are replaced by
-\hyperi{template}, and uses of {\cf set!} with the identifier are
-replaced by \hyperii{template}.
+更常用的，{\cf identifier-syntax}的第二个形式允许转换器决定当{\cf set!}被使用时会发生什么。在这种情况下，标识符它自己的使用被\hyperi{template}代替，和标识符一起{\cf set!}的使用被\hyperii{template}代替。
 
 \begin{scheme}
 (define p (cons 4 5))
@@ -3657,22 +2970,18 @@ replaced by \hyperii{template}.
     ((set! \_ e) (set-car! p e))))
 (set! p.car 15)
 p.car           \ev 15
-p               \ev (15 5)%
+p               \ev (15 . 5) ; （已根据勘误表修改）%
 \end{scheme}
 
 \end{entry}
 
-\section{Tail calls and tail contexts}
+\section{尾调用和尾上下文}
 \label{basetailcontextsection}
 
-A {\em tail call}\mainindex{tail call} is a procedure call that occurs
-in a {\em tail context}.  Tail contexts are defined inductively.  Note
-that a tail context is always determined with respect to a particular lambda
-expression.
+\textit{尾调用}\mainindex{tail call}是一个发生在\textit{尾上下文}中的过程调用。尾上下文被以归纳的方式定义。注意，对于一个特定的lambda表达式，其尾上下文总是确定的。
 
 \begin{itemize}
-\item The last expression within the body of a lambda expression,
-  shown as \hyper{tail expression} below, occurs in a tail context.
+\item 一个lambda表达式内部的最后一个表达式，即下面用\hyper{tail expression}表示的，是在尾上下文中。
 %
 \begin{scheme}
 (l\=ambda \hyper{formals}
@@ -3680,12 +2989,7 @@ expression.
   \>\arbno{\hyper{expression}} \hyper{tail expression})%
 \end{scheme}
 %
-\item If one of the following expressions is in a tail context,
-then the subexpressions shown as \hyper{tail expression} are in a tail context.
-These were derived from specifications of the syntax of the forms described in
-this chapter by replacing some occurrences of \hyper{expression}
-with \hyper{tail expression}.  Only those rules that contain tail contexts
-are shown here.
+\item 如果下面表达式的一个在尾上下文中，那么用\hyper{tail expression}表示的子表达式也在尾上下文中。这些来源于本章中所描述的形式语法规范，把有些\hyper{expression}出现的地方改成了\hyper{tail expression}。只有那些包含尾上下文的规则被列在了这儿。
 %
 \begin{scheme}
 (if \hyper{expression} \hyper{tail expression} \hyper{tail expression})
@@ -3717,46 +3021,36 @@ are shown here.
 (begin \hyper{tail sequence})%
 \end{scheme}
 %
-A \hyper{cond clause} is
+一个\hyper{cond clause}是
 %
 \begin{scheme}
 (\hyper{test} \hyper{tail sequence})\textrm{,}%
 \end{scheme}
-a \hyper{case clause} is
+一个\hyper{case clause}是
 %
 \begin{scheme}
 ((\arbno{\hyper{datum}}) \hyper{tail sequence})\textrm{,}%
 \end{scheme}
 %
-a \hyper{tail body} is
+一个\hyper{tail body}是
 \begin{scheme}
 \arbno{\hyper{definition}} \hyper{tail sequence}\textrm{,}%
 \end{scheme}
 %
-and a \hyper{tail sequence} is
+且一个\hyper{tail sequence}是
 %
 \begin{scheme}
 \arbno{\hyper{expression}} \hyper{tail expression}\textrm{.}%
 \end{scheme}%
 
 \item
-If a {\cf cond} expression is in a tail context, and has a clause of
-the form {\cf (\hyperi{expression} => \hyperii{expression})}
-then the (implied) call to
-the procedure that results from the evaluation of \hyperii{expression} is in a
-tail context.  \hyperii{Expression} itself is not in a tail context.
+如果一个{\cf cond}表达式在尾上下文中，且有一个{\cf (\hyperi{expression} => \hyperii{expression})}形式的子句，那么对\hyperii{expression}求值结果的过程的（隐含）调用在尾上下文中。\hyperii{Expression}它自己不在尾上下文中。
 
 \end{itemize}
 
-Certain built-in procedures must also perform tail calls.
-The first argument passed to {\cf apply} and to
-{\cf call-\hp{}with-\hp{}current-continuation}, and the second argument passed to
-{\cf call-with-values}, must be called via a tail call.
+特定的内置过程也必须执行尾调用。传递给{\cf apply}和{\cf call-with-current-continuation}的第一个参数，和传递给{\cf call-with-values}的第二个参数必须通过尾调用被调用。
 
-In the following example the only tail call is the call to {\cf f}.
-None of the calls to {\cf g} or {\cf h} are tail calls.  The reference to
-{\cf x} is in a tail context, but it is not a call and thus is not a
-tail call.
+在下面的例子中，唯一的尾调用是{\cf f}调用。{\cf g}和{\cf h}调用都不是尾调用。{\cf x}的引用在尾上下文中，但它不是一个调用，因此不是一个尾调用。
 \begin{scheme}%
 (lambda ()
   (if (g)
@@ -3766,14 +3060,7 @@ tail call.
 \end{scheme}%
 
 \begin{note}
-Implementations may
-recognize that some non-tail calls, such as the call to {\cf h}
-above, can be evaluated as though they were tail calls.
-In the example above, the {\cf let} expression could be compiled
-as a tail call to {\cf h}. (The possibility of {\cf h} returning
-an unexpected number of values can be ignored, because in that
-case the effect of the {\cf let} is explicitly unspecified and
-implementation-dependent.)
+实现可以把一些非尾调用，比如上面的{\cf h}调用，当作尾调用来求值。在上面的例子中，{\cf let}表达式可以以尾调用{\cf f}的方式来编译。（{\cf h}返回不确定数量值得可能性可以被忽略，这时因为在那种情况下{\cf let}的作用明显是未定义且依赖于实现的。）
 \end{note}
 
 %%% Local Variables:

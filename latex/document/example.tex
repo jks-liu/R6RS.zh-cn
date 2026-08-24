@@ -1,15 +1,12 @@
-\chapter{Example }
+\chapter{示例}
 \label{exampleappendix}
 
 \nobreak
-This section describes an example consisting of the
-\library{runge-kutta} library, which provides an {\cf integrate-system}
-procedure that integrates the system 
+本节包含一个组成\library{runge-kutta}库的示例，这个库提供一个{\cf integrate-system}过程，其以Runge-Kutta的方法对微分方程系统
 $$y_k^\prime = f_k(y_1, y_2, \ldots, y_n), \; k = 1, \ldots, n$$
-of differential equations with the method of Runge-Kutta.
+求积分。
 
-As the \library{runge-kutta} library makes use of the \rsixlibrary{base}
-library, its skeleton is as follows:
+因为\library{runge-kutta}库利用了\rsixlibrary{base}库，所以其骨架如下所示：
 
 \begin{scheme}
 \#!r6rs
@@ -20,17 +17,11 @@ library, its skeleton is as follows:
   \hyper{library body})
 \end{scheme}
 
-The procedure definitions described below go in the place of \hyper{library body}.
+下面描述的过程定义放入\hyper{library body}那里。
 
-The parameter {\tt system-derivative} is a function that takes a system
-state (a vector of values for the state variables $y_1, \ldots, y_n$)
-and produces a system derivative (the values $y_1^\prime, \ldots,
-y_n^\prime$).  The parameter {\tt initial-state} provides an initial
-system state, and {\tt h} is an initial guess for the length of the
-integration step.
+参数{\tt system-derivative}是一个函数，其接受一个系统状态（一个代表状态变量$y_1, \ldots, y_n$的向量值）且产生系统的导函数（值$y_1^\prime, \ldots, y_n^\prime$）。参数{\tt initial-state}提供一个初始的系统状态，以及{\tt h}是综合系统步长的一个初始猜测。
 
-The value returned by {\cf integrate-system} is an infinite stream of
-system states.
+{\cf integrate-system}的返回值是一个无限的系统状态流。
 
 \begin{schemenoindent}
 (define integrate-system
@@ -43,10 +34,7 @@ system states.
         states))))%
 \end{schemenoindent}
 
-The {\cf runge-kutta-4} procedure takes a function, {\tt f}, that produces a
-system derivative from a system state.  The {\cf runge-kutta-4} procedure
-produces a function that takes a system state and
-produces a new system state.
+{\cf runge-kutta-4}过程接受一个函数，{\tt h}，其从一个系统状态产生一个系统积分。{\cf runge-kutta-4}过程产生一个接受系统状态并产生一个新的系统状态的过程。
 
 \begin{schemenoindent}
 (define runge-kutta-4
@@ -97,9 +85,7 @@ produces a new system state.
     (elementwise (lambda (x) (* x s)))))%
 \end{schemenoindent}
 
-The {\cf map-streams} procedure is analogous to {\cf map}: it applies its first
-argument (a procedure) to all the elements of its second argument (a
-stream).
+{\cf map-streams}过程和{\cf map}类似：它将其第一个参数（一个过程）应用到其第二个参数（一个流）的所有元素上面。
 
 \begin{schemenoindent}
 (define map-streams
@@ -108,9 +94,7 @@ stream).
           (lambda () (map-streams f (tail s))))))%
 \end{schemenoindent}
 
-Infinite streams are implemented as pairs whose car holds the first
-element of the stream and whose cdr holds a procedure that delivers the rest
-of the stream.
+无限流以点对的方式实现，其car保存流的第一个元素，其cdr交付一个产生流的其余部分的过程。
 
 \begin{schemenoindent}
 (define head car)
@@ -119,11 +103,10 @@ of the stream.
 \end{schemenoindent}
 
 \bigskip
-The following program illustrates the use of {\cf integrate-\hp{}system} in
-integrating the system
+下列的程序展示了在对系统
 $$ C {dv_C \over dt} = -i_L - {v_C \over R}$$\nobreak
 $$ L {di_L \over dt} = v_C$$
-which models a damped oscillator.
+进行积分时使用{\cf integrate-\hp{}system}，此系统模拟了一个阻尼振荡器。
 
 \begin{schemenoindent}
 \#!r6rs
@@ -149,10 +132,13 @@ which models a damped oscillator.
                  (newline)
                  (write (head s))
                  (loop (tail s)))))
-  (loop the-states))%
+  (loop the-states))
+
+; （根据勘误表添加。）
+(close-output-port (current-output-port))%
 \end{schemenoindent}
 
-This prints output like the following:
+其会像下面一样打印输出：
 
 \begin{scheme}
 \#(1 0)

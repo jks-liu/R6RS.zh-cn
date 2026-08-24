@@ -2,8 +2,8 @@
 # For more see: https://github.com/mojombo/jekyll/wiki/Permalinks
 permalink: /:title 
 
-exclude: [".rvmrc", ".rbenv-version", "README.md", "Rakefile", "changelog.md", "CNAME"]
-highlighter: pygments
+exclude: [".rvmrc", ".rbenv-version", "README.md", "Rakefile", "changelog.md", "CNAME", "scripts", "TRANSLATION_NOTES.md", "WORK_REPORT_2026-08-24.md"]
+highlighter: rouge
 
 # Themes are encouraged to use these universal variables 
 # so be sure to set them if your theme uses them.
@@ -25,7 +25,7 @@ author :
 # Else if you are pushing to username.github.io, replace with your username.
 # Finally if you are pushing to a GitHub project page, include the project name at the end.
 #
-production_url : r6rs.mrliu.org
+production_url : https://r6rs.mrliu.org
 
 # All Jekyll-Bootstrap specific configurations are namespaced into this hash
 #
@@ -129,3 +129,6 @@ JB :
 # Migrating Pages site from Maruku
 # See: https://help.github.com/articles/migrating-your-pages-site-from-maruku
 markdown: kramdown
+kramdown:
+  math_engine: mathjax
+  syntax_highlighter: rouge

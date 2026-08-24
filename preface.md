@@ -1,0 +1,85 @@
+---
+layout: r6rs
+title: '摘要与概述'
+title_plain: '摘要与概述 — R6RS简体中文翻译'
+permalink: /preface/
+r6rs: true
+chapter_key: preface
+next_url: /chapters/01/
+next_title: '1. Scheme概论'
+---
+
+<!-- 由 scripts/generate_chapters.ps1 从 single-page.md 生成；正文修改请在单页源文件中进行。 -->
+
+<center><font size="4">M</font>ICHAEL <font size="4">S</font>PERBER</center>
+<center><font size="4">R. K</font>ENT <font size="4">D</font>YBVIG, <font size="4">M</font>ATTHEW <font size="4">F</font>LATT, <font size="4">A</font>NTON <font size="4">V</font>AN <font size="4">S</font>TRAATEN</center>
+<center>(编辑)</center>
+<center><font size="4">R</font>ICHARD <font size="4">K</font>ELSEY, <font size="4">W</font>ILLIAM <font size="4">C</font>LINGER, <font size="4">J</font>ONATHAN <font size="4">R</font>EES</center>
+<center>(编辑，算法语言Scheme修订<sup>5</sup>报告)</center>
+<center><font size="4">R</font>OBERT <font size="4">B</font>RUCE <font size="4">F</font>INDLER, <font size="4">J</font>ACOB <font size="4">M</font>ATTHEWS</center>
+<center>(作者，形式语义)</center>
+**<center>2007年09月26日</center>**
+
+[<center>在GitHub联系译者</center>](https://github.com/jks-liu/R6RS.zh-cn)
+<center>最后修改于2017年04月29日</center>
+
+# 摘要 <!-- SUMMARY -->
+
+报告给出了程序设计语言Scheme的定义性描述。Scheme是由Guy Lewis Steele Jr.和Gerald Jay Sussman设计的具有静态作用域和严格尾递归特性的Lisp程序设计语言的方言。它的设计目的是以异常清晰，语义简明和较少表达方式的方法来组合表达式。包括函数（functional）式，命令（imperative）式和消息传递（message passing）式风格在内的绝大多数程序设计模式都可以用Scheme方便地表述。
+
+和本报告一起的还有一个描述标准库的报告<sup class="citation"><a href="{{ '/references/' | relative_url }}#ref-24">1</a></sup>；用描述符“库的第多少小节（library section）”或“库的第多少章（library chapter）”来识别此文档的引用。和它一起的还有一个包含非规范性附录的报告<sup class="citation"><a href="{{ '/references/' | relative_url }}#ref-22">2</a></sup>。第四次报告在语言和库的许多方面阐述了历史背景和基本原理<sup class="citation"><a href="{{ '/references/' | relative_url }}#ref-23">3</a></sup>。
+
+上面列到的人不是这篇报告文字的唯一作者。多年来，下面这些人也参与到Scheme语言设计的讨论中，我们也将他们列为之前报告的作者：
+
+Hal Abelson，Norman Adams，David Bartley，Gary Brooks，William Clinger，R. Kent Dybvig，Daniel Friedman，Robert Halstead，Chris Hanson，Christopher Haynes，Eugene Kohlbecker，Don Oxley，Kent Pitman，Jonathan Rees，Guillermo Rozas，Guy L. Steele Jr.，Gerald Jay Sussman和Mitchell Wand。
+
+为了突出最近的贡献，他们没有被列为本篇报告的作者。然而，他们的贡献和服务应被确认。
+
+我们认为这篇报告属于整个Scheme社区，并且我们授权任何人复制它的全部或部分。我们尤其鼓励Scheme的实现者使用本报告作为手册或其它文档的起点，必要时也可以对它进行修改。
+
+# 概述 <!-- INTRODUCTION -->
+
+程序设计语言的设计不应该是特征的堆砌，而应消除那些需要依赖于多余特征的弱点和局限。Scheme语言证明，极少的表达式构造规则和不加限制的表达式复合方式可以构造出实用而高效的程序设计语言，其灵活性足以支持今天的大部分主流编程模型。
+
+Scheme是最早的像在lambda演算里一样提供了第一级过程的程序设计语言之一，并由此在动态类型的语言中提供了有用的静态作用域规则和块结构的特征。在Lisp的主要方言中，Scheme第一次使过程有别于lambda表达式和符号，为所有变量使用单一的词法环境，在确定运算符的位置时采用与确定运算对象位置一样的方式。Scheme完全依赖过程调用来表示迭代，并以此强调，尾递归过程调用在本质上就是传递参数的goto。Scheme是第一种被广泛使用的，采纳第一级逃逸过程（escape procedure）的程序设计语言，通过第一级逃逸过程可以合成所有已知的顺序控制结构。Scheme的后续版本引入了精确和非精确数的概念，这是CommonLisp语言通用算术功能的扩展。最近，Scheme成为了第一种支持卫生宏（hygienic macro）的程序设计语言，该机制允许我们以一种一致和可靠的方式扩展块结构语言的语法。
+
+**<font size="4">指导原则</font>**
+
+为帮助指导标准化的工作，编辑采纳了如下的一系列原则。正如《算法语言Scheme修订<sup>5</sup>报告》<sup class="citation"><a href="{{ '/references/' | relative_url }}#ref-14">4</a></sup>定义的Scheme语言，本报告描述的语言致力于：
+
+* 允许程序员互相阅读别人的代码，允许能被任何符合标准的Scheme实现执行的可移植程序的开发；
+* 得益于它简单的力量，只有少量有用的核心形式和过程，并且在它们如何组合方面没有不必要的限制；
+* 允许程序定义新的过程和新的语法形式；
+* 支持以数据的形式呈现程序源代码；
+* 使过程调用足够强大以表达任意形式的顺序控制，也允许在不使用全局程序变换的情况下执行非本地控制操作；
+* 允许有趣的纯函数式程序无限期运行而不被中断且在有限内存的机器上不会内存不足；
+* 允许教育工作者在各个层次用各种教育方法使用本语言去有效地进行编程教学；并
+* 允许研究工作者使用这门语言去探索编程语言的设计，实现和语义。
+
+此外，本报告致力于：
+
+* 允许程序员创建和分发大量的程序和库，比如：Scheme要求的在不修改的情况下在各个Scheme实现中运行的实现；
+* 通过任意作用域的过程和卫生宏以及允许程序定义卫生弯曲（hygiene-bending）和卫生破坏（hygiene-breaking）的语法抽象和新的独特的数据类型来更全面地支持程序，语法和数据抽象；
+* 允许程序员在一定程度上依赖足够确保类型安全的自动的运行时类型和边界检查；且
+* 允许实现在不要求程序员使用实现定义的运算符和声明的情况下生成高效的代码。
+
+尽管在《算法语言Scheme修订<sup>5</sup>报告》表述的Scheme中编写可移植的程序是可能的，且在这篇报告之前也确实有可移植的程序被写出，但是许多Scheme程序是不可移植的，这主要是因为标准库的缺乏和繁多的实现定义的语言扩展。
+
+通常，Scheme应当包含能够编写各种库程序的积木，包括以提高库和用户程序的可移植性（portability）和可读性（readability）为目的的常用的用户层特性，并排除可以在单独库中轻松实现的不常用的特性。
+
+
+本报告描述的语言同样致力于在不违背上述原则和语言未来发展的情况下尽可能与用《算法语言Scheme修订<sup>5</sup>报告》表述的Scheme编写的程序反向兼容。
+
+**<font size="4">致谢</font>**
+
+许多人对本版本的报告做出了有意义的贡献。我们尤其感谢Aziz Ghuloum和André van Tonder贡献的库系统的参考实现。我们感谢Alan Bawden，John Cowan，Sebastian Egner，Aubrey Jaffer，Shiro Kawai，Bradley Lucier和André van Tonder在语言设计上的洞察力。Marc Feeley，Martin Gasbichler，Aubrey Jaffer，Lars T Hansen，Richard Kelsey，Olin Shivers和André van Tonder编写了用于本报告文本直接录入的SRFIs。Marcus Crestani，David Frese，Aziz Ghuloum，Arthur A. Gleckler，Eric Knauel，Jonathan Rees和André van Tonder细致彻底地校对了本报告的早期版本。
+
+我们同样感谢下面这些人对本报告的帮助： Lauri Alanko，Eli Barzilay，Alan Bawden，Brian C. Barnes，Per Bothner，Trent Buck，Thomas Bushnell，Taylor Campbell，Ludovic Courtès，Pascal Costanza，John Cowan，Ray Dillinger，Jed Davis，J.A. “Biep” Durieux，Carl Eastlund，Sebastian Egner，Tom Emerson，Marc Feeley，Matthias Felleisen，Andy Freeman，Ken Friedenbach，Martin Gasbichler，Arthur A. Gleckler，Aziz Ghuloum，Dave Gurnell，Lars T Hansen，Ben Harris，Sven Hartrumpf，Dave Herman，Nils M. Holm，Stanislav Ievlev，James Jackson，Aubrey Jaffer，Shiro Kawai，Alexander Kjeldaas，Eric Knauel，Michael Lenaghan，Felix Klock，Donovan Kolbly，Marcin Kowalczyk，Thomas Lord，Bradley Lucier，Paulo J. Matos，Dan Muresan，Ryan Newton，Jason Orendorff，Erich Rast，Jeff Read，Jonathan Rees，Jorgen Schäfer，Paul Schlie，Manuel Serrano，Olin Shivers，Jonathan Shapiro，Jens Axel Søgaard，Jay Sulzberger，Pinku Surana，Mikael Tillenius，Sam Tobin-Hochstadt，David Van Horn，André van Tonder，Reinder Verlinde，Alan Watson，Andrew Wilcox，Jon Wilson，Lynn Winebarger，Keith Wright和Chongkai Zhu。
+
+我们同样感谢下面这些人对本报告以前版本的帮助： Alan Bawden，Michael Blair，George Carrette，Andy Cromarty，Pavel Curtis，Jeff Dalton，Olivier Danvy，Ken Dickey，Bruce Duba，Marc Feeley，Andy Freeman，Richard Gabriel，Yekta Gürsel，Ken Haase，Robert Hieb，Paul Hudak，Morry Katz，Chris Lindblad，Mark Meyer，Jim Miller，Jim Philbin，John Ramsdell，Mike Shaff，Jonathan Shapiro，Julie Sussman，Perry Wagle，Daniel Weise，Henry Wu和Ozan Yigit。
+
+我们感谢Carol Fessenden，Daniel Friedman和Christopher Haynes，他们允许我们使用Scheme 311第4版参考手册的内容。我们感谢德州仪器公司（Texas Instruments, Inc.）允许我们使用《TI Scheme语言参考手册》（*TI Scheme Language Reference Manual*）<sup class="citation"><a href="{{ '/references/' | relative_url }}#ref-26">5</a></sup>的内容。我们衷心感谢MIT Scheme<sup class="citation"><a href="{{ '/references/' | relative_url }}#ref-20">6</a></sup>, T<sup class="citation"><a href="{{ '/references/' | relative_url }}#ref-21">7</a></sup>, Scheme 84<sup class="citation"><a href="{{ '/references/' | relative_url }}#ref-12">8</a></sup>, Common Lisp<sup class="citation"><a href="{{ '/references/' | relative_url }}#ref-25">9</a></sup>, Chez Scheme<sup class="citation"><a href="{{ '/references/' | relative_url }}#ref-8">10</a></sup>, PLT Scheme<sup class="citation"><a href="{{ '/references/' | relative_url }}#ref-11">11</a></sup>和Algol 60<sup class="citation"><a href="{{ '/references/' | relative_url }}#ref-1">12</a></sup>的手册对本报告的影响。
+
+我们也感谢Betty Dexter，她在将本报告设为\\\(\\TeX\\\)格式的工作中做出了杰出的贡献；感谢高德纳（Donald Knuth），他设计的程序给Betty添了不少麻烦。
+
+The Artificial Intelligence Laboratory of the Massachusetts Institute of Technology, the Computer Science Department of Indiana University, the Computer and Information Sciences Department of the University of Oregon和the NEC Research Institute支持了本报告的预备工作。The Advanced Research Projects Agency of the Department of Defense根据Office of Naval Research的N00014-80-C-0505号合同为MIT的工作提供了部分支持。NSF的NCS 83-04567和NCS 83-03325号基金为Indiana University的工作提供了支持。

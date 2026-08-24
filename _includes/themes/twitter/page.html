@@ -2,6 +2,13 @@
   <h1>{{ page.title }} {% if page.tagline %} <small>{{ page.tagline }}</small>{% endif %}</h1>
 </div>
 
+{% if page.r6rs_single %}
+<nav class="r6rs-view-links r6rs-single-links" aria-label="阅读视图">
+  <a href="{{ '/' | relative_url }}">分章目录</a>
+  <span aria-current="page">单页版</span>
+</nav>
+{% endif %}
+
 <div class="row-fluid">
   <div class="span12">
     {{ content }}

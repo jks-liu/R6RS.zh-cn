@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
   <head>
     <meta charset="utf-8">
-    <title>{{ page.title }}</title>
-    {% if page.description %}<meta name="description" content="{{ page.description }}">{% endif %}
+    {% assign browser_title = page.title_plain | default: page.title | default: site.title %}
+    <title>{{ browser_title | strip_html | strip_newlines }}</title>
+    {% if page.description %}<meta name="description" content="{{ page.description | strip_html | escape }}">{% endif %}
     <meta name="author" content="{{ site.author.name }}">
 
     <!-- Enable responsive viewport -->
@@ -18,6 +19,7 @@
     <link href="{{ ASSET_PATH }}/bootstrap/css/bootstrap.2.2.2.min.css" rel="stylesheet">
     <link href="{{ ASSET_PATH }}/css/style.css?body=1" rel="stylesheet" type="text/css" media="all">
     <link href="{{ ASSET_PATH }}/css/r6rs.css" rel="stylesheet" type="text/css">
+    <link href="{{ BASE_PATH }}/favicon.ico" rel="icon">
 
     <!-- Le fav and touch icons -->
   <!-- Update these with your own images
@@ -33,7 +35,7 @@
 
   </head>
 
-  <body>
+  <body{% if page.r6rs %} class="r6rs-page"{% elsif page.r6rs_single %} class="r6rs-single-page"{% elsif page.r6rs_home %} class="r6rs-home-page"{% endif %}>
 
     <div class="container-narrow">
 
@@ -41,24 +43,30 @@
         {{ content }}
       </div>
       <hr>
-      <footer>
-      <center>
-         
+      <footer class="site-footer">
         <p>&copy; {{ site.time | date: '%Y' }} {{ site.author.name }}
-          with help from <a href="http://jekyllbootstrap.com" target="_blank" title="The Definitive Jekyll Blogging Framework">Jekyll Bootstrap</a>
-          and <a href="http://twitter.github.com/bootstrap/" target="_blank">Twitter Bootstrap</a>
+          with help from <a href="https://jekyllbootstrap.com" target="_blank" rel="noopener" title="The Definitive Jekyll Blogging Framework">Jekyll Bootstrap</a>
+          and <a href="https://getbootstrap.com/2.3.2/" target="_blank" rel="noopener">Twitter Bootstrap</a>
         </p>
-
-      </center>
       </footer>
 
     </div>
 
     {% include JB/analytics %}
 
-    <!-- MathJax Section -->    
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <!-- MathJax 2 is kept for compatibility with the report's existing macros. -->
     <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        messageStyle: "none",
+        tex2jax: {
+          skipTags: ['script', 'noscript', 'style', 'textarea']
+        },
+        "HTML-CSS": {
+          preferredFont: "STIX",
+          linebreaks: { automatic: true, width: "container" }
+        }
+      });
+
       // From https://groups.google.com/forum/#!topic/mathjax-users/kCHv2j5wWC8
       MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         var TEXDEFS = MathJax.InputJax.TeX.Definitions;
@@ -89,23 +97,14 @@
           };
         }
       });
-    </script>
-    <script>
-    MathJax.Hub.Config({
-      tex2jax: {
-        skipTags: ['script', 'noscript', 'style', 'textarea']
-      },
-      "HTML-CSS": {
-        preferredFont: "STIX"
-      }
-    });
 
-    MathJax.Hub.Queue(function() {
-      var all = MathJax.Hub.getAllJax(), i;
-      for(i=0; i < all.length; i += 1) {
-        all[i].SourceElement().parentNode.className += ' has-jax';
-      }
-    });
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
     </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
   </body>
 </html>

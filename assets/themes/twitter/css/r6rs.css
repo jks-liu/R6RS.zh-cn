@@ -14,3 +14,462 @@ table.center {
 .caption {
     text-align: center;
 }
+
+/* R6RS reader ------------------------------------------------------------ */
+
+.r6rs-page,
+.r6rs-single-page,
+.r6rs-home-page {
+    color: #20252b;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans CJK SC",
+        "Microsoft YaHei", sans-serif;
+    font-size: 16px;
+    line-height: 1.75;
+}
+
+.r6rs-page *,
+.r6rs-single-page *,
+.r6rs-home-page * {
+    box-sizing: border-box;
+}
+
+.r6rs-page .container-narrow,
+.r6rs-single-page .container-narrow,
+.r6rs-home-page .container-narrow {
+    max-width: 1180px;
+    padding-right: 24px;
+    padding-left: 24px;
+}
+
+.r6rs-titlebar {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    margin: 24px 0 10px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #e1e5e9;
+}
+
+.r6rs-brand {
+    color: #20252b;
+    font-size: 1.55rem;
+    font-weight: 700;
+    line-height: 1.25;
+}
+
+.r6rs-brand:hover,
+.r6rs-brand:focus {
+    color: #005ea8;
+    text-decoration: none;
+}
+
+.r6rs-titlebar > span {
+    color: #68737d;
+    white-space: nowrap;
+}
+
+.r6rs-view-links {
+    display: flex;
+    justify-content: flex-end;
+    gap: .9rem;
+    margin: 0 0 18px;
+    font-size: .925rem;
+}
+
+.r6rs-view-links a,
+.r6rs-view-links span {
+    display: inline-block;
+    padding: 3px 9px;
+    border-radius: 4px;
+}
+
+.r6rs-view-links a {
+    background: #eef6fc;
+}
+
+.r6rs-single-links {
+    margin-top: -10px;
+}
+
+.r6rs-shell {
+    display: grid;
+    grid-template-columns: 235px minmax(0, 1fr);
+    gap: 36px;
+    align-items: start;
+}
+
+.r6rs-sidebar {
+    position: sticky;
+    top: 18px;
+    max-height: calc(100vh - 36px);
+    overflow-y: auto;
+}
+
+.r6rs-chapters > summary {
+    color: #4e5963;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.r6rs-chapter-list {
+    padding: 4px 0 14px;
+}
+
+.r6rs-chapter-list a {
+    display: block;
+    margin: 1px 0;
+    padding: 5px 9px;
+    border-left: 3px solid transparent;
+    border-radius: 0 4px 4px 0;
+    color: #3f4a54;
+    font-size: .875rem;
+    line-height: 1.4;
+}
+
+.r6rs-chapter-list a:hover,
+.r6rs-chapter-list a:focus {
+    background: #f0f5f8;
+    color: #005ea8;
+    text-decoration: none;
+}
+
+.r6rs-chapter-list a.active {
+    border-left-color: #0088cc;
+    background: #e8f4fb;
+    color: #005f91;
+    font-weight: 700;
+}
+
+.r6rs-document {
+    min-width: 0;
+    max-width: 880px;
+}
+
+.r6rs-document p,
+.r6rs-single-page .span12 > p {
+    margin: 0 0 1em;
+}
+
+.r6rs-document h1,
+.r6rs-document h2,
+.r6rs-document h3,
+.r6rs-document h4,
+.r6rs-single-page h1,
+.r6rs-single-page h2,
+.r6rs-single-page h3,
+.r6rs-single-page h4 {
+    scroll-margin-top: 18px;
+    line-height: 1.3;
+}
+
+.r6rs-document h1 {
+    margin-top: .35em;
+}
+
+.r6rs-pager {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin: 36px 0 8px;
+    padding-top: 14px;
+    border-top: 1px solid #dfe4e8;
+    font-size: .925rem;
+}
+
+.r6rs-pager a:last-child {
+    margin-left: auto;
+    text-align: right;
+}
+
+.r6rs-pager-top {
+    margin: 0 0 28px;
+    padding: 0 0 12px;
+    border-top: 0;
+    border-bottom: 1px solid #dfe4e8;
+}
+
+.r6rs-document pre,
+.r6rs-single-page pre,
+.r6rs-document .highlight,
+.r6rs-single-page .highlight {
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+.r6rs-document pre,
+.r6rs-single-page pre {
+    white-space: pre;
+    overflow-wrap: normal;
+    word-break: normal;
+}
+
+.r6rs-document code,
+.r6rs-single-page code {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+/* Bootstrap 2 sets pre code to pre-wrap; report examples must retain the
+   source line layout and scroll horizontally when necessary. */
+.r6rs-document pre code,
+.r6rs-single-page pre code {
+    white-space: pre;
+    overflow-wrap: normal;
+    word-break: normal;
+}
+
+/* Rouge marks characters outside a lexer grammar as errors. They are valid
+   report examples and should not receive the old Pygments red error box. */
+.highlight .err {
+    border: 0;
+    background: transparent;
+    color: inherit;
+    text-decoration: none;
+}
+
+.r6rs-document table,
+.r6rs-single-page .span12 > table {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+    border-collapse: collapse;
+}
+
+.r6rs-document th,
+.r6rs-document td,
+.r6rs-single-page th,
+.r6rs-single-page td {
+    padding: 4px 8px;
+    vertical-align: top;
+}
+
+.r6rs-document img,
+.r6rs-single-page img {
+    max-width: 100%;
+    height: auto;
+}
+
+.r6rs-document .MathJax_Display,
+.r6rs-single-page .MathJax_Display {
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 2px 0;
+}
+
+.r6rs-document span.MathJax,
+.r6rs-single-page span.MathJax,
+.r6rs-document .MathJax_Preview,
+.r6rs-single-page .MathJax_Preview {
+    display: inline-block;
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    vertical-align: middle;
+}
+
+.r6rs-document.has-jax > .MathJax_Preview,
+.r6rs-document .has-jax > .MathJax_Preview,
+.r6rs-single-page .has-jax > .MathJax_Preview {
+    display: none;
+}
+
+.r6rs-document .note,
+.r6rs-single-page .note {
+    padding: 9px 12px;
+    border-left: 3px solid #b6c4cf;
+    background: #f6f8fa;
+}
+
+.r6rs-document .caption,
+.r6rs-single-page .caption {
+    margin-top: .5rem;
+    color: #4f5962;
+}
+
+.citation {
+    padding: 0 .08em;
+    font-size: .75em;
+    line-height: 0;
+    vertical-align: super;
+}
+
+.r6rs-bibliography li {
+    margin-bottom: .8em;
+    padding-left: .35em;
+}
+
+.r6rs-bibliography span[id] {
+    scroll-margin-top: 18px;
+}
+
+.r6rs-home-intro {
+    max-width: 780px;
+    margin-bottom: 28px;
+    font-size: 1.05rem;
+}
+
+.r6rs-reading-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 20px 0;
+}
+
+.r6rs-reading-options a {
+    display: inline-block;
+    padding: 8px 14px;
+    border: 1px solid #b9d6e7;
+    border-radius: 5px;
+    background: #eef8fd;
+    font-weight: 600;
+}
+
+.r6rs-chapter-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(245px, 1fr));
+    gap: 10px;
+    margin: 18px 0 32px;
+}
+
+.r6rs-chapter-grid a {
+    display: block;
+    padding: 11px 13px;
+    border: 1px solid #d8e0e6;
+    border-radius: 5px;
+    background: #fff;
+    color: #274356;
+}
+
+.r6rs-chapter-grid a:hover,
+.r6rs-chapter-grid a:focus {
+    border-color: #87bddb;
+    background: #f5fbfe;
+    color: #005f91;
+    text-decoration: none;
+}
+
+.site-footer {
+    color: #6c757d;
+    text-align: center;
+}
+
+.r6rs-single-page #markdown-toc {
+    column-width: 320px;
+    column-gap: 36px;
+}
+
+.r6rs-single-page #markdown-toc > li {
+    break-inside: avoid;
+}
+
+@media (min-width: 801px) {
+    .r6rs-chapters > summary {
+        display: none;
+    }
+
+    .r6rs-chapters > .r6rs-chapter-list {
+        display: block !important;
+    }
+}
+
+@media (max-width: 800px) {
+    .r6rs-page,
+    .r6rs-single-page,
+    .r6rs-home-page {
+        font-size: 15px;
+    }
+
+    .r6rs-page .container-narrow,
+    .r6rs-single-page .container-narrow,
+    .r6rs-home-page .container-narrow {
+        padding-right: 14px;
+        padding-left: 14px;
+    }
+
+    .r6rs-home-page .page-header h1,
+    .r6rs-single-page .page-header h1 {
+        max-width: 100%;
+        font-size: 30px;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+    }
+
+    .r6rs-home-page .page-header h1 small,
+    .r6rs-single-page .page-header h1 small {
+        display: block;
+        margin-top: 5px;
+        line-height: 1.35;
+    }
+
+    .r6rs-titlebar {
+        display: block;
+    }
+
+    .r6rs-titlebar > span {
+        display: block;
+        margin-top: 4px;
+        white-space: normal;
+    }
+
+    .r6rs-view-links {
+        justify-content: flex-start;
+    }
+
+    .r6rs-shell {
+        display: block;
+    }
+
+    .r6rs-sidebar {
+        position: static;
+        max-height: none;
+        margin-bottom: 22px;
+        overflow: visible;
+    }
+
+    .r6rs-chapters > summary {
+        padding: 8px 10px;
+        border: 1px solid #d8e0e6;
+        border-radius: 4px;
+        background: #f6f8fa;
+    }
+
+    .r6rs-chapter-list {
+        max-height: 55vh;
+        overflow-y: auto;
+        border: 1px solid #d8e0e6;
+        border-top: 0;
+    }
+
+    .r6rs-pager {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .r6rs-single-page #markdown-toc {
+        columns: 1;
+    }
+
+    .r6rs-chapter-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+@media print {
+    .r6rs-sidebar,
+    .r6rs-view-links,
+    .r6rs-pager,
+    .site-footer {
+        display: none !important;
+    }
+
+    .r6rs-shell {
+        display: block;
+    }
+
+    .r6rs-document {
+        max-width: none;
+    }
+}

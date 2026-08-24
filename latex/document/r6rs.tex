@@ -117,9 +117,9 @@ Hal Abelson，Norman Adams，David Bartley，Gary Brooks，William Clinger，R. 
 \input{syntax} \par
 \input{expansion} \par
 \input{base}    \par
-\clearchaptergroupstar{Appendices}
+\clearchaptergroupstar{附录}
 \appendix
-\chapter{Formal semantics}
+\chapter{形式语义}
 \label{formalsemanticschapter}
 \input{semantics} \par
 \input{derived} \par
@@ -127,10 +127,13 @@ Hal Abelson，Norman Adams，David Bartley，Gary Brooks，William Clinger，R. 
 \input{example} \par
 \input{changes} \par
 \newpage
-\renewcommand{\bibname}{References}
+\renewcommand{\bibname}{参考文献}
 
 \bibliographystyle{plain}
+\begingroup
+\renewcommand{\MakeUppercase}[1]{#1}
 \bibliography{abbrevs,rrs}
+\endgroup
 
 \vfill\eject
 

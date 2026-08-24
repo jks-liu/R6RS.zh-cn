@@ -1,0 +1,54 @@
+---
+layout: default
+---
+{% include JB/setup %}
+
+<header class="r6rs-titlebar">
+  <a class="r6rs-brand" href="{{ '/' | relative_url }}">算法语言Scheme修订<sup>6</sup>报告</a>
+  <span>R6RS简体中文翻译</span>
+</header>
+
+<nav class="r6rs-view-links" aria-label="阅读视图">
+  <a href="{{ '/' | relative_url }}">分章目录</a>
+  <a href="{{ '/single-page/' | relative_url }}">单页版</a>
+</nav>
+
+<div class="r6rs-shell">
+  <aside class="r6rs-sidebar">
+    <details class="r6rs-chapters">
+      <summary>章节目录</summary>
+      <nav class="r6rs-chapter-list" aria-label="R6RS章节目录">
+        {% for item in site.data.r6rs_pages %}
+          <a href="{{ item.url | relative_url }}"{% if page.chapter_key == item.key %} class="active" aria-current="page"{% endif %}>{{ item.title }}</a>
+        {% endfor %}
+      </nav>
+    </details>
+  </aside>
+
+  <main id="main-content" class="r6rs-document">
+    <nav class="r6rs-pager r6rs-pager-top" aria-label="相邻章节">
+      {% if page.previous_url %}
+        <a rel="prev" href="{{ page.previous_url | relative_url }}">&larr; {{ page.previous_title }}</a>
+      {% else %}
+        <span></span>
+      {% endif %}
+      {% if page.next_url %}
+        <a rel="next" href="{{ page.next_url | relative_url }}">{{ page.next_title }} &rarr;</a>
+      {% endif %}
+    </nav>
+
+    {% include r6rs-math-macros.html %}
+    {{ content }}
+
+    <nav class="r6rs-pager" aria-label="相邻章节">
+      {% if page.previous_url %}
+        <a rel="prev" href="{{ page.previous_url | relative_url }}">&larr; {{ page.previous_title }}</a>
+      {% else %}
+        <span></span>
+      {% endif %}
+      {% if page.next_url %}
+        <a rel="next" href="{{ page.next_url | relative_url }}">{{ page.next_title }} &rarr;</a>
+      {% endif %}
+    </nav>
+  </main>
+</div>

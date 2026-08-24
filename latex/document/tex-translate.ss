@@ -410,7 +410,7 @@
                (apply string-append (add-between ", " (map (λ (l) (inline-tex l #f)) ls)))
                (inline-tex r #f)
                (if show-otherwise?
-                   "~ ~ ~ ~ ~ ~ ~ \\mbox{\\textrm{(otherwise)}}"
+                   "~ ~ ~ ~ ~ ~ ~ \\mbox{\\textrm{(否则)}}"
                    ""))]))))))
   
   (define (p-case name lhs rhs show-otherwise?)
@@ -437,7 +437,7 @@
              (inline-tex l #f)
              (inline-tex r #f)
              (if show-otherwise?
-                 "~ ~ ~ ~ ~ ~ ~ \\mbox{\\textrm{(otherwise)}}"
+                 "~ ~ ~ ~ ~ ~ ~ \\mbox{\\textrm{(否则)}}"
                  ""))])))))
   
   (define (p-rel-case name lhs rhs side-condition flatten-lhs?)
@@ -522,8 +522,8 @@
       [`(hole multi)             "\\holes"]
       [`(hole single)            "\\holeone"]
       [`(error string)           (format "\\textbf{error: } \\textit{error message}")]
-      [`(unknown string)           (format "\\textbf{unknown: } \\textit{description}")]
-      [`(uncaught-exception v)           (format "\\textbf{uncaught exception: } \\nt{v}")]
+      [`(unknown string)           (format "\\textbf{未知: } \\textit{description}")]
+      [`(uncaught-exception v)           (format "\\textbf{未捕获的异常: } \\nt{v}")]
       [_                         (do-pretty-format p)]))
   
   (define (show-rewritten-nt lhs str) (display (string-append lhs " " str " " TEX-NEWLINE)))
@@ -536,11 +536,11 @@
         (display TEX-NEWLINE))
       
       (case nonterm        
-        [(ip) (show-rewritten-nt lhs "\\textrm{[immutable pair pointers]}")]
-        [(mp) (show-rewritten-nt lhs "\\textrm{[mutable pair pointers]}")]
-        [(sym) (show-rewritten-nt lhs "\\textrm{[variables except \\sy{dot}]}")]
-        [(x)  (show-rewritten-nt lhs "\\textrm{[variables except \\sy{dot} and keywords]}")]
-        [(n)  (show-rewritten-nt lhs "\\textrm{[numbers]}")]
+        [(ip) (show-rewritten-nt lhs "\\textrm{[不可变点对指针]}")]
+        [(mp) (show-rewritten-nt lhs "\\textrm{[可变点对指针]}")]
+        [(sym) (show-rewritten-nt lhs "\\textrm{[除了\\sy{dot}的变量]}")]
+        [(x)  (show-rewritten-nt lhs "\\textrm{[除了\\sy{dot}的变量和关键词]}")]
+        [(n)  (show-rewritten-nt lhs "\\textrm{[数字]}")]
         
         [else
          (let ([max-line-length
@@ -954,12 +954,15 @@
              [(null? lst) (list (apply string-append (reverse strs)))]
              [else (loop (cdr lst)
                          (list* (car lst) 
-                                "\\textrm{ or }" 
+                                "\\textrm{或}"
                                 strs))])))]
       [`(fresh ,xs)
-        (list (format "~a \\textrm{ fresh}" (string-join (map (lambda (x) (format "~a" (gps x))) xs) ", ")))]
+        (list (format (if (equal? xs '(qp))
+                          "~a \\textrm{ fresh}"
+                          "~a \\textrm{新生}")
+                      (string-join (map (lambda (x) (format "~a" (gps x))) xs) ", ")))]
       [`(fresh ,(? symbol? x) ,'...)
-        (list (format "~a \\cdots \\textrm{ fresh}" (gps x)))]
+        (list (format "~a \\cdots \\textrm{新生}" (gps x)))]
       [`(freshS ,xs)        
         (list (format "~a \\cdots \\textrm{ fresh}" (string-join (map (lambda (x) (format "~a" (gps x))) xs) ", ")))]
       [`(not (,(? (λ (x) (memq x '(equal? eq?)))) (term ,t1) (term ,t2)))
@@ -1012,7 +1015,7 @@
       [`(not (number? (term ,v)))
         (list (format "~a \\texrm{ is not a number}" (gps v)))]
       [`(not (number? ,(? symbol? exp)))
-        (list (format "~a \\textrm{ is not a number}" exp))]
+        (list (format "~a \\textrm{不是一个数字}" exp))]
       [`(not (v? (term ,v)))
         (list (format "~a \\not\\in \\nt{v}" (gps v)))]
       [`(not (v? ,(? symbol? v)))
@@ -1169,7 +1172,7 @@
           (loop arg1)
           (for-each
            (lambda (x) 
-             (d "\\textrm{ or }")
+             (d "\\textrm{或}")
              (loop x))
            args)]
         
@@ -1287,7 +1290,7 @@
         [`(in-named-hole ,holename ,context ,exp)
           (loop `(in-hole ,context ,exp)) (d (format "_{~a}" (holename->tex holename)))]
         [`(uncaught-exception ,e)
-          (printf "\\textbf{uncaught exception: }")
+          (printf "\\textbf{未捕获异常: }")
           (loop e)]
         [`(unknown (,uq (format ,str (length (term (,v ,'...))))))
           (printf "\\mbox{\\textbf{unknown: }")
@@ -1295,7 +1298,7 @@
           (printf "}")
           (loop v)]
         [`(unknown string)
-         (printf "\\textbf{unknown: } \\textit{description}")]
+         (printf "\\textbf{未知: } \\textit{description}")]
         [`(,(? (lambda (x) (memq x '(unknown error))) lab) ,s)
           (printf "\\mbox{\\textbf{~a:} ~a}" lab (quote-tex-specials s))]
         [`(,(or 'r6rs-subst-many 'r6rs-subst-one) ,arg)
@@ -1483,4 +1486,3 @@
   ;; ============================================================
   
   (translate "../model/r6rs.scm"))
-  

@@ -52,9 +52,7 @@
 		  (begin
 		    (display (munge-index-line thing) outport)
 		    (newline outport)
-		    (loop))))))))))
+		    (loop))
+		  #f))))))))
 
 (frob-library-index "r6rs-lib.idx" "r6rs-report-lib.idx")
-
-
-		  
